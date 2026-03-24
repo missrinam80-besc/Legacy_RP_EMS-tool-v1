@@ -6,14 +6,12 @@ document.addEventListener("DOMContentLoaded", init);
  * =========================================================
  * Afwezigheidstool - app.js
  * ---------------------------------------------------------
- * Compatibele versie voor:
- * - oude Engelstalige ids
- * - nieuwe Nederlandstalige ids
- *
- * Deze versie:
- * - gebruikt geen afdeling meer
- * - vult read-only velden in
- * - crasht niet als een selector ontbreekt
+ * Deze versie ondersteunt:
+ * - bericht opbouwen
+ * - kopiëren
+ * - resetten
+ * - verzenden naar Discord via Apps Script proxy
+ * - compatibiliteit met oude en nieuwe ids
  * =========================================================
  */
 
@@ -141,11 +139,13 @@ function bindEvents() {
   const form = getForm();
   const resetBtn = getEl("#resetBtn");
   const copyBtn = getEl("#copyBtn");
+  const sendBtn = getEl("#sendBtn");
   const staffSelect = getStaffSelect();
 
   if (form) form.addEventListener("submit", handleSubmit);
   if (resetBtn) resetBtn.addEventListener("click", resetForm);
   if (copyBtn) copyBtn.addEventListener("click", copyOutput);
+  if (sendBtn) sendBtn.addEventListener("click", handleSendToDiscord);
   if (staffSelect) staffSelect.addEventListener("change", handleStaffChange);
 }
 
@@ -157,7 +157,7 @@ async function loadStaffOptions() {
   const staffSelect = getStaffSelect();
 
   if (!staffSelect) {
-    console.warn("Medewerker-select niet gevonden (#staffSelect of #medewerker).");
+    console.warn("Medewerker-select niet gevonden.");
     return;
   }
 
@@ -336,5 +336,47 @@ async function copyOutput() {
     showStatusSafe("Melding gekopieerd.", "success");
   } catch (error) {
     showStatusSafe(`Kopiëren mislukt: ${error.message}`, "danger");
+  }
+}
+
+/* =========================
+   Discord send
+========================= */
+
+async function handleSendToDiscord() {
+  const outputField = getOutputField();
+  const text = outputField ? outputField.value.trim() : "";
+
+  if (!text) {
+    showStatusSafe("Bouw eerst een melding op voor je verzendt.", "warning");
+    return;
+  }
+
+  if (!window.DiscordWebhookService) {
+    showStatusSafe("DiscordWebhookService niet beschikbaar.", "danger");
+    return;
+  }
+
+  if (!config.discordEndpointUrl) {
+    showStatusSafe("Geen Discord endpoint ingesteld in config.json.", "danger");
+    return;
+  }
+
+  try {
+    showStatusSafe("Bericht wordt verzonden...", "info");
+
+    await window.DiscordWebhookService.sendFormMessage({
+      endpointUrl: config.discordEndpointUrl,
+      formType: config.discordFormType || "absence",
+      content: text,
+      username: config.discordUsername || "EMS Afwezigheidstool",
+      extraData: {
+        tool: "absence"
+      }
+    });
+
+    showStatusSafe("Bericht succesvol naar Discord verzonden.", "success");
+  } catch (error) {
+    showStatusSafe(`Verzenden mislukt: ${error.message}`, "danger");
   }
 }
