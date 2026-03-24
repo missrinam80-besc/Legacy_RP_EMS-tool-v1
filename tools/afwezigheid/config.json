@@ -1,6 +1,7 @@
 {
   "toolTitle": "Afwezigheidsmelding",
   "toolDescription": "Meld afwezigheden en stuur ze door naar Discord.",
+  "staffApiUrl": "https://script.google.com/macros/s/AKfycbw2kNYykn-uWDfNSlbIlmFaM65lhw3bb-AlEndYbqde9muCBhiPH8IaziM203GxArPTuQ/exec",
   "discordEndpointUrl": "https://script.google.com/macros/s/AKfycbw2kNYykn-uWDfNSlbIlmFaM65lhw3bb-AlEndYbqde9muCBhiPH8IaziM203GxArPTuQ/exec",
   "discordUsername": "EMS Afwezigheidstool",
   "discordFormType": "absence",
