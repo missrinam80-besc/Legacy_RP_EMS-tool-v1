@@ -1,1 +1,72 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Personeelslijst Beheer</title>
 
+  <link rel="stylesheet" href="../../assets/styles/theme.css" />
+  <link rel="stylesheet" href="../../assets/styles/base.css" />
+  <link rel="stylesheet" href="../../assets/styles/layout.css" />
+  <link rel="stylesheet" href="../../assets/styles/components.css" />
+  <link rel="stylesheet" href="../../assets/styles/utilities.css" />
+</head>
+<body>
+  <main class="page-container">
+    <section class="panel">
+      <h1>Beheer personeelslijst</h1>
+      <p class="text-soft">
+        Gebruik deze pagina om rijen toe te voegen of aan te passen. Verwijderen is niet voorzien;
+        medewerkers worden aangepast of op niet-zichtbaar gezet.
+      </p>
+    </section>
+
+    <section class="panel mt-2">
+      <form id="adminForm">
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="name">Naam</label>
+            <input class="form-input" id="name" type="text" />
+          </div>
+
+          <div class="form-field">
+            <label for="callSign">Roepnummer</label>
+            <input class="form-input" id="callSign" type="text" />
+          </div>
+
+          <div class="form-field">
+            <label for="role">Rol</label>
+            <input class="form-input" id="role" type="text" />
+          </div>
+
+          <div class="form-field">
+            <label for="visible">Zichtbaar</label>
+            <select class="form-select" id="visible">
+              <option value="Ja">Ja</option>
+              <option value="Nee">Nee</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button type="submit" class="btn btn-primary">Rij voorbereiden</button>
+          <button type="button" class="btn btn-secondary" id="resetBtn">Leegmaken</button>
+          <button type="button" class="btn btn-secondary" id="copyBtn">Kopiëren</button>
+        </div>
+      </form>
+
+      <div id="statusBox" class="status-box hidden mt-2"></div>
+    </section>
+
+    <section class="output-card mt-2">
+      <h2>Voorbereide data</h2>
+      <textarea id="output" class="form-textarea" readonly></textarea>
+    </section>
+  </main>
+
+  <script src="../../assets/scripts/core.js"></script>
+  <script src="../../assets/scripts/ui.js"></script>
+  <script src="../../assets/scripts/export.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
