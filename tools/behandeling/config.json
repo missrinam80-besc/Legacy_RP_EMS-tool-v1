@@ -1,1 +1,32 @@
-
+{
+  "toolTitle": "Behandelingsadviseur",
+  "toolDescription": "Ondersteuning bij letsels, vitale functies en behandelkeuze.",
+  "bodyParts": [
+    "Linkerarm",
+    "Rechterarm",
+    "Linkerbeen",
+    "Rechterbeen",
+    "Hoofd",
+    "Rompgedeelte"
+  ],
+  "injuryTypes": [
+    "Snijwonde",
+    "Steekwonde",
+    "Schotwonde",
+    "Brandwonde",
+    "Breuk",
+    "Kneuzing"
+  ],
+  "painLevels": [
+    "Licht",
+    "Gemiddeld",
+    "Hoog",
+    "Extreem"
+  ],
+  "bloodLossLevels": [
+    "Licht",
+    "Gemiddeld",
+    "Hoog",
+    "Extreem"
+  ]
+}
