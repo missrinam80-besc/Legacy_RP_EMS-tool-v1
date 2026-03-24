@@ -273,13 +273,14 @@ function validateForm(data) {
 
 function buildOutput(data) {
   return [
-    "AFWEZIGHEIDSMELDING",
-    `Naam: ${data.name}`,
-    `Roepnummer: ${data.callSign}`,
-    `Rang: ${data.role || "-"}`,
-    `Periode: ${formatPeriod(data.startDate, data.endDate)}`,
-    `Reden: ${data.reason}`,
-    `Toelichting: ${data.details || "-"}`
+    "__**📋 AFWEZIGHEIDSMELDING**__",
+    "",
+    `**Naam:** ${data.name}`,
+    `**Roepnummer:** ${data.callSign}`,
+    `**Rang:** ${data.role || "-"}`,
+    `**Periode:** ${formatPeriod(data.startDate, data.endDate)}`,
+    `**Reden:** ${data.reason}`,
+    `**Toelichting:** ${data.details || "-"}`
   ].join("\n");
 }
 
