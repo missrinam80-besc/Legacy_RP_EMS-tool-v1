@@ -6,19 +6,14 @@ document.addEventListener("DOMContentLoaded", init);
  * =========================================================
  * Afwezigheidstool - app.js
  * ---------------------------------------------------------
- * Doel:
- * - Config laden
- * - Redenen vullen vanuit config
- * - Medewerkers laden vanuit de personeelsservice
- * - Bij selectie van een medewerker automatisch:
- *   naam, roepnummer en rang invullen
- * - Afwezigheidsmelding valideren en opbouwen
- * - Bericht tonen in outputveld
- * - Bericht kunnen kopiëren
+ * Compatibele versie voor:
+ * - oude Engelstalige ids
+ * - nieuwe Nederlandstalige ids
  *
- * Opmerking:
- * - Afdeling werd bewust verwijderd uit deze versie
- * - Naam, roepnummer en rang zijn read-only velden
+ * Deze versie:
+ * - gebruikt geen afdeling meer
+ * - vult read-only velden in
+ * - crasht niet als een selector ontbreekt
  * =========================================================
  */
 
@@ -28,34 +23,102 @@ async function init() {
     bindEvents();
     await loadStaffOptions();
   } catch (error) {
-    showStatus("#statusBox", `Fout bij laden: ${error.message}`, "danger");
+    showStatusSafe(`Fout bij laden: ${error.message}`, "danger");
+    console.error(error);
   }
 }
 
-/**
- * Laadt de configuratie van de tool.
- */
+/* =========================
+   Helpers
+========================= */
+
+function getEl(...selectors) {
+  for (const selector of selectors) {
+    const el = document.querySelector(selector);
+    if (el) return el;
+  }
+  return null;
+}
+
+function getValue(...selectors) {
+  const el = getEl(...selectors);
+  return el ? sanitizeText(el.value) : "";
+}
+
+function setValue(value, ...selectors) {
+  const el = getEl(...selectors);
+  if (el) el.value = value ?? "";
+}
+
+function setText(value, ...selectors) {
+  const el = getEl(...selectors);
+  if (el) el.textContent = value ?? "";
+}
+
+function clearValue(...selectors) {
+  const el = getEl(...selectors);
+  if (el) el.value = "";
+}
+
+function showStatusSafe(message, type = "info") {
+  const statusBox = getEl("#statusBox");
+  if (!statusBox) {
+    console.warn("StatusBox niet gevonden:", message);
+    return;
+  }
+  showStatus("#statusBox", message, type);
+}
+
+function clearStatusSafe() {
+  const statusBox = getEl("#statusBox");
+  if (!statusBox) return;
+  clearStatus("#statusBox");
+}
+
+function getReasonSelect() {
+  return getEl("#reason", "#reden");
+}
+
+function getStaffSelect() {
+  return getEl("#staffSelect", "#medewerker");
+}
+
+function getForm() {
+  return getEl("#absenceForm", "#afwezigheidsForm");
+}
+
+function getOutputField() {
+  return getEl("#output", "#bericht");
+}
+
+function isOtherReason(reason) {
+  return reason.trim().toLowerCase() === "andere";
+}
+
+/* =========================
+   Config
+========================= */
+
 async function loadConfig() {
   config = await fetchJson("./config.json");
 
-  qs("#toolTitle").textContent = config.toolTitle || "Afwezigheidsmelding";
-  qs("#toolDescription").textContent = config.toolDescription || "";
+  setText(config.toolTitle || "Afwezigheidsmelding", "#toolTitle");
+  setText(config.toolDescription || "", "#toolDescription");
 
-  fillReasonSelect("#reason", config.reasons || [], "Kies een reden");
+  fillReasonSelect(config.reasons || [], "Kies een reden");
 }
 
-/**
- * Vult de reden-select met waarden uit config.
- *
- * Ondersteunt:
- * - array van strings
- * - array van objecten { value, label }
- */
-function fillReasonSelect(selector, items, placeholder) {
-  const select = qs(selector);
+function fillReasonSelect(items, placeholder) {
+  const select = getReasonSelect();
+
+  if (!select) {
+    console.warn("Reden-select niet gevonden (#reason of #reden).");
+    return;
+  }
+
   select.innerHTML = `<option value="">${placeholder}</option>`;
 
-  items.forEach(item => {
+  items.forEach((item) => {
     const option = document.createElement("option");
 
     if (typeof item === "string") {
@@ -70,21 +133,38 @@ function fillReasonSelect(selector, items, placeholder) {
   });
 }
 
-/**
- * Koppelt alle events van het formulier.
- */
+/* =========================
+   Events
+========================= */
+
 function bindEvents() {
-  qs("#absenceForm").addEventListener("submit", handleSubmit);
-  qs("#resetBtn").addEventListener("click", resetForm);
-  qs("#copyBtn").addEventListener("click", copyOutput);
-  qs("#staffSelect").addEventListener("change", handleStaffChange);
+  const form = getForm();
+  const resetBtn = getEl("#resetBtn");
+  const copyBtn = getEl("#copyBtn");
+  const staffSelect = getStaffSelect();
+
+  if (form) form.addEventListener("submit", handleSubmit);
+  if (resetBtn) resetBtn.addEventListener("click", resetForm);
+  if (copyBtn) copyBtn.addEventListener("click", copyOutput);
+  if (staffSelect) staffSelect.addEventListener("change", handleStaffChange);
 }
 
-/**
- * Laadt actieve en zichtbare medewerkers in de dropdown.
- */
+/* =========================
+   Staff loading
+========================= */
+
 async function loadStaffOptions() {
-  const staffSelect = qs("#staffSelect");
+  const staffSelect = getStaffSelect();
+
+  if (!staffSelect) {
+    console.warn("Medewerker-select niet gevonden (#staffSelect of #medewerker).");
+    return;
+  }
+
+  if (!window.EmsStaffService) {
+    showStatusSafe("Personeelsservice niet beschikbaar.", "danger");
+    return;
+  }
 
   try {
     const activeVisibleStaff = await window.EmsStaffService.getByStatus("actief", true);
@@ -96,17 +176,13 @@ async function loadStaffOptions() {
       valueField: "roepnummer"
     });
 
-    showStatus("#statusBox", "Medewerkers geladen.", "success");
+    showStatusSafe("Medewerkers geladen.", "success");
   } catch (error) {
     staffSelect.innerHTML = `<option value="">Laden mislukt</option>`;
-    showStatus("#statusBox", `Fout bij laden van medewerkers: ${error.message}`, "danger");
+    showStatusSafe(`Fout bij laden van medewerkers: ${error.message}`, "danger");
   }
 }
 
-/**
- * Wanneer een medewerker gekozen wordt, halen we de data op
- * en vullen we de read-only velden.
- */
 async function handleStaffChange(event) {
   const roepnummer = sanitizeText(event.target.value);
 
@@ -115,72 +191,54 @@ async function handleStaffChange(event) {
     return;
   }
 
+  if (!window.EmsStaffService) {
+    showStatusSafe("Personeelsservice niet beschikbaar.", "danger");
+    return;
+  }
+
   try {
     const row = await window.EmsStaffService.getByCallSign(roepnummer, true);
 
     if (!row) {
       clearStaffFields();
-      showStatus("#statusBox", "Medewerker niet gevonden.", "warning");
+      showStatusSafe("Medewerker niet gevonden.", "warning");
       return;
     }
 
-    qs("#name").value = row.naam || "";
-    qs("#callSign").value = row.roepnummer || "";
-    qs("#role").value = row.rang || "";
+    setValue(row.naam || "", "#name", "#naam");
+    setValue(row.roepnummer || "", "#callSign", "#roepnummer");
+    setValue(row.rang || "", "#role", "#rang");
 
-    clearStatus("#statusBox");
+    clearStatusSafe();
   } catch (error) {
     clearStaffFields();
-    showStatus("#statusBox", `Fout bij ophalen medewerker: ${error.message}`, "danger");
+    showStatusSafe(`Fout bij ophalen medewerker: ${error.message}`, "danger");
   }
 }
 
-/**
- * Leegt de read-only medewerkervelden.
- */
 function clearStaffFields() {
-  qs("#name").value = "";
-  qs("#callSign").value = "";
-  qs("#role").value = "";
+  clearValue("#name", "#naam");
+  clearValue("#callSign", "#roepnummer");
+  clearValue("#role", "#rang");
 }
 
-/**
- * Verwerkt het formulier en bouwt de afwezigheidsmelding op.
- */
-function handleSubmit(event) {
-  event.preventDefault();
+/* =========================
+   Form handling
+========================= */
 
-  const data = getFormData();
-  const validationError = validateForm(data);
-
-  if (validationError) {
-    showStatus("#statusBox", validationError, "warning");
-    return;
-  }
-
-  qs("#output").value = buildOutput(data);
-  showStatus("#statusBox", "Melding opgebouwd.", "success");
-}
-
-/**
- * Leest en normaliseert alle formulierdata.
- */
 function getFormData() {
   return {
-    staffSelect: sanitizeText(qs("#staffSelect").value),
-    name: sanitizeText(qs("#name").value),
-    callSign: sanitizeText(qs("#callSign").value),
-    role: sanitizeText(qs("#role").value),
-    startDate: sanitizeText(qs("#startDate").value),
-    endDate: sanitizeText(qs("#endDate").value),
-    reason: sanitizeText(qs("#reason").value),
-    details: sanitizeText(qs("#details").value)
+    staffSelect: getValue("#staffSelect", "#medewerker"),
+    name: getValue("#name", "#naam"),
+    callSign: getValue("#callSign", "#roepnummer"),
+    role: getValue("#role", "#rang"),
+    startDate: getValue("#startDate", "#begindatum"),
+    endDate: getValue("#endDate", "#einddatum"),
+    reason: getValue("#reason", "#reden"),
+    details: getValue("#details", "#toelichting")
   };
 }
 
-/**
- * Valideert de formulierdata.
- */
 function validateForm(data) {
   if (!data.staffSelect) {
     return "Selecteer eerst een medewerker.";
@@ -213,17 +271,6 @@ function validateForm(data) {
   return "";
 }
 
-/**
- * Bepaalt of de gekozen reden neerkomt op "Andere".
- * Ondersteunt zowel "Andere" als "andere".
- */
-function isOtherReason(reason) {
-  return reason.trim().toLowerCase() === "andere";
-}
-
-/**
- * Bouwt de uiteindelijke outputtekst op.
- */
 function buildOutput(data) {
   return [
     "AFWEZIGHEIDSMELDING",
@@ -236,38 +283,57 @@ function buildOutput(data) {
   ].join("\n");
 }
 
-/**
- * Formatteert de periode.
- */
 function formatPeriod(startDate, endDate) {
   return `${startDate} t.e.m. ${endDate}`;
 }
 
-/**
- * Reset het volledige formulier.
- */
-function resetForm() {
-  qs("#absenceForm").reset();
-  qs("#output").value = "";
-  clearStaffFields();
-  clearStatus("#statusBox");
+function handleSubmit(event) {
+  event.preventDefault();
+
+  const data = getFormData();
+  const validationError = validateForm(data);
+
+  if (validationError) {
+    showStatusSafe(validationError, "warning");
+    return;
+  }
+
+  const outputField = getOutputField();
+  if (outputField) {
+    outputField.value = buildOutput(data);
+  }
+
+  showStatusSafe("Melding opgebouwd.", "success");
 }
 
-/**
- * Kopieert de output naar het klembord.
- */
+function resetForm() {
+  const form = getForm();
+  const outputField = getOutputField();
+
+  if (form) form.reset();
+  if (outputField) outputField.value = "";
+
+  clearStaffFields();
+  clearStatusSafe();
+}
+
+/* =========================
+   Copy
+========================= */
+
 async function copyOutput() {
-  const text = qs("#output").value.trim();
+  const outputField = getOutputField();
+  const text = outputField ? outputField.value.trim() : "";
 
   if (!text) {
-    showStatus("#statusBox", "Geen melding om te kopiëren.", "warning");
+    showStatusSafe("Geen melding om te kopiëren.", "warning");
     return;
   }
 
   try {
     await copyTextToClipboard(text);
-    showStatus("#statusBox", "Melding gekopieerd.", "success");
+    showStatusSafe("Melding gekopieerd.", "success");
   } catch (error) {
-    showStatus("#statusBox", `Kopiëren mislukt: ${error.message}`, "danger");
+    showStatusSafe(`Kopiëren mislukt: ${error.message}`, "danger");
   }
 }
