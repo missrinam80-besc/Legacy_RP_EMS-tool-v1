@@ -1,1 +1,39 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Personeelslijst</title>
 
+  <link rel="stylesheet" href="../../assets/styles/theme.css" />
+  <link rel="stylesheet" href="../../assets/styles/base.css" />
+  <link rel="stylesheet" href="../../assets/styles/layout.css" />
+  <link rel="stylesheet" href="../../assets/styles/components.css" />
+  <link rel="stylesheet" href="../../assets/styles/utilities.css" />
+</head>
+<body>
+  <main class="page-container">
+    <section class="panel">
+      <h1>Personeelslijst</h1>
+      <p class="text-soft">Publieke of interne weergave van de personeelslijst.</p>
+    </section>
+
+    <section class="panel mt-2">
+      <div class="form-field">
+        <label for="searchInput">Zoeken</label>
+        <input class="form-input" id="searchInput" type="text" placeholder="Zoek op naam, roepnummer of rol" />
+      </div>
+
+      <div id="statusBox" class="status-box status-info mt-2">Lijst wordt geladen...</div>
+    </section>
+
+    <section class="panel mt-2">
+      <div id="listContainer"></div>
+    </section>
+  </main>
+
+  <script src="../../assets/scripts/core.js"></script>
+  <script src="../../assets/scripts/ui.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
