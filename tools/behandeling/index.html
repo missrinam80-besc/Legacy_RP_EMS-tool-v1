@@ -1,1 +1,78 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Behandelingsadviseur</title>
 
+  <link rel="stylesheet" href="../../assets/styles/theme.css" />
+  <link rel="stylesheet" href="../../assets/styles/base.css" />
+  <link rel="stylesheet" href="../../assets/styles/layout.css" />
+  <link rel="stylesheet" href="../../assets/styles/components.css" />
+  <link rel="stylesheet" href="../../assets/styles/utilities.css" />
+</head>
+<body>
+  <main class="page-container">
+    <section class="panel">
+      <h1 id="toolTitle">Behandelingsadviseur</h1>
+      <p id="toolDescription" class="text-soft"></p>
+    </section>
+
+    <section class="panel mt-2">
+      <form id="treatmentForm">
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="bodyPart">Lichaamsdeel</label>
+            <select class="form-select" id="bodyPart"></select>
+          </div>
+
+          <div class="form-field">
+            <label for="injuryType">Type letsel</label>
+            <select class="form-select" id="injuryType"></select>
+          </div>
+
+          <div class="form-field">
+            <label for="painLevel">Pijnlevel</label>
+            <select class="form-select" id="painLevel"></select>
+          </div>
+
+          <div class="form-field">
+            <label for="bloodLoss">Bloedverlies</label>
+            <select class="form-select" id="bloodLoss"></select>
+          </div>
+        </div>
+
+        <div class="form-grid mt-2">
+          <div class="form-field">
+            <label for="heartRate">Hartslag / pols</label>
+            <input class="form-input" id="heartRate" type="text" />
+          </div>
+
+          <div class="form-field">
+            <label for="bloodPressure">Bloeddruk</label>
+            <input class="form-input" id="bloodPressure" type="text" />
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button type="submit" class="btn btn-primary">Advies genereren</button>
+          <button type="button" class="btn btn-secondary" id="resetBtn">Leegmaken</button>
+          <button type="button" class="btn btn-secondary" id="copyBtn">Kopiëren</button>
+        </div>
+      </form>
+
+      <div id="statusBox" class="status-box hidden mt-2"></div>
+    </section>
+
+    <section class="output-card mt-2">
+      <h2>Behandeladvies</h2>
+      <textarea id="output" class="form-textarea" readonly></textarea>
+    </section>
+  </main>
+
+  <script src="../../assets/scripts/core.js"></script>
+  <script src="../../assets/scripts/ui.js"></script>
+  <script src="../../assets/scripts/export.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
