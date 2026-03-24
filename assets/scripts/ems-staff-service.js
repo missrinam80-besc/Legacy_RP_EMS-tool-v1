@@ -10,12 +10,28 @@
  *
  * Gebruik:
  * - laden in elke tool die personeel nodig heeft
+ * - API-url instellen via window.EmsStaffService.setApiUrl(...)
  * - daarna functies gebruiken via window.EmsStaffService
  */
 
 window.EmsStaffService = (() => {
   let cache = [];
   let lastLoadedAt = null;
+  let apiUrl = '';
+
+  /**
+   * Stelt de API-url in.
+   */
+  function setApiUrl(url) {
+    apiUrl = String(url || '').trim();
+  }
+
+  /**
+   * Geeft de huidige API-url terug.
+   */
+  function getApiUrl() {
+    return apiUrl;
+  }
 
   /**
    * Normaliseert statuswaarden naar vaste waarden.
@@ -25,9 +41,22 @@ window.EmsStaffService = (() => {
 
     if (status === 'actief') return 'actief';
     if (status === 'verlof') return 'verlof';
-    if (status === 'non actief' || status === 'non-actief' || status === 'nonactief') return 'non-actief';
+    if (status === 'non actief' || status === 'non-actief' || status === 'nonactief') {
+      return 'non-actief';
+    }
 
     return 'actief';
+  }
+
+  /**
+   * Zet verschillende truthy/falsy waarden om naar boolean.
+   */
+  function toBoolean(value) {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'number') return value === 1;
+
+    const normalized = String(value || '').trim().toLowerCase();
+    return ['true', '1', 'ja', 'yes', 'y'].includes(normalized);
   }
 
   /**
@@ -40,7 +69,7 @@ window.EmsStaffService = (() => {
       rang: String(row.rang || '').trim(),
       afdeling: String(row.afdeling || '').trim(),
       status: normalizeStatus(row.status),
-      is_active: !!row.is_active
+      is_active: toBoolean(row.is_active)
     };
   }
 
@@ -53,21 +82,34 @@ window.EmsStaffService = (() => {
       return cache;
     }
 
-    if (typeof API_URL !== 'string' || !API_URL) {
-      throw new Error('API_URL is niet ingesteld.');
+    if (!apiUrl) {
+      throw new Error('API URL is niet ingesteld. Gebruik EmsStaffService.setApiUrl(url).');
     }
 
-    const response = await fetch(`${API_URL}?action=readonly`);
+    const response = await fetch(`${apiUrl}?action=readonly`);
+
+    if (!response.ok) {
+      throw new Error(`Personeels-API gaf een HTTP-fout terug: ${response.status}`);
+    }
+
     const data = await response.json();
 
-    if (!data.success) {
-      throw new Error(data.message || 'Personeelslijst laden mislukt.');
+    if (!data || data.success !== true) {
+      throw new Error((data && data.message) || 'Personeelslijst laden mislukt.');
     }
 
     cache = Array.isArray(data.rows) ? data.rows.map(sanitizeRow) : [];
     lastLoadedAt = new Date();
 
     return cache;
+  }
+
+  /**
+   * Leegt de cache.
+   */
+  function clearCache() {
+    cache = [];
+    lastLoadedAt = null;
   }
 
   /**
@@ -105,10 +147,14 @@ window.EmsStaffService = (() => {
     const { visibleOnly = true, status = null } = options;
     const rows = visibleOnly ? await getVisibleStaff() : await getAll();
     const roleList = Array.isArray(roles) ? roles : [roles];
-    const normalizedRoles = roleList.map(role => String(role || '').trim().toLowerCase());
+    const normalizedRoles = roleList.map(role =>
+      String(role || '').trim().toLowerCase()
+    );
 
     return rows.filter(row => {
-      const matchesRole = normalizedRoles.includes(String(row.rang || '').trim().toLowerCase());
+      const matchesRole = normalizedRoles.includes(
+        String(row.rang || '').trim().toLowerCase()
+      );
       const matchesStatus = status ? row.status === normalizeStatus(status) : true;
       return matchesRole && matchesStatus;
     });
@@ -121,10 +167,14 @@ window.EmsStaffService = (() => {
     const { visibleOnly = true, status = null } = options;
     const rows = visibleOnly ? await getVisibleStaff() : await getAll();
     const deptList = Array.isArray(departments) ? departments : [departments];
-    const normalizedDepartments = deptList.map(item => String(item || '').trim().toLowerCase());
+    const normalizedDepartments = deptList.map(item =>
+      String(item || '').trim().toLowerCase()
+    );
 
     return rows.filter(row => {
-      const matchesDepartment = normalizedDepartments.includes(String(row.afdeling || '').trim().toLowerCase());
+      const matchesDepartment = normalizedDepartments.includes(
+        String(row.afdeling || '').trim().toLowerCase()
+      );
       const matchesStatus = status ? row.status === normalizeStatus(status) : true;
       return matchesDepartment && matchesStatus;
     });
@@ -147,7 +197,9 @@ window.EmsStaffService = (() => {
     const rows = visibleOnly ? await getVisibleStaff() : await getAll();
     const target = String(name || '').trim().toLowerCase();
 
-    return rows.find(row => String(row.naam || '').trim().toLowerCase() === target) || null;
+    return (
+      rows.find(row => String(row.naam || '').trim().toLowerCase() === target) || null
+    );
   }
 
   /**
@@ -196,7 +248,6 @@ window.EmsStaffService = (() => {
     if (!selectElement) return;
 
     const sortedRows = sortByName(rows);
-
     selectElement.innerHTML = '';
 
     if (includeEmpty) {
@@ -220,7 +271,10 @@ window.EmsStaffService = (() => {
   }
 
   return {
+    setApiUrl,
+    getApiUrl,
     load,
+    clearCache,
     getAll,
     getVisibleStaff,
     getByStatus,
