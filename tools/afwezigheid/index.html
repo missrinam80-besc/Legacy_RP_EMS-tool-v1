@@ -22,13 +22,30 @@
       <form id="absenceForm">
         <div class="form-grid">
           <div class="form-field">
+            <label for="staffSelect">Medewerker</label>
+            <select class="form-select" id="staffSelect">
+              <option value="">Laden...</option>
+            </select>
+          </div>
+
+          <div class="form-field">
             <label for="name">Naam</label>
-            <input class="form-input" id="name" type="text" />
+            <input class="form-input" id="name" type="text" readonly />
           </div>
 
           <div class="form-field">
             <label for="callSign">Roepnummer</label>
-            <input class="form-input" id="callSign" type="text" />
+            <input class="form-input" id="callSign" type="text" readonly />
+          </div>
+
+          <div class="form-field">
+            <label for="role">Rang</label>
+            <input class="form-input" id="role" type="text" readonly />
+          </div>
+
+          <div class="form-field">
+            <label for="department">Afdeling</label>
+            <input class="form-input" id="department" type="text" readonly />
           </div>
 
           <div class="form-field">
@@ -68,9 +85,13 @@
     </section>
   </main>
 
+  <script>
+    const API_URL = 'https://script.google.com/macros/s/AKfycbw2kNYykn-uWDfNSlbIlmFaM65lhw3bb-AlEndYbqde9muCBhiPH8IaziM203GxArPTuQ/exec';
+  </script>
   <script src="../../assets/scripts/core.js"></script>
   <script src="../../assets/scripts/ui.js"></script>
   <script src="../../assets/scripts/export.js"></script>
+  <script src="../../assets/scripts/ems-staff-service.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
