@@ -351,3 +351,21 @@
   color: #6b7280;
   cursor: not-allowed;
 }
+
+.form-input.readonly {
+  background: #f3f4f6;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+.tool-nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.tool-nav a:hover {
+  text-decoration: underline;
+}
