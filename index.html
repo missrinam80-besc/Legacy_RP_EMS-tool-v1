@@ -6,9 +6,8 @@
   <title>EMS Tools Hub</title>
 
   <!--
-    Gedeelde stijlen:
-    Deze bestanden worden door de hele EMS-toolset gebruikt.
-    Zo blijft de look & feel overal consistent.
+    Gedeelde styles voor de volledige EMS-toolset.
+    Deze bestanden zorgen ervoor dat alle tools visueel consistent blijven.
   -->
   <link rel="stylesheet" href="assets/styles/theme.css" />
   <link rel="stylesheet" href="assets/styles/base.css" />
@@ -27,18 +26,108 @@
     </header>
 
     <main class="page-container">
-      <!-- Intro / hoofdbeschrijving -->
+      <!-- Hoofdintro -->
       <section class="hero-card">
         <div class="hero-card__content">
           <h1>EMS Tools Hub</h1>
           <p class="text-soft">
             Centrale startpagina voor de EMS webtools. Elke tool werkt zelfstandig,
-            zonder database, en kan apart geopend, gedeeld of ingebed worden.
+            zonder database, en kan apart gebruikt, gedeeld of ingebed worden.
           </p>
         </div>
       </section>
 
-      <!-- Zoek/filterblok -->
+      <!-- Quick actions -->
+      <section class="panel mt-2">
+        <div class="section-heading">
+          <div>
+            <h2>Quick actions</h2>
+            <p class="text-soft">
+              Snelle toegang tot de meest gebruikte tools en beheerpagina’s.
+            </p>
+          </div>
+        </div>
+
+        <div class="quick-actions-grid">
+          <a class="quick-action-card" href="tools/rapport-trauma/index.html">
+            <span class="quick-action-card__icon" aria-hidden="true">📝</span>
+            <div>
+              <strong>Nieuw trauma rapport</strong>
+              <p class="text-soft mt-1">Open meteen het traumaformulier.</p>
+            </div>
+          </a>
+
+          <a class="quick-action-card" href="tools/behandeling/index.html">
+            <span class="quick-action-card__icon" aria-hidden="true">🩺</span>
+            <div>
+              <strong>Behandeladvies starten</strong>
+              <p class="text-soft mt-1">Ga direct naar de behandelingsadviseur.</p>
+            </div>
+          </a>
+
+          <a class="quick-action-card" href="tools/afwezigheid/index.html">
+            <span class="quick-action-card__icon" aria-hidden="true">📅</span>
+            <div>
+              <strong>Afwezigheid melden</strong>
+              <p class="text-soft mt-1">Open het formulier voor verlof of ziekte.</p>
+            </div>
+          </a>
+
+          <a class="quick-action-card" href="tools/personeelslijst/admin.html">
+            <span class="quick-action-card__icon" aria-hidden="true">⚙️</span>
+            <div>
+              <strong>Personeelslijst beheren</strong>
+              <p class="text-soft mt-1">Ga naar de adminweergave.</p>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <!-- Kleine admin sectie -->
+      <section class="panel mt-2">
+        <div class="section-heading">
+          <div>
+            <h2>Admin overzicht</h2>
+            <p class="text-soft">
+              Technische en beheermatige snelkoppelingen voor onderhoud van de toolset.
+            </p>
+          </div>
+        </div>
+
+        <div class="admin-overview-grid">
+          <div class="admin-info-card">
+            <div class="admin-info-card__top">
+              <span class="admin-info-card__icon" aria-hidden="true">🧱</span>
+              <strong>Projectstructuur</strong>
+            </div>
+            <p class="text-soft mt-1">
+              Gebruik de uniforme structuur met gedeelde assets, losse tools en configbestanden.
+            </p>
+          </div>
+
+          <div class="admin-info-card">
+            <div class="admin-info-card__top">
+              <span class="admin-info-card__icon" aria-hidden="true">🛠️</span>
+              <strong>Beheerpad</strong>
+            </div>
+            <p class="text-soft mt-1">
+              Personeelsbeheer loopt via de adminpagina. Rijen worden aangepast, niet verwijderd.
+            </p>
+          </div>
+
+          <div class="admin-info-card">
+            <div class="admin-info-card__top">
+              <span class="admin-info-card__icon" aria-hidden="true">📦</span>
+              <strong>Deploy</strong>
+            </div>
+            <p class="text-soft mt-1">
+              Alle tools zijn bedoeld voor GitHub Pages en kunnen gelinkt of ingebed worden.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Zoek/filter -->
       <section class="panel mt-2">
         <div class="form-field">
           <label for="toolSearch">Zoek een tool</label>
@@ -78,7 +167,12 @@
               <span class="tool-badge">Operationeel</span>
               <span class="tool-status tool-status--success">Actief</span>
             </div>
-            <h3>Kostencalculator</h3>
+
+            <div class="tool-card__title-row">
+              <span class="tool-icon" aria-hidden="true">💶</span>
+              <h3>Kostencalculator</h3>
+            </div>
+
             <p>
               Bereken snel de kostprijs van een behandeling, opname of medische interventie.
             </p>
@@ -95,7 +189,12 @@
               <span class="tool-badge">Operationeel</span>
               <span class="tool-status tool-status--success">Actief</span>
             </div>
-            <h3>Behandelingsadviseur</h3>
+
+            <div class="tool-card__title-row">
+              <span class="tool-icon" aria-hidden="true">🩺</span>
+              <h3>Behandelingsadviseur</h3>
+            </div>
+
             <p>
               Ondersteuning bij letsels, pijn, bloedverlies en basisbehandelkeuzes.
             </p>
@@ -126,10 +225,13 @@
               <span class="tool-badge">Rapport</span>
               <span class="tool-status tool-status--success">Actief</span>
             </div>
-            <h3>Trauma rapport</h3>
-            <p>
-              Genereer een gestructureerd trauma- en interventierapport.
-            </p>
+
+            <div class="tool-card__title-row">
+              <span class="tool-icon" aria-hidden="true">🚑</span>
+              <h3>Trauma rapport</h3>
+            </div>
+
+            <p>Genereer een gestructureerd trauma- en interventierapport.</p>
           </a>
 
           <a
@@ -143,10 +245,13 @@
               <span class="tool-badge">Rapport</span>
               <span class="tool-status tool-status--success">Actief</span>
             </div>
-            <h3>Opname rapport</h3>
-            <p>
-              Verslag voor opname, observatie en verdere opvolging van de patiënt.
-            </p>
+
+            <div class="tool-card__title-row">
+              <span class="tool-icon" aria-hidden="true">🏥</span>
+              <h3>Opname rapport</h3>
+            </div>
+
+            <p>Verslag voor opname, observatie en verdere opvolging van de patiënt.</p>
           </a>
 
           <a
@@ -160,10 +265,13 @@
               <span class="tool-badge">Rapport</span>
               <span class="tool-status tool-status--success">Actief</span>
             </div>
-            <h3>Operatie rapport</h3>
-            <p>
-              Samenvatting van ingreep, verloop en postoperatieve zorg.
-            </p>
+
+            <div class="tool-card__title-row">
+              <span class="tool-icon" aria-hidden="true">🔬</span>
+              <h3>Operatie rapport</h3>
+            </div>
+
+            <p>Samenvatting van ingreep, verloop en postoperatieve zorg.</p>
           </a>
 
           <a
@@ -177,10 +285,13 @@
               <span class="tool-badge">Rapport</span>
               <span class="tool-status tool-status--success">Actief</span>
             </div>
-            <h3>Overlijdensrapport</h3>
-            <p>
-              Registratie van overlijden, vaststellingen en verdere afhandeling.
-            </p>
+
+            <div class="tool-card__title-row">
+              <span class="tool-icon" aria-hidden="true">⚕️</span>
+              <h3>Overlijdensrapport</h3>
+            </div>
+
+            <p>Registratie van overlijden, vaststellingen en verdere afhandeling.</p>
           </a>
 
           <a
@@ -194,10 +305,13 @@
               <span class="tool-badge">Rapport</span>
               <span class="tool-status tool-status--success">Actief</span>
             </div>
-            <h3>Labo rapport</h3>
-            <p>
-              Aanvraag en samenvatting van labo- en onderzoeksresultaten.
-            </p>
+
+            <div class="tool-card__title-row">
+              <span class="tool-icon" aria-hidden="true">🧪</span>
+              <h3>Labo rapport</h3>
+            </div>
+
+            <p>Aanvraag en samenvatting van labo- en onderzoeksresultaten.</p>
           </a>
         </div>
       </section>
@@ -225,10 +339,13 @@
               <span class="tool-badge">Aanvraag</span>
               <span class="tool-status tool-status--success">Actief</span>
             </div>
-            <h3>Afwezigheidsmelding</h3>
-            <p>
-              Registreer verlof, ziekte of andere afwezigheden in een vaste structuur.
-            </p>
+
+            <div class="tool-card__title-row">
+              <span class="tool-icon" aria-hidden="true">📅</span>
+              <h3>Afwezigheidsmelding</h3>
+            </div>
+
+            <p>Registreer verlof, ziekte of andere afwezigheden in een vaste structuur.</p>
           </a>
 
           <a
@@ -242,10 +359,13 @@
               <span class="tool-badge">Verslag</span>
               <span class="tool-status tool-status--success">Actief</span>
             </div>
-            <h3>Evaluatieformulier</h3>
-            <p>
-              Vul evaluaties gestructureerd, uniform en makkelijk kopieerbaar in.
-            </p>
+
+            <div class="tool-card__title-row">
+              <span class="tool-icon" aria-hidden="true">📋</span>
+              <h3>Evaluatieformulier</h3>
+            </div>
+
+            <p>Vul evaluaties gestructureerd, uniform en makkelijk kopieerbaar in.</p>
           </a>
 
           <a
@@ -259,10 +379,13 @@
               <span class="tool-badge">Beheer</span>
               <span class="tool-status tool-status--success">Actief</span>
             </div>
-            <h3>Personeelslijst</h3>
-            <p>
-              Bekijk de personeelslijst of open de beheeromgeving voor aanpassingen.
-            </p>
+
+            <div class="tool-card__title-row">
+              <span class="tool-icon" aria-hidden="true">👥</span>
+              <h3>Personeelslijst</h3>
+            </div>
+
+            <p>Bekijk de personeelslijst of open de beheeromgeving voor aanpassingen.</p>
           </a>
         </div>
       </section>
@@ -270,18 +393,19 @@
   </div>
 
   <!--
-    Gedeelde hulpscripts:
-    core.js bevat algemene helperfuncties zoals qs() en qsa().
-    ui.js bevat statusmeldingen.
+    Gedeelde helper scripts:
+    - core.js: selectors, JSON laden, tekst opschonen, datumformattering
+    - ui.js: statusmeldingen tonen of wissen
   -->
   <script src="assets/scripts/core.js"></script>
   <script src="assets/scripts/ui.js"></script>
 
   <!--
-    hub.js bevat enkel de logica van deze startpagina:
-    - tools tellen
-    - zoekfunctie
-    - secties automatisch verbergen als niets matcht
+    hub.js bevat enkel logica voor de startpagina:
+    - live zoeken/filteren
+    - zichtbaar aantal tools tonen
+    - lege secties verbergen
+    - quick actions en tellingen klaarzetten
   -->
   <script src="assets/scripts/hub.js"></script>
 </body>
