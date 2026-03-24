@@ -18,6 +18,17 @@ document.addEventListener("DOMContentLoaded", init);
 async function init() {
   try {
     await loadConfig();
+
+    if (window.EmsStaffService) {
+      if (config.staffApiUrl) {
+        window.EmsStaffService.setApiUrl(config.staffApiUrl);
+      } else {
+        console.warn("staffApiUrl ontbreekt in config.json");
+      }
+    } else {
+      console.warn("EmsStaffService is niet beschikbaar");
+    }
+
     bindEvents();
     await loadStaffOptions();
   } catch (error) {
