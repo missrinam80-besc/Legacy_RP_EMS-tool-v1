@@ -1,1 +1,9 @@
-
+{
+  "toolTitle": "Afwezigheidsmelding",
+  "toolDescription": "Registreer verlof, ziekte of andere afwezigheden.",
+  "reasons": [
+    "Verlof",
+    "Ziekte",
+    "Andere"
+  ]
+}
