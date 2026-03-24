@@ -113,3 +113,60 @@
   background: #fee2e2;
   color: #991b1b;
 }
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.tool-card--hub {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 210px;
+}
+
+.tool-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.tool-badge,
+.tool-status {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.tool-badge {
+  background: #efe2e2;
+  color: var(--color-primary);
+}
+
+.tool-status--success {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.tool-status--warning {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.tool-status--danger {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.hero-card__content {
+  max-width: 780px;
+}
