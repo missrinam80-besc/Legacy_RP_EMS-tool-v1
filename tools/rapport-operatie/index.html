@@ -1,1 +1,77 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Operatie Rapport</title>
 
+  <link rel="stylesheet" href="../../assets/styles/theme.css" />
+  <link rel="stylesheet" href="../../assets/styles/base.css" />
+  <link rel="stylesheet" href="../../assets/styles/layout.css" />
+  <link rel="stylesheet" href="../../assets/styles/components.css" />
+  <link rel="stylesheet" href="../../assets/styles/utilities.css" />
+</head>
+<body>
+  <main class="page-container">
+    <section class="panel">
+      <h1 id="toolTitle">Operatie Rapport</h1>
+      <p id="toolDescription" class="text-soft"></p>
+    </section>
+
+    <section class="panel mt-2">
+      <form id="reportForm">
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="patientName">Patiënt</label>
+            <input class="form-input" id="patientName" type="text" />
+          </div>
+
+          <div class="form-field">
+            <label for="surgeon">Chirurg / behandelaar</label>
+            <input class="form-input" id="surgeon" type="text" />
+          </div>
+
+          <div class="form-field">
+            <label for="procedureType">Type ingreep</label>
+            <select class="form-select" id="procedureType"></select>
+          </div>
+
+          <div class="form-field">
+            <label for="outcome">Verloop / resultaat</label>
+            <select class="form-select" id="outcome"></select>
+          </div>
+        </div>
+
+        <div class="form-field mt-2">
+          <label for="details">Beschrijving van de ingreep</label>
+          <textarea class="form-textarea" id="details"></textarea>
+        </div>
+
+        <div class="form-field mt-2">
+          <label for="aftercare">Nazorg / opvolging</label>
+          <textarea class="form-textarea" id="aftercare"></textarea>
+        </div>
+
+        <div class="button-row">
+          <button type="submit" class="btn btn-primary">Rapport opbouwen</button>
+          <button type="button" class="btn btn-secondary" id="resetBtn">Leegmaken</button>
+          <button type="button" class="btn btn-secondary" id="copyBtn">Kopiëren</button>
+          <button type="button" class="btn btn-secondary" id="downloadBtn">Download .txt</button>
+        </div>
+      </form>
+
+      <div id="statusBox" class="status-box hidden mt-2"></div>
+    </section>
+
+    <section class="output-card mt-2">
+      <h2>Gegenereerd rapport</h2>
+      <textarea id="reportOutput" class="form-textarea" readonly></textarea>
+    </section>
+  </main>
+
+  <script src="../../assets/scripts/core.js"></script>
+  <script src="../../assets/scripts/ui.js"></script>
+  <script src="../../assets/scripts/export.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
