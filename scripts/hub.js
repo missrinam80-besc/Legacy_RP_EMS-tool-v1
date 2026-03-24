@@ -7,33 +7,34 @@
  * - tools op de startpagina doorzoekbaar maken
  * - dynamisch tonen hoeveel tools zichtbaar zijn
  * - secties automatisch verbergen als er geen matches zijn
- *
- * Werking:
- * - leest alle tool-cards in
- * - filtert op basis van tekst in het zoekveld
- * - zoekt in naam + categorie-info van elke kaart
+ * - de hub overzichtelijk en onderhoudbaar houden
  */
 
 document.addEventListener("DOMContentLoaded", initHub);
 
 /**
- * Start de hublogica zodra de pagina geladen is.
+ * Start alle logica van de hub nadat de DOM volledig geladen is.
  */
 function initHub() {
   const searchInput = qs("#toolSearch");
 
   if (!searchInput) return;
 
+  // Zorg bij eerste laadmoment voor correcte status en zichtbare secties.
   updateHubStatus();
   toggleEmptySections();
 
-  // Elke wijziging in het zoekveld herfiltert de kaarten onmiddellijk.
+  // Herfilter de kaarten live terwijl de gebruiker typt.
   searchInput.addEventListener("input", handleHubSearch);
 }
 
 /**
- * Wordt uitgevoerd telkens de gebruiker typt in het zoekveld.
- * Filtert de toolcards en werkt daarna de status en secties bij.
+ * Verwerkt de zoekopdracht uit het zoekveld.
+ * Elke toolcard wordt gecontroleerd op basis van:
+ * - data-name
+ * - data-category
+ * - data-status
+ * - zichtbare tekst in de kaart
  */
 function handleHubSearch() {
   const searchValue = sanitizeText(qs("#toolSearch").value).toLowerCase();
@@ -51,23 +52,22 @@ function handleHubSearch() {
 
     const isMatch = searchableText.includes(searchValue);
 
+    // Toon of verberg de kaart afhankelijk van de match.
     card.classList.toggle("hidden", !isMatch);
   });
 
+  // Werk na het filteren de statusbox en secties opnieuw bij.
   updateHubStatus();
   toggleEmptySections();
 }
 
 /**
- * Telt hoeveel toolcards momenteel zichtbaar zijn
- * en toont dat in de statusbox.
+ * Telt hoeveel tools zichtbaar zijn
+ * en schrijft dat weg in de statusbox boven het overzicht.
  */
 function updateHubStatus() {
   const allCards = qsa(".tool-card--hub");
   const visibleCards = allCards.filter(card => !card.classList.contains("hidden"));
-  const statusBox = qs("#hubStatus");
-
-  if (!statusBox) return;
 
   if (visibleCards.length === allCards.length) {
     showStatus("#hubStatus", `${allCards.length} tools beschikbaar.`, "info");
@@ -87,8 +87,8 @@ function updateHubStatus() {
 }
 
 /**
- * Verbergt een volledige sectie als daarin geen zichtbare tools meer zitten.
- * Zo blijft de hub netjes wanneer er gefilterd wordt.
+ * Verbergt hele secties wanneer daarin geen zichtbare kaarten meer staan.
+ * Zo blijft de hub proper en compact tijdens het filteren.
  */
 function toggleEmptySections() {
   const sections = qsa(".tool-section");
