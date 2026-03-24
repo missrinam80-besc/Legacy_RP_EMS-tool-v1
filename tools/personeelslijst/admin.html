@@ -3,70 +3,137 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Personeelslijst Beheer</title>
+  <title>EMS Personeelsbeheer</title>
 
   <link rel="stylesheet" href="../../assets/styles/theme.css" />
   <link rel="stylesheet" href="../../assets/styles/base.css" />
   <link rel="stylesheet" href="../../assets/styles/layout.css" />
   <link rel="stylesheet" href="../../assets/styles/components.css" />
   <link rel="stylesheet" href="../../assets/styles/utilities.css" />
+  <link rel="stylesheet" href="../../assets/styles/personeel.css" />
 </head>
 <body>
-  <main class="page-container">
-    <section class="panel">
-      <h1>Beheer personeelslijst</h1>
-      <p class="text-soft">
-        Gebruik deze pagina om rijen toe te voegen of aan te passen. Verwijderen is niet voorzien;
-        medewerkers worden aangepast of op niet-zichtbaar gezet.
-      </p>
-    </section>
+  <div class="app-shell">
+    <main class="page-container">
+      <section class="hero-card">
+        <div class="hero-card__content">
+          <h1>EMS Personeelsbeheer</h1>
+          <p class="text-soft">
+            Beheer de personeelslijst van het ziekenhuis.
+          </p>
+        </div>
+      </section>
 
-    <section class="panel mt-2">
-      <form id="adminForm">
-        <div class="form-grid">
-          <div class="form-field">
-            <label for="name">Naam</label>
-            <input class="form-input" id="name" type="text" />
-          </div>
-
-          <div class="form-field">
-            <label for="callSign">Roepnummer</label>
-            <input class="form-input" id="callSign" type="text" />
-          </div>
-
-          <div class="form-field">
-            <label for="role">Rol</label>
-            <input class="form-input" id="role" type="text" />
-          </div>
-
-          <div class="form-field">
-            <label for="visible">Zichtbaar</label>
-            <select class="form-select" id="visible">
-              <option value="Ja">Ja</option>
-              <option value="Nee">Nee</option>
-            </select>
+      <section class="panel mt-2">
+        <div class="section-heading">
+          <div>
+            <h2>Beheer</h2>
+            <p class="text-soft">
+              Pas medewerkers aan, voeg nieuwe rijen toe en sla alles centraal op.
+            </p>
           </div>
         </div>
 
-        <div class="button-row">
-          <button type="submit" class="btn btn-primary">Rij voorbereiden</button>
-          <button type="button" class="btn btn-secondary" id="resetBtn">Leegmaken</button>
-          <button type="button" class="btn btn-secondary" id="copyBtn">Kopiëren</button>
+        <div class="personeel-toolbar">
+          <div class="form-field personeel-toolbar__actor">
+            <label for="actorInput">Jouw naam</label>
+            <input
+              class="form-input"
+              type="text"
+              id="actorInput"
+              placeholder="Naam voor logging"
+              autocomplete="name"
+            />
+          </div>
+
+          <div class="form-field personeel-toolbar__search">
+            <label for="searchInput">Zoeken</label>
+            <input
+              class="form-input"
+              type="text"
+              id="searchInput"
+              placeholder="Zoek op roepnummer, naam, rang, afdeling of status..."
+            />
+          </div>
+
+          <div class="personeel-toolbar__actions">
+            <button class="btn" id="loadBtn" type="button">Laden</button>
+            <button class="btn" id="addRowBtn" type="button">Rij toevoegen</button>
+            <button class="btn btn-primary" id="saveBtn" type="button">Opslaan</button>
+          </div>
         </div>
-      </form>
 
-      <div id="statusBox" class="status-box hidden mt-2"></div>
-    </section>
+        <div id="messageBox" class="status-box status-info mt-2" aria-live="polite">
+          Klaar om te laden.
+        </div>
+      </section>
 
-    <section class="output-card mt-2">
-      <h2>Voorbereide data</h2>
-      <textarea id="output" class="form-textarea" readonly></textarea>
-    </section>
-  </main>
+      <section class="panel mt-2">
+        <div class="section-heading">
+          <div>
+            <h2>Instructies voor beheerders</h2>
+            <p class="text-soft">
+              Belangrijke richtlijnen voor het beheer van de personeelslijst.
+            </p>
+          </div>
+        </div>
 
-  <script src="../../assets/scripts/core.js"></script>
-  <script src="../../assets/scripts/ui.js"></script>
-  <script src="../../assets/scripts/export.js"></script>
-  <script src="admin.js"></script>
+        <div class="info-list">
+          <ul>
+            <li>Vul bovenaan je naam in. Die wordt gebruikt voor logging.</li>
+            <li>Gebruik het zoekveld om snel een medewerker terug te vinden.</li>
+            <li>Pas gegevens rechtstreeks aan in de tabel.</li>
+            <li>Gebruik bij status enkel: <strong>actief</strong>, <strong>non-actief</strong> of <strong>verlof</strong>.</li>
+            <li>Vink <strong>zichtbaar</strong> aan als de medewerker mag verschijnen in read-only lijsten en andere tools.</li>
+            <li>Medewerkers worden niet verwijderd via deze tool. Pas status en zichtbaarheid aan indien nodig.</li>
+            <li>Klik na wijzigingen altijd op <strong>Opslaan</strong>.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="panel mt-2">
+        <div class="personeel-meta">
+          <div class="personeel-meta__count">
+            <span class="text-soft">Aantal resultaten:</span>
+            <strong id="resultCount">0</strong>
+          </div>
+
+          <div class="personeel-legend">
+            <span class="personeel-legend__item">
+              <span class="personeel-dot personeel-dot--actief"></span> Actief
+            </span>
+            <span class="personeel-legend__item">
+              <span class="personeel-dot personeel-dot--non-actief"></span> Non-actief
+            </span>
+            <span class="personeel-legend__item">
+              <span class="personeel-dot personeel-dot--verlof"></span> Verlof
+            </span>
+          </div>
+        </div>
+
+        <div class="personeel-table-wrap">
+          <table class="personeel-table" id="staffTable">
+            <thead>
+              <tr>
+                <th>Roepnummer</th>
+                <th>Naam</th>
+                <th>Rang</th>
+                <th>Afdeling</th>
+                <th>Status</th>
+                <th>Zichtbaar</th>
+              </tr>
+            </thead>
+            <tbody id="staffTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const API_URL = 'https://script.google.com/macros/s/AKfycbw2kNYykn-uWDfNSlbIlmFaM65lhw3bb-AlEndYbqde9muCBhiPH8IaziM203GxArPTuQ/exec';
+  </script>
+  <script src="../../assets/scripts/personeel-shared.js"></script>
+  <script src="./admin.js"></script>
 </body>
 </html>
