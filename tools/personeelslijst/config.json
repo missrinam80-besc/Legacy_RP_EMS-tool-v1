@@ -1,1 +1,24 @@
-
+{
+  "toolTitle": "Personeelslijst",
+  "toolDescription": "Bekijk en beheer medewerkers.",
+  "demoData": [
+    {
+      "name": "Jan Peeters",
+      "callSign": "201",
+      "role": "Chief",
+      "visible": "Ja"
+    },
+    {
+      "name": "Els Jacobs",
+      "callSign": "204",
+      "role": "Captain",
+      "visible": "Ja"
+    },
+    {
+      "name": "Tom Vermeulen",
+      "callSign": "312",
+      "role": "EMT",
+      "visible": "Nee"
+    }
+  ]
+}
