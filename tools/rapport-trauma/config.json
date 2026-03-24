@@ -1,1 +1,19 @@
-
+{
+  "toolTitle": "Trauma Rapport",
+  "toolDescription": "Genereer een gestructureerd trauma-rapport voor interventie en opvolging.",
+  "injuryTypes": [
+    "Schotwonde",
+    "Steekwonde",
+    "Brandwonde",
+    "Breuk",
+    "Kneuzing",
+    "Amputatie",
+    "Hoofdtrauma"
+  ],
+  "severityLevels": [
+    "Licht",
+    "Matig",
+    "Ernstig",
+    "Kritiek"
+  ]
+}
