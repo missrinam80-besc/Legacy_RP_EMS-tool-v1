@@ -1,0 +1,18 @@
+{
+  "toolTitle": "Labo Rapport",
+  "toolDescription": "Aanvraag en samenvatting van labo- en onderzoeksresultaten.",
+  "testTypes": [
+    "Bloedonderzoek",
+    "Toxicologie",
+    "DNA-onderzoek",
+    "Verwantschapsonderzoek",
+    "Infectieonderzoek",
+    "Allergieonderzoek"
+  ],
+  "priorityLevels": [
+    "Laag",
+    "Normaal",
+    "Hoog",
+    "Dringend"
+  ]
+}
