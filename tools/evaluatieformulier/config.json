@@ -1,1 +1,17 @@
-
+{
+  "toolTitle": "Evaluatieformulier",
+  "toolDescription": "Vul evaluaties gestructureerd en uniform in.",
+  "categories": [
+    "Algemene werking",
+    "Communicatie",
+    "Patiëntenzorg",
+    "Administratie",
+    "Samenwerking"
+  ],
+  "scores": [
+    "Onvoldoende",
+    "Voldoende",
+    "Goed",
+    "Zeer goed"
+  ]
+}
