@@ -1,0 +1,166 @@
+/**
+ * Toolspecifieke styling voor de personeelslijst.
+ * Basislayout en algemene componenten komen uit de centrale stylesheets.
+ */
+
+.personeel-toolbar {
+  display: grid;
+  grid-template-columns: 280px minmax(320px, 1fr) auto;
+  gap: 16px;
+  align-items: end;
+}
+
+.personeel-toolbar__search {
+  min-width: 0;
+}
+
+.personeel-toolbar__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.personeel-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.personeel-meta__count {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.personeel-legend {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.personeel-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.personeel-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.personeel-dot--actief {
+  background: #1f7a3d;
+}
+
+.personeel-dot--non-actief {
+  background: #b42318;
+}
+
+.personeel-dot--verlof {
+  background: #b7791f;
+}
+
+.personeel-table-wrap {
+  overflow-x: auto;
+}
+
+.personeel-table {
+  width: 100%;
+  min-width: 960px;
+  border-collapse: collapse;
+}
+
+.personeel-table th,
+.personeel-table td {
+  padding: 12px 10px;
+  text-align: left;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+  vertical-align: middle;
+}
+
+.personeel-table thead th {
+  white-space: nowrap;
+}
+
+.personeel-input,
+.personeel-select {
+  width: 100%;
+}
+
+.personeel-checkbox-cell {
+  white-space: nowrap;
+  text-align: center;
+}
+
+.personeel-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.personeel-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.personeel-badge--actief {
+  background: rgba(34, 197, 94, 0.12);
+  color: #166534;
+}
+
+.personeel-badge--non-actief {
+  background: rgba(239, 68, 68, 0.12);
+  color: #b42318;
+}
+
+.personeel-badge--verlof {
+  background: rgba(245, 158, 11, 0.14);
+  color: #9a6700;
+}
+
+.personeel-badge--default {
+  background: rgba(148, 163, 184, 0.14);
+  color: #475569;
+}
+
+.personeel-empty-state {
+  text-align: center;
+  color: #64748b;
+  padding: 28px 12px;
+}
+
+.info-list ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.info-list li + li {
+  margin-top: 8px;
+}
+
+@media (max-width: 980px) {
+  .personeel-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .personeel-toolbar__actions {
+    justify-content: stretch;
+  }
+
+  .personeel-toolbar__actions .btn {
+    width: 100%;
+  }
+}
