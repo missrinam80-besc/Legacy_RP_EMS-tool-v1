@@ -1,1 +1,46 @@
-
+{
+  "toolTitle": "Kostencalculator",
+  "toolDescription": "Bereken snel de kostprijs van een behandeling, opname of medische interventie.",
+  "items": [
+    {
+      "id": "checkin",
+      "label": "Standaard check-in / basisbehandeling",
+      "price": 500
+    },
+    {
+      "id": "woundcare",
+      "label": "Wondzorg / hechting",
+      "price": 350
+    },
+    {
+      "id": "fracture",
+      "label": "Breukbehandeling / gips / immobilisatie",
+      "price": 750
+    },
+    {
+      "id": "burncare",
+      "label": "Brandwondzorg",
+      "price": 600
+    },
+    {
+      "id": "surgery",
+      "label": "Operatieve ingreep",
+      "price": 1500
+    },
+    {
+      "id": "admission",
+      "label": "Opname / observatie",
+      "price": 800
+    },
+    {
+      "id": "lab",
+      "label": "Labo / onderzoek",
+      "price": 400
+    },
+    {
+      "id": "death",
+      "label": "Overlijdensafhandeling",
+      "price": 300
+    }
+  ]
+}
