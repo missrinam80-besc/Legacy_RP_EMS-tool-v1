@@ -1,0 +1,18 @@
+{
+  "toolTitle": "Opname Rapport",
+  "toolDescription": "Verslag voor opname, observatie en verdere opvolging.",
+  "reasons": [
+    "Observatie",
+    "Trauma",
+    "Chirurgische opvolging",
+    "Infectie / ziektebeeld",
+    "Psychologische observatie",
+    "Andere"
+  ],
+  "urgencyLevels": [
+    "Laag",
+    "Normaal",
+    "Hoog",
+    "Dringend"
+  ]
+}
