@@ -1,0 +1,18 @@
+{
+  "toolTitle": "Operatie Rapport",
+  "toolDescription": "Samenvatting van ingreep, verloop en postoperatieve zorg.",
+  "procedureTypes": [
+    "Hechting",
+    "Breukstabilisatie",
+    "Amputatiebehandeling",
+    "Verwijderen projectiel",
+    "Wonddebridement",
+    "Andere ingreep"
+  ],
+  "outcomes": [
+    "Stabiel afgerond",
+    "Complicaties tijdens ingreep",
+    "Nazorg vereist",
+    "Doorverwijzing nodig"
+  ]
+}
