@@ -20,7 +20,7 @@
 
     <section class="panel mt-2">
       <form id="absenceForm">
-        <div class="form-grid">
+        <div class="form-grid form-grid--custom">
           <div class="form-field">
             <label for="staffSelect">Medewerker</label>
             <select class="form-select" id="staffSelect">
@@ -28,47 +28,58 @@
             </select>
           </div>
 
-          <div class="form-field">
-            <label for="name">Naam</label>
-            <input class="form-input" id="name" type="text" readonly />
-          </div>
+            <!-- RIJ 1: Read-only user info -->
+            <div class="form-row form-row--3">
+              <div class="form-field">
+                <label>Naam</label>
+                <input type="text" id="naam" class="form-input readonly" readonly />
+              </div>
+          
+              <div class="form-field">
+                <label>Roepnummer</label>
+                <input type="text" id="roepnummer" class="form-input readonly" readonly />
+              </div>
+          
+              <div class="form-field">
+                <label>Rang</label>
+                <input type="text" id="rang" class="form-input readonly" readonly />
+              </div>
+            </div>
+          
+            <!-- RIJ 2: Datums -->
+            <div class="form-row form-row--2">
+              <div class="form-field">
+                <label for="begindatum">Begindatum</label>
+                <input type="date" id="begindatum" class="form-input" />
+              </div>
+          
+              <div class="form-field">
+                <label for="einddatum">Einddatum</label>
+                <input type="date" id="einddatum" class="form-input" />
+              </div>
+            </div>
 
-          <div class="form-field">
-            <label for="callSign">Roepnummer</label>
-            <input class="form-input" id="callSign" type="text" readonly />
-          </div>
-
-          <div class="form-field">
-            <label for="role">Rang</label>
-            <input class="form-input" id="role" type="text" readonly />
-          </div>
-
-          <div class="form-field">
-            <label for="department">Afdeling</label>
-            <input class="form-input" id="department" type="text" readonly />
-          </div>
-
-          <div class="form-field">
-            <label for="startDate">Begindatum</label>
-            <input class="form-input" id="startDate" type="date" />
-          </div>
-
-          <div class="form-field">
-            <label for="endDate">Einddatum</label>
-            <input class="form-input" id="endDate" type="date" />
-          </div>
-
-          <div class="form-field">
-            <label for="reason">Reden</label>
-            <select class="form-select" id="reason"></select>
-          </div>
+            <!-- RIJ 3: Reden -->
+            <div class="form-row form-row--1">
+              <div class="form-field">
+                <label for="reden">Reden</label>
+                <select id="reden" class="form-select">
+                  <option value="">Selecteer reden</option>
+                  <option value="verlof">Verlof</option>
+                  <option value="ziekte">Ziekte</option>
+                  <option value="andere">Andere</option>
+                </select>
+              </div>
+            </div>
+          
+            <!-- Extra toelichting -->
+            <div class="form-row form-row--1">
+              <div class="form-field">
+                <label for="toelichting">Toelichting</label>
+                <textarea id="toelichting" class="form-textarea"></textarea>
+              </div>
+            </div>
         </div>
-
-        <div class="form-field mt-2">
-          <label for="details">Extra toelichting</label>
-          <textarea class="form-textarea" id="details"></textarea>
-        </div>
-
         <div class="button-row">
           <button type="submit" class="btn btn-primary">Melding opbouwen</button>
           <button type="button" class="btn btn-secondary" id="resetBtn">Leegmaken</button>
