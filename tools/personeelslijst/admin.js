@@ -1,17 +1,16 @@
 /**
  * Personeelslijst admin
- * Toolspecifieke logica voor beheer.
+ * Rij-per-rij bewerken en opslaan.
  */
 
 let staffRows = [];
 let filteredRows = [];
+let editStateByKey = {};
 
 const tableBody = document.getElementById('staffTableBody');
 const searchInput = document.getElementById('searchInput');
 const actorInput = document.getElementById('actorInput');
 const loadBtn = document.getElementById('loadBtn');
-const addRowBtn = document.getElementById('addRowBtn');
-const saveBtn = document.getElementById('saveBtn');
 const messageBox = document.getElementById('messageBox');
 const resultCount = document.getElementById('resultCount');
 
@@ -31,17 +30,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function bindEvents() {
   loadBtn.addEventListener('click', loadRows);
-  addRowBtn.addEventListener('click', addRow);
-  saveBtn.addEventListener('click', saveRows);
   searchInput.addEventListener('input', applyFilter);
 }
 
 async function loadRows() {
-  setButtonsDisabled(true);
+  loadBtn.disabled = true;
   setMessage(messageBox, 'Personeelslijst wordt geladen...', 'info');
 
   try {
     const response = await fetch(`${API_URL}?action=list`);
+
+    if (!response.ok) {
+      throw new Error(`HTTP-fout: ${response.status}`);
+    }
+
     const data = await response.json();
 
     if (!data.success) {
@@ -49,12 +51,14 @@ async function loadRows() {
     }
 
     staffRows = Array.isArray(data.rows) ? data.rows.map(sanitizeRow) : [];
+    editStateByKey = {};
     applyFilter();
+
     setMessage(messageBox, 'Personeelslijst is geladen.', 'success');
   } catch (error) {
     setMessage(messageBox, error.message || 'Fout bij laden.', 'error');
   } finally {
-    setButtonsDisabled(false);
+    loadBtn.disabled = false;
   }
 }
 
@@ -84,37 +88,96 @@ function renderTable() {
   if (!filteredRows.length) {
     tableBody.innerHTML = `
       <tr>
-        <td colspan="6" class="personeel-empty-state">Geen resultaten gevonden.</td>
+        <td colspan="7" class="personeel-empty-state">Geen resultaten gevonden.</td>
       </tr>
     `;
     return;
   }
 
   tableBody.innerHTML = filteredRows.map(row => {
-    const realIndex = staffRows.findIndex(item => String(item.roepnummer) === String(row.roepnummer));
+    const key = getRowKey(row);
+    const isEditing = !!editStateByKey[key];
+
+    const draft = isEditing ? editStateByKey[key].draft : row;
+    const original = isEditing ? editStateByKey[key].original : row;
 
     return `
-      <tr>
-        <td>
-          <input class="form-input personeel-input" type="text" value="${escapeHtml(row.roepnummer)}" data-index="${realIndex}" data-field="roepnummer" />
+      <tr class="${isEditing ? 'personeel-row--editing' : ''}" data-row-key="${escapeHtml(key)}">
+        <td class="personeel-actions-cell">
+          ${isEditing ? `
+            <div class="personeel-row-actions">
+              <button class="btn btn-primary btn-sm" type="button" data-action="save-row" data-key="${escapeHtml(key)}">Opslaan</button>
+              <button class="btn btn-sm" type="button" data-action="cancel-row" data-key="${escapeHtml(key)}">Annuleren</button>
+            </div>
+          ` : `
+            <div class="personeel-row-actions">
+              <button class="btn btn-sm" type="button" data-action="edit-row" data-key="${escapeHtml(key)}">Bewerken</button>
+            </div>
+          `}
         </td>
+
         <td>
-          <input class="form-input personeel-input" type="text" value="${escapeHtml(row.naam)}" data-index="${realIndex}" data-field="naam" />
+          <input
+            class="form-input personeel-input personeel-input--readonly"
+            type="text"
+            value="${escapeHtml(original.roepnummer)}"
+            readonly
+            disabled
+          />
         </td>
+
         <td>
-          <input class="form-input personeel-input" type="text" value="${escapeHtml(row.rang)}" data-index="${realIndex}" data-field="rang" />
+          <input
+            class="form-input personeel-input"
+            type="text"
+            value="${escapeHtml(draft.naam)}"
+            data-key="${escapeHtml(key)}"
+            data-field="naam"
+            ${isEditing ? '' : 'readonly disabled'}
+          />
         </td>
+
         <td>
-          <input class="form-input personeel-input" type="text" value="${escapeHtml(row.afdeling)}" data-index="${realIndex}" data-field="afdeling" />
+          <input
+            class="form-input personeel-input personeel-input--readonly"
+            type="text"
+            value="${escapeHtml(original.rang)}"
+            readonly
+            disabled
+          />
         </td>
+
         <td>
-          <select class="form-input personeel-select ${getStatusClass(row.status)}" data-index="${realIndex}" data-field="status">
-            ${renderStatusOptions(row.status)}
+          <input
+            class="form-input personeel-input"
+            type="text"
+            value="${escapeHtml(draft.afdeling)}"
+            data-key="${escapeHtml(key)}"
+            data-field="afdeling"
+            ${isEditing ? '' : 'readonly disabled'}
+          />
+        </td>
+
+        <td>
+          <select
+            class="form-input personeel-select ${getStatusClass(draft.status)}"
+            data-key="${escapeHtml(key)}"
+            data-field="status"
+            ${isEditing ? '' : 'disabled'}
+          >
+            ${renderStatusOptions(draft.status)}
           </select>
         </td>
+
         <td class="personeel-checkbox-cell">
           <label class="personeel-checkbox-label">
-            <input type="checkbox" ${row.is_active ? 'checked' : ''} data-index="${realIndex}" data-field="is_active" />
+            <input
+              type="checkbox"
+              ${draft.is_active ? 'checked' : ''}
+              data-key="${escapeHtml(key)}"
+              data-field="is_active"
+              ${isEditing ? '' : 'disabled'}
+            />
             <span>Zichtbaar</span>
           </label>
         </td>
@@ -134,6 +197,10 @@ function renderStatusOptions(currentStatus) {
 }
 
 function bindTableInputs() {
+  document.querySelectorAll('#staffTableBody [data-action]').forEach(button => {
+    button.addEventListener('click', handleRowAction);
+  });
+
   document.querySelectorAll('#staffTableBody input[data-field], #staffTableBody select[data-field]').forEach(input => {
     if (input.type === 'checkbox') {
       input.addEventListener('change', handleFieldChange);
@@ -147,54 +214,78 @@ function bindTableInputs() {
 
 function handleFieldChange(event) {
   const element = event.target;
-  const index = Number(element.dataset.index);
+  const key = element.dataset.key;
   const field = element.dataset.field;
 
-  if (Number.isNaN(index) || !staffRows[index]) return;
+  if (!key || !field || !editStateByKey[key]) return;
 
   if (element.type === 'checkbox') {
-    staffRows[index][field] = element.checked;
+    editStateByKey[key].draft[field] = element.checked;
     return;
   }
 
   if (field === 'status') {
-    staffRows[index][field] = normalizeStatus(element.value);
-    applyFilter();
+    editStateByKey[key].draft[field] = normalizeStatus(element.value);
+    renderTable();
     return;
   }
 
-  staffRows[index][field] = element.value;
+  editStateByKey[key].draft[field] = element.value;
 }
 
 function handleTrimOnBlur(event) {
   const element = event.target;
-  const index = Number(element.dataset.index);
+  const key = element.dataset.key;
   const field = element.dataset.field;
 
-  if (Number.isNaN(index) || !staffRows[index]) return;
+  if (!key || !field || !editStateByKey[key]) return;
   if (element.type === 'checkbox' || field === 'status') return;
 
   const trimmedValue = String(element.value || '').trim();
   element.value = trimmedValue;
-  staffRows[index][field] = trimmedValue;
+  editStateByKey[key].draft[field] = trimmedValue;
 }
 
-function addRow() {
-  staffRows.unshift({
-    roepnummer: '',
-    naam: '',
-    rang: '',
-    afdeling: '',
-    status: 'actief',
-    is_active: true
-  });
+async function handleRowAction(event) {
+  const action = event.currentTarget.dataset.action;
+  const key = event.currentTarget.dataset.key;
 
-  searchInput.value = '';
-  applyFilter();
-  setMessage(messageBox, 'Nieuwe rij toegevoegd. Vul de gegevens in en klik daarna op Opslaan.', 'success');
+  if (!key) return;
+
+  if (action === 'edit-row') {
+    startRowEdit(key);
+    return;
+  }
+
+  if (action === 'cancel-row') {
+    cancelRowEdit(key);
+    return;
+  }
+
+  if (action === 'save-row') {
+    await saveRow(key);
+  }
 }
 
-async function saveRows() {
+function startRowEdit(key) {
+  const row = staffRows.find(item => getRowKey(item) === key);
+  if (!row) return;
+
+  editStateByKey[key] = {
+    original: { ...row },
+    draft: { ...row }
+  };
+
+  renderTable();
+}
+
+function cancelRowEdit(key) {
+  delete editStateByKey[key];
+  renderTable();
+  setMessage(messageBox, 'Wijzigingen aan de rij zijn geannuleerd.', 'info');
+}
+
+async function saveRow(key) {
   const actor = actorInput.value.trim();
 
   if (!actor) {
@@ -202,18 +293,30 @@ async function saveRows() {
     return;
   }
 
-  const cleanedRows = staffRows
-    .map(sanitizeRow)
-    .filter(row => row.roepnummer || row.naam || row.rang || row.afdeling);
+  const state = editStateByKey[key];
+  if (!state) return;
 
-  const validationError = validateRows(cleanedRows);
+  const draft = sanitizeRow(state.draft);
+  const validationError = validateSingleRow(draft);
+
   if (validationError) {
     setMessage(messageBox, validationError, 'error');
     return;
   }
 
-  setButtonsDisabled(true);
-  setMessage(messageBox, 'Personeelslijst wordt opgeslagen...', 'info');
+  const updatedRows = staffRows.map(row => {
+    return getRowKey(row) === key ? draft : row;
+  });
+
+  const duplicateError = validateDuplicateRoepnummers(updatedRows);
+  if (duplicateError) {
+    setMessage(messageBox, duplicateError, 'error');
+    return;
+  }
+
+  loadBtn.disabled = true;
+  setRowButtonsDisabled(true);
+  setMessage(messageBox, `Rij ${draft.roepnummer} wordt opgeslagen...`, 'info');
 
   try {
     const response = await fetch(API_URL, {
@@ -222,9 +325,13 @@ async function saveRows() {
       body: JSON.stringify({
         action: 'saveAll',
         actor,
-        rows: cleanedRows
+        rows: updatedRows.map(sanitizeRow)
       })
     });
+
+    if (!response.ok) {
+      throw new Error(`HTTP-fout: ${response.status}`);
+    }
 
     const data = await response.json();
 
@@ -232,45 +339,57 @@ async function saveRows() {
       throw new Error(data.message || 'Opslaan mislukt.');
     }
 
-    setMessage(messageBox, 'Personeelslijst is opgeslagen.', 'success');
-    await loadRows();
+    staffRows = updatedRows;
+    delete editStateByKey[key];
+    applyFilter();
+
+    setMessage(messageBox, `Rij ${draft.roepnummer} is opgeslagen.`, 'success');
   } catch (error) {
     setMessage(messageBox, error.message || 'Fout bij opslaan.', 'error');
   } finally {
-    setButtonsDisabled(false);
+    loadBtn.disabled = false;
+    setRowButtonsDisabled(false);
   }
 }
 
-function validateRows(rows) {
-  const seenRoepnummers = new Set();
+function validateSingleRow(row) {
+  if (!row.roepnummer) {
+    return 'Roepnummer ontbreekt.';
+  }
 
-  for (let i = 0; i < rows.length; i++) {
-    const row = rows[i];
+  if (!row.naam) {
+    return `Naam ontbreekt voor roepnummer ${row.roepnummer}.`;
+  }
 
-    if (!row.roepnummer) {
-      return `Rij ${i + 1}: roepnummer ontbreekt.`;
-    }
-
-    if (!row.naam) {
-      return `Rij ${i + 1}: naam ontbreekt.`;
-    }
-
-    if (seenRoepnummers.has(row.roepnummer)) {
-      return `Dubbel roepnummer gevonden: ${row.roepnummer}`;
-    }
-
-    if (!STATUS_OPTIONS.includes(row.status)) {
-      return `Rij ${i + 1}: ongeldige status.`;
-    }
-
-    seenRoepnummers.add(row.roepnummer);
+  if (!STATUS_OPTIONS.includes(row.status)) {
+    return `Ongeldige status voor roepnummer ${row.roepnummer}.`;
   }
 
   return null;
 }
 
-function setButtonsDisabled(disabled) {
-  loadBtn.disabled = disabled;
-  addRowBtn.disabled = disabled;
-  saveBtn.disabled = disabled;
+function validateDuplicateRoepnummers(rows) {
+  const seen = new Set();
+
+  for (const row of rows) {
+    const roepnummer = String(row.roepnummer || '').trim();
+
+    if (seen.has(roepnummer)) {
+      return `Dubbel roepnummer gevonden: ${roepnummer}`;
+    }
+
+    seen.add(roepnummer);
+  }
+
+  return null;
+}
+
+function getRowKey(row) {
+  return String(row.roepnummer || '').trim();
+}
+
+function setRowButtonsDisabled(disabled) {
+  document.querySelectorAll('#staffTableBody button').forEach(button => {
+    button.disabled = disabled;
+  });
 }

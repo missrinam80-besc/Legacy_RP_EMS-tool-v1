@@ -16,7 +16,8 @@ const {
   normalizeStatus,
   getStatusClass,
   escapeHtml,
-  setMessage
+  setMessage,
+  sanitizeRow
 } = window.PersoneelShared;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -35,6 +36,11 @@ async function loadRows() {
 
   try {
     const response = await fetch(`${API_URL}?action=readonly`);
+
+    if (!response.ok) {
+      throw new Error(`HTTP-fout: ${response.status}`);
+    }
+
     const data = await response.json();
 
     if (!data.success) {
@@ -42,13 +48,7 @@ async function loadRows() {
     }
 
     staffRows = Array.isArray(data.rows)
-      ? data.rows.map(row => ({
-          roepnummer: String(row.roepnummer || '').trim(),
-          naam: String(row.naam || '').trim(),
-          rang: String(row.rang || '').trim(),
-          afdeling: String(row.afdeling || '').trim(),
-          status: normalizeStatus(row.status)
-        }))
+      ? data.rows.map(sanitizeRow).filter(row => row.is_active)
       : [];
 
     applyFilter();

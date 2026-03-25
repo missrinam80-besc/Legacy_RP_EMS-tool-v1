@@ -4,13 +4,14 @@
  */
 
 window.PersoneelShared = (() => {
-  const STATUS_OPTIONS = ['actief', 'non-actief', 'verlof'];
+  const STATUS_OPTIONS = ['actief', 'non-actief', 'verlof', 'ziekte'];
 
   function normalizeStatus(value) {
     const status = String(value || '').trim().toLowerCase();
 
     if (status === 'actief') return 'actief';
     if (status === 'verlof') return 'verlof';
+    if (status === 'ziekte') return 'ziekte';
     if (status === 'non actief' || status === 'non-actief' || status === 'nonactief') return 'non-actief';
 
     return 'actief';
@@ -22,6 +23,7 @@ window.PersoneelShared = (() => {
     if (value === 'actief') return 'personeel-badge--actief';
     if (value === 'non-actief') return 'personeel-badge--non-actief';
     if (value === 'verlof') return 'personeel-badge--verlof';
+    if (value === 'ziekte') return 'personeel-badge--ziekte';
 
     return 'personeel-badge--default';
   }
