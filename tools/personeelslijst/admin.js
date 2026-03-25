@@ -1,6 +1,18 @@
 /**
- * Personeelslijst admin - DEBUGVERSIE
- * Deze versie toont zichtbaar wat er gebeurt bij opslaan.
+ * Personeelslijst admin - volledige werkversie
+ * --------------------------------------------
+ * Deze versie:
+ * - laadt personeelsdata via GET
+ * - laat rij-per-rij bewerken toe
+ * - slaat wijzigingen op via GET action=saveRow
+ * - toont debug-info op de pagina
+ *
+ * Vereisten:
+ * - admin.html bevat elementen met ids:
+ *   staffTableBody, searchInput, actorInput, loadBtn, messageBox, resultCount
+ * - API_URL bestaat globaal in admin.html
+ * - window.PersoneelShared bevat minstens:
+ *   STATUS_OPTIONS, setMessage, sanitizeRow
  */
 
 let staffRows = [];
@@ -20,7 +32,10 @@ const {
   sanitizeRow
 } = window.PersoneelShared;
 
-// ===== DEBUG BOX =====
+// =========================
+// DEBUG
+// =========================
+
 let debugBox = null;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -44,11 +59,15 @@ function createDebugBox() {
   debugBox.style.fontFamily = 'monospace';
   debugBox.style.fontSize = '12px';
   debugBox.style.whiteSpace = 'pre-wrap';
+  debugBox.style.maxHeight = '260px';
+  debugBox.style.overflow = 'auto';
   debugBox.textContent = 'Debug gestart...\n';
 
-  const panel = document.querySelector('.panel.mt-2');
-  if (panel) {
-    panel.appendChild(debugBox);
+  const panels = document.querySelectorAll('.panel.mt-2');
+  const targetPanel = panels.length ? panels[panels.length - 1] : null;
+
+  if (targetPanel) {
+    targetPanel.appendChild(debugBox);
   } else {
     document.body.appendChild(debugBox);
   }
@@ -57,11 +76,16 @@ function createDebugBox() {
 function debugLog(text) {
   const line = `[${new Date().toLocaleTimeString()}] ${text}`;
   console.log(line);
+
   if (debugBox) {
     debugBox.textContent += line + '\n';
     debugBox.scrollTop = debugBox.scrollHeight;
   }
 }
+
+// =========================
+// EVENTS
+// =========================
 
 function bindEvents() {
   loadBtn.addEventListener('click', () => {
@@ -71,6 +95,10 @@ function bindEvents() {
 
   searchInput.addEventListener('input', applyFilter);
 }
+
+// =========================
+// DATA LADEN
+// =========================
 
 async function loadRows() {
   loadBtn.disabled = true;
@@ -82,6 +110,10 @@ async function loadRows() {
     const response = await fetch(`${API_URL}?action=list`);
     debugLog('GET list response ontvangen');
 
+    if (!response.ok) {
+      throw new Error(`HTTP-fout: ${response.status}`);
+    }
+
     const data = await response.json();
     debugLog('GET list JSON parsed, success=' + data.success);
 
@@ -89,7 +121,10 @@ async function loadRows() {
       throw new Error(data.message || 'Laden mislukt.');
     }
 
-    staffRows = Array.isArray(data.rows) ? data.rows.map(sanitizeRow) : [];
+    staffRows = Array.isArray(data.rows)
+      ? data.rows.map(sanitizeRow)
+      : [];
+
     editStateByKey = {};
     applyFilter();
 
@@ -104,6 +139,10 @@ async function loadRows() {
   }
 }
 
+// =========================
+// FILTEREN
+// =========================
+
 function applyFilter() {
   const query = searchInput.value.trim().toLowerCase();
 
@@ -117,16 +156,24 @@ function applyFilter() {
           row.afdeling,
           row.status,
           row.is_active ? 'zichtbaar' : 'verborgen'
-        ].some(v => String(v || '').toLowerCase().includes(query))
+        ].some(value => String(value || '').toLowerCase().includes(query))
       );
 
   resultCount.textContent = String(filteredRows.length);
   renderTable();
 }
 
+// =========================
+// TABEL RENDEREN
+// =========================
+
 function renderTable() {
   if (!filteredRows.length) {
-    tableBody.innerHTML = `<tr><td colspan="7" class="personeel-empty-state">Geen resultaten gevonden.</td></tr>`;
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="7" class="personeel-empty-state">Geen resultaten gevonden.</td>
+      </tr>
+    `;
     return;
   }
 
@@ -134,35 +181,72 @@ function renderTable() {
     const key = getRowKey(row);
     const isEditing = !!editStateByKey[key];
 
-    const draft = isEditing ? editStateByKey[key].draft : row;
     const original = isEditing ? editStateByKey[key].original : row;
+    const draft = isEditing ? editStateByKey[key].draft : row;
 
     return `
       <tr class="${isEditing ? 'personeel-row--editing' : ''}">
         <td>
-          ${isEditing ? `
-            <button type="button" data-action="save" data-key="${escapeAttr(key)}">Opslaan</button>
-            <button type="button" data-action="cancel" data-key="${escapeAttr(key)}">Annuleren</button>
-          ` : `
-            <button type="button" data-action="edit" data-key="${escapeAttr(key)}">Bewerken</button>
-          `}
+          ${
+            isEditing
+              ? `
+                <button type="button" data-action="save" data-key="${escapeAttr(key)}">Opslaan</button>
+                <button type="button" data-action="cancel" data-key="${escapeAttr(key)}">Annuleren</button>
+              `
+              : `
+                <button type="button" data-action="edit" data-key="${escapeAttr(key)}">Bewerken</button>
+              `
+          }
         </td>
 
-        <td><input value="${escapeAttr(original.roepnummer)}" disabled></td>
-        <td><input value="${escapeAttr(draft.naam)}" data-field="naam" data-key="${escapeAttr(key)}" ${isEditing ? '' : 'disabled'}></td>
-        <td><input value="${escapeAttr(original.rang)}" disabled></td>
-        <td><input value="${escapeAttr(draft.afdeling)}" data-field="afdeling" data-key="${escapeAttr(key)}" ${isEditing ? '' : 'disabled'}></td>
+        <td>
+          <input value="${escapeAttr(original.roepnummer)}" disabled>
+        </td>
 
         <td>
-          <select data-field="status" data-key="${escapeAttr(key)}" ${isEditing ? '' : 'disabled'}>
-            ${STATUS_OPTIONS.map(s =>
-              `<option value="${escapeAttr(s)}" ${s === draft.status ? 'selected' : ''}>${s}</option>`
-            ).join('')}
+          <input
+            value="${escapeAttr(draft.naam)}"
+            data-field="naam"
+            data-key="${escapeAttr(key)}"
+            ${isEditing ? '' : 'disabled'}
+          >
+        </td>
+
+        <td>
+          <input value="${escapeAttr(original.rang)}" disabled>
+        </td>
+
+        <td>
+          <input
+            value="${escapeAttr(draft.afdeling)}"
+            data-field="afdeling"
+            data-key="${escapeAttr(key)}"
+            ${isEditing ? '' : 'disabled'}
+          >
+        </td>
+
+        <td>
+          <select
+            data-field="status"
+            data-key="${escapeAttr(key)}"
+            ${isEditing ? '' : 'disabled'}
+          >
+            ${STATUS_OPTIONS.map(status => `
+              <option value="${escapeAttr(status)}" ${status === draft.status ? 'selected' : ''}>
+                ${escapeHtml(status)}
+              </option>
+            `).join('')}
           </select>
         </td>
 
         <td>
-          <input type="checkbox" ${draft.is_active ? 'checked' : ''} data-field="is_active" data-key="${escapeAttr(key)}" ${isEditing ? '' : 'disabled'}>
+          <input
+            type="checkbox"
+            ${draft.is_active ? 'checked' : ''}
+            data-field="is_active"
+            data-key="${escapeAttr(key)}"
+            ${isEditing ? '' : 'disabled'}
+          >
         </td>
       </tr>
     `;
@@ -172,24 +256,29 @@ function renderTable() {
 }
 
 function bindTableInputs() {
-  document.querySelectorAll('[data-action]').forEach(btn => {
-    btn.onclick = handleAction;
+  document.querySelectorAll('[data-action]').forEach(button => {
+    button.onclick = handleAction;
   });
 
-  document.querySelectorAll('[data-field]').forEach(el => {
-    el.oninput = updateDraft;
-    el.onchange = updateDraft;
+  document.querySelectorAll('[data-field]').forEach(input => {
+    input.oninput = updateDraft;
+    input.onchange = updateDraft;
   });
 }
 
-function handleAction(e) {
-  const key = e.target.dataset.key;
-  const action = e.target.dataset.action;
+// =========================
+// ACTIES
+// =========================
+
+function handleAction(event) {
+  const key = event.target.dataset.key;
+  const action = event.target.dataset.action;
 
   debugLog(`handleAction: ${action} voor key=${key}`);
 
   if (action === 'edit') {
-    const row = staffRows.find(r => getRowKey(r) === key);
+    const row = staffRows.find(item => getRowKey(item) === key);
+
     if (!row) {
       debugLog('Geen rij gevonden voor edit');
       return;
@@ -208,6 +297,7 @@ function handleAction(e) {
     delete editStateByKey[key];
     renderTable();
     setMessage(messageBox, 'Wijzigingen geannuleerd.', 'info');
+    debugLog('Wijzigingen geannuleerd voor key=' + key);
     return;
   }
 
@@ -216,17 +306,23 @@ function handleAction(e) {
   }
 }
 
-function updateDraft(e) {
-  const key = e.target.dataset.key;
-  const field = e.target.dataset.field;
+function updateDraft(event) {
+  const key = event.target.dataset.key;
+  const field = event.target.dataset.field;
 
-  if (!editStateByKey[key]) return;
+  if (!editStateByKey[key]) {
+    return;
+  }
 
   editStateByKey[key].draft[field] =
-    e.target.type === 'checkbox'
-      ? e.target.checked
-      : e.target.value;
+    event.target.type === 'checkbox'
+      ? event.target.checked
+      : event.target.value;
 }
+
+// =========================
+// OPSLAAN
+// =========================
 
 async function saveRow(key) {
   debugLog('saveRow() gestart voor key=' + key);
@@ -262,7 +358,7 @@ async function saveRow(key) {
   setMessage(messageBox, `Rij ${draft.roepnummer} wordt opgeslagen...`, 'info');
 
   try {
-    await getSaveRow({
+    const payload = {
       action: 'saveRow',
       actor,
       row: {
@@ -272,13 +368,16 @@ async function saveRow(key) {
         status: draft.status,
         is_active: draft.is_active
       }
-    });
+    };
 
-    debugLog('GET saveRow verzonden');
+    debugLog('payload=' + JSON.stringify(payload));
+
+    const result = await getSaveRow(payload);
+    debugLog('GET save response=' + JSON.stringify(result));
 
     delete editStateByKey[key];
 
-    await wait(1000);
+    await wait(700);
     debugLog('Lijst wordt herladen na save');
     await loadRows();
 
@@ -292,43 +391,38 @@ async function saveRow(key) {
   }
 }
 
-  debugLog('payload=' + JSON.stringify(payload));
-
-  try {
-    await postSaveRow(payload);
-    debugLog('POST verzonden');
-
-    delete editStateByKey[key];
-
-    await wait(1500);
-    debugLog('Lijst wordt herladen na save');
-    await loadRows();
-
-    setMessage(messageBox, `Rij ${draft.roepnummer} is opgeslagen.`, 'success');
-  } catch (error) {
-    setMessage(messageBox, error.message || 'Fout bij opslaan.', 'error');
-    debugLog('FOUT saveRow: ' + (error.message || error));
-  } finally {
-    loadBtn.disabled = false;
-    setRowButtonsDisabled(false);
-  }
-}
-
-async function postSaveRow(payload) {
-  const body = new URLSearchParams();
-  body.append('payload', JSON.stringify(payload));
-
-  debugLog('POST body=' + body.toString());
-
-  await fetch(API_URL, {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-    },
-    body: body.toString()
+async function getSaveRow(payload) {
+  const params = new URLSearchParams({
+    action: payload.action,
+    actor: payload.actor,
+    roepnummer: payload.row.roepnummer,
+    naam: payload.row.naam,
+    afdeling: payload.row.afdeling,
+    status: payload.row.status,
+    is_active: payload.row.is_active ? 'true' : 'false'
   });
+
+  const url = `${API_URL}?${params.toString()}`;
+  debugLog('GET save URL=' + url);
+
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(`HTTP-fout bij opslaan: ${response.status}`);
+  }
+
+  const data = await response.json();
+
+  if (!data.success) {
+    throw new Error(data.message || 'Opslaan mislukt.');
+  }
+
+  return data;
 }
+
+// =========================
+// VALIDATIE
+// =========================
 
 function validateSingleRow(row) {
   if (!row.roepnummer) {
@@ -345,6 +439,10 @@ function validateSingleRow(row) {
 
   return null;
 }
+
+// =========================
+// HELPERS
+// =========================
 
 function getRowKey(row) {
   return String(row.roepnummer || '').trim();
@@ -368,28 +466,11 @@ function escapeAttr(value) {
     .replaceAll('>', '&gt;');
 }
 
-async function getSaveRow(payload) {
-  const params = new URLSearchParams({
-    action: payload.action,
-    actor: payload.actor,
-    roepnummer: payload.row.roepnummer,
-    naam: payload.row.naam,
-    afdeling: payload.row.afdeling,
-    status: payload.row.status,
-    is_active: payload.row.is_active ? 'true' : 'false'
-  });
-
-  const url = `${API_URL}?${params.toString()}`;
-  debugLog('GET save URL=' + url);
-
-  const response = await fetch(url);
-  const data = await response.json();
-
-  debugLog('GET save response=' + JSON.stringify(data));
-
-  if (!data.success) {
-    throw new Error(data.message || 'Opslaan mislukt.');
-  }
-
-  return data;
+function escapeHtml(value) {
+  return String(value || '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
 }
