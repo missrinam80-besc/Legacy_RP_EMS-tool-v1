@@ -1,33 +1,54 @@
-# Evaluatieformulier (EMS Tool)
+# Evaluatieformulier V3
 
-Tool voor het opstellen van gestructureerde evaluaties binnen EMS.
+Volledige evaluatietool voor EMS-medewerkers, opgebouwd als client-side webtool zonder database.
 
 ## Functionaliteiten
 
-- Meerdere evaluatiecategorieën
-- Score per categorie
+- Dynamische evaluatiecategorieën via `config.json`
+- Score per onderdeel
+- Kleurbadge per score
 - Automatische gemiddelde score
-- Sterktes & werkpunten
-- Eindbesluit
-- Copy + download functie
+- Automatische samenvattende feedback
+- Eindbeoordeling en eindbesluit
+- Secties voor sterktes, werkpunten en opvolgafspraken
+- Kopiëren, downloaden en printen
 
-## Werking
+## Bestanden
 
-1. Vul alle velden in
-2. Klik op "Verslag opbouwen"
-3. Kopieer of download het resultaat
+- `index.html`  
+  Structuur van de tool en de UI
 
-## Technisch
+- `app.js`  
+  Alle logica voor scores, feedback en output
 
-- Geen database
-- Volledig client-side
-- JSON-configuratie
-- Modulair uitbreidbaar
+- `config.json`  
+  Instellingen, categorieën, scoremapping en besluitopties
 
-## Aanpasbaar
+- `README.md`  
+  Korte documentatie
 
-Pas `config.json` aan om:
+## Gebruik
 
-- categorieën te wijzigen
-- scores aan te passen
-- beslissingen toe te voegen
+1. Vul de algemene gegevens in
+2. Geef per onderdeel een score en optionele opmerking
+3. Vul sterktes, werkpunten en afspraken aan
+4. Klik op **Verslag opbouwen**
+5. Kopieer, download of print het resultaat
+
+## Aanpassen
+
+### Categorieën wijzigen
+Pas in `config.json` de lijst onder `"categories"` aan.
+
+### Evaluatietypes wijzigen
+Pas in `config.json` de lijst onder `"evaluationTypes"` aan.
+
+### Besluitopties wijzigen
+Pas in `config.json` de lijst onder `"decisions"` aan.
+
+### Scoresysteem wijzigen
+Pas `"scores"` en `"scoreMap"` samen aan.
+
+## Opmerking
+
+Deze tool bewaart geen gegevens en werkt volledig in de browser.

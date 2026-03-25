@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Evaluatieformulier</title>
 
   <link rel="stylesheet" href="../../assets/styles/theme.css" />
@@ -12,108 +12,234 @@
   <link rel="stylesheet" href="../../assets/styles/utilities.css" />
 
   <style>
+    .evaluation-list {
+      display: grid;
+      gap: 14px;
+    }
+
     .evaluation-block {
-      border: 1px solid #ddd;
-      padding: 12px;
-      margin-bottom: 12px;
-      border-radius: 6px;
-      background: #fafafa;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 16px;
+      background: rgba(255,255,255,0.03);
+    }
+
+    .evaluation-block h4 {
+      margin: 0 0 12px;
+    }
+
+    .evaluation-block__grid {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .score-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: 1px solid transparent;
+      min-height: 34px;
+    }
+
+    .score-badge.is-empty {
+      opacity: 0.65;
+    }
+
+    .score-badge.score-1 {
+      background: rgba(220, 53, 69, 0.15);
+      color: #ff8c96;
+      border-color: rgba(220, 53, 69, 0.35);
+    }
+
+    .score-badge.score-2 {
+      background: rgba(255, 193, 7, 0.14);
+      color: #ffd666;
+      border-color: rgba(255, 193, 7, 0.35);
+    }
+
+    .score-badge.score-3 {
+      background: rgba(13, 110, 253, 0.14);
+      color: #87b7ff;
+      border-color: rgba(13, 110, 253, 0.35);
+    }
+
+    .score-badge.score-4 {
+      background: rgba(25, 135, 84, 0.15);
+      color: #8ce0b2;
+      border-color: rgba(25, 135, 84, 0.35);
+    }
+
+    .summary-grid {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .summary-card {
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 16px;
+      background: rgba(255,255,255,0.03);
+    }
+
+    .summary-card h3 {
+      margin-top: 0;
+      margin-bottom: 8px;
+      font-size: 1rem;
+    }
+
+    .summary-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .auto-feedback-list {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .output-card textarea {
+      min-height: 460px;
+    }
+
+    @media (max-width: 800px) {
+      .evaluation-block__grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
-
 <body>
+  <header class="site-header">
+    <img
+      src="../../assets/images/Banner.png"
+      alt="Pillbox Hill Medical Center"
+      class="site-banner"
+    />
+  </header>
 
-<header class="site-header">
-  <img src="../../assets/images/Banner.png" class="site-banner">
-</header>
+  <main class="page-container">
+    <div class="tool-nav">
+      <a href="../../index.html">← Terug naar EMS Tools Hub</a>
+    </div>
 
-<main class="page-container">
+    <section class="panel">
+      <h1 id="toolTitle">Evaluatieformulier</h1>
+      <p id="toolDescription" class="text-soft"></p>
+    </section>
 
-  <div class="tool-nav">
-    <a href="../../index.html">← Terug naar EMS Tools Hub</a>
-  </div>
+    <section class="panel mt-2">
+      <form id="evaluationForm">
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="employeeName">Naam medewerker</label>
+            <input class="form-input" id="employeeName" type="text" />
+          </div>
 
-  <section class="panel">
-    <h1 id="toolTitle">Evaluatieformulier</h1>
-    <p id="toolDescription"></p>
-  </section>
+          <div class="form-field">
+            <label for="callSign">Roepnummer</label>
+            <input class="form-input" id="callSign" type="text" />
+          </div>
 
-  <section class="panel mt-2">
-    <form id="evaluationForm">
+          <div class="form-field">
+            <label for="rank">Rang / functie</label>
+            <input class="form-input" id="rank" type="text" />
+          </div>
 
-      <div class="form-grid">
-        <div class="form-field">
-          <label>Naam medewerker</label>
-          <input class="form-input" id="employeeName">
+          <div class="form-field">
+            <label for="evaluatorName">Evaluator</label>
+            <input class="form-input" id="evaluatorName" type="text" />
+          </div>
+
+          <div class="form-field">
+            <label for="evaluationType">Type evaluatie</label>
+            <select class="form-select" id="evaluationType"></select>
+          </div>
+
+          <div class="form-field">
+            <label for="date">Datum evaluatie</label>
+            <input class="form-input" id="date" type="date" />
+          </div>
         </div>
 
-        <div class="form-field">
-          <label>Roepnummer</label>
-          <input class="form-input" id="callSign">
+        <div class="form-field mt-2">
+          <label for="context">Context / aanleiding</label>
+          <textarea class="form-textarea" id="context" placeholder="Bijvoorbeeld: periodieke evaluatie, evaluatie na incident, opvolgingsgesprek, proefperiode..."></textarea>
         </div>
 
-        <div class="form-field">
-          <label>Evaluator</label>
-          <input class="form-input" id="evaluatorName">
+        <div class="form-section mt-2">
+          <h2>Beoordeling per onderdeel</h2>
+          <div id="evaluationBlocks" class="evaluation-list"></div>
         </div>
 
-        <div class="form-field">
-          <label>Datum</label>
-          <input type="date" class="form-input" id="date">
-        </div>
-      </div>
+        <div class="summary-grid mt-2">
+          <div class="summary-card">
+            <h3>Gemiddelde score</h3>
+            <div class="summary-value" id="averageScoreDisplay">-</div>
+            <p class="text-soft" id="averageScoreLabel">Nog geen beoordeling</p>
+          </div>
 
-      <div class="form-section mt-2">
-        <h3>Evaluatie per onderdeel</h3>
-        <div id="evaluationBlocks"></div>
-      </div>
-
-      <div class="form-grid mt-2">
-        <div class="form-field">
-          <label>Algemene beoordeling</label>
-          <select class="form-select" id="finalScore"></select>
+          <div class="summary-card">
+            <h3>Automatische feedback</h3>
+            <ul id="autoFeedbackList" class="auto-feedback-list">
+              <li class="text-soft">Feedback verschijnt na het opbouwen van het verslag.</li>
+            </ul>
+          </div>
         </div>
 
-        <div class="form-field">
-          <label>Eindbesluit</label>
-          <select class="form-select" id="decision"></select>
+        <div class="form-grid mt-2">
+          <div class="form-field">
+            <label for="finalScore">Algemene beoordeling</label>
+            <select class="form-select" id="finalScore"></select>
+          </div>
+
+          <div class="form-field">
+            <label for="decision">Eindbesluit</label>
+            <select class="form-select" id="decision"></select>
+          </div>
         </div>
-      </div>
 
-      <div class="form-field mt-2">
-        <label>Sterktes</label>
-        <textarea class="form-textarea" id="strengths"></textarea>
-      </div>
+        <div class="form-field mt-2">
+          <label for="strengths">Sterktes</label>
+          <textarea class="form-textarea" id="strengths" placeholder="Beschrijf hier de sterke punten van de medewerker."></textarea>
+        </div>
 
-      <div class="form-field mt-2">
-        <label>Werkpunten</label>
-        <textarea class="form-textarea" id="improvements"></textarea>
-      </div>
+        <div class="form-field mt-2">
+          <label for="improvements">Werkpunten / aandachtspunten</label>
+          <textarea class="form-textarea" id="improvements" placeholder="Beschrijf hier concrete verbeterpunten of afspraken."></textarea>
+        </div>
 
-      <div class="button-row">
-        <button type="submit" class="btn btn-primary">Verslag opbouwen</button>
-        <button type="button" class="btn btn-secondary" id="resetBtn">Reset</button>
-        <button type="button" class="btn btn-secondary" id="copyBtn">Kopieer</button>
-        <button type="button" class="btn btn-secondary" id="downloadBtn">Download</button>
-      </div>
+        <div class="form-field mt-2">
+          <label for="agreements">Afspraken / opvolgacties</label>
+          <textarea class="form-textarea" id="agreements" placeholder="Welke acties, begeleiding of opvolging zijn afgesproken?"></textarea>
+        </div>
 
-    </form>
+        <div class="button-row">
+          <button type="submit" class="btn btn-primary">Verslag opbouwen</button>
+          <button type="button" class="btn btn-secondary" id="resetBtn">Leegmaken</button>
+          <button type="button" class="btn btn-secondary" id="copyBtn">Kopiëren</button>
+          <button type="button" class="btn btn-secondary" id="downloadBtn">Download .txt</button>
+          <button type="button" class="btn btn-secondary" id="printBtn">Print</button>
+        </div>
+      </form>
 
-    <div id="statusBox" class="status-box hidden mt-2"></div>
-  </section>
+      <div id="statusBox" class="status-box hidden mt-2"></div>
+    </section>
 
-  <section class="output-card mt-2">
-    <h2>Evaluatieverslag</h2>
-    <textarea id="output" class="form-textarea" readonly></textarea>
-  </section>
+    <section class="output-card mt-2">
+      <h2>Evaluatieverslag</h2>
+      <textarea id="output" class="form-textarea" readonly></textarea>
+    </section>
+  </main>
 
-</main>
-
-<script src="../../assets/scripts/core.js"></script>
-<script src="../../assets/scripts/ui.js"></script>
-<script src="../../assets/scripts/export.js"></script>
-<script src="app.js"></script>
-
+  <script src="../../assets/scripts/core.js"></script>
+  <script src="../../assets/scripts/ui.js"></script>
+  <script src="../../assets/scripts/export.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>

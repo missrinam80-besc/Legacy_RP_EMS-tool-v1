@@ -1,12 +1,22 @@
 {
   "toolTitle": "Evaluatieformulier",
-  "toolDescription": "Gestandaardiseerde evaluaties voor EMS-medewerkers.",
+  "toolDescription": "Gestandaardiseerde evaluaties voor EMS-medewerkers met score-overzicht, automatische samenvatting en uniforme verslagopbouw.",
+  "evaluationTypes": [
+    "Periodieke evaluatie",
+    "Evaluatie proefperiode",
+    "Opvolgingsgesprek",
+    "Evaluatie na incident",
+    "Functioneringsgesprek"
+  ],
   "categories": [
     "Communicatie",
     "Medische kennis",
+    "Klinisch redeneren",
     "Teamwork",
     "Administratie",
-    "Professionaliteit"
+    "Professionaliteit",
+    "Stressbestendigheid",
+    "Inzet en verantwoordelijkheid"
   ],
   "scores": [
     "Onvoldoende",
@@ -14,9 +24,19 @@
     "Goed",
     "Zeer goed"
   ],
+  "scoreMap": {
+    "Onvoldoende": 1,
+    "Voldoende": 2,
+    "Goed": 3,
+    "Zeer goed": 4
+  },
   "decisions": [
     "Positief",
-    "Opvolging nodig",
-    "Onvoldoende"
+    "Positief met opvolging",
+    "Extra coaching nodig",
+    "Formele waarschuwing",
+    "Te herbekijken op volgende evaluatie",
+    "Klaar voor extra verantwoordelijkheid",
+    "Aanbevolen voor promotie"
   ]
 }
