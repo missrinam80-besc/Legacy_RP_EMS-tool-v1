@@ -1,6 +1,7 @@
 /**
  * Personeelslijst admin
- * Rij-per-rij bewerken en opslaan via hidden form POST in een verborgen iframe.
+ * Rij-per-rij bewerken en opslaan via form-urlencoded POST.
+ * Deze versie gebruikt fetch met no-cors voor schrijven naar Apps Script.
  */
 
 let staffRows = [];
@@ -199,7 +200,7 @@ async function saveRow(key) {
   setMessage(messageBox, `Rij ${draft.roepnummer} wordt opgeslagen...`, 'info');
 
   try {
-    await submitPayloadViaHiddenForm({
+    await postSaveRow({
       action: 'saveRow',
       actor,
       row: {
@@ -212,7 +213,10 @@ async function saveRow(key) {
     });
 
     delete editStateByKey[key];
+
+    await wait(1200);
     await loadRows();
+
     setMessage(messageBox, `Rij ${draft.roepnummer} is opgeslagen.`, 'success');
   } catch (error) {
     setMessage(messageBox, error.message || 'Fout bij opslaan.', 'error');
@@ -222,60 +226,17 @@ async function saveRow(key) {
   }
 }
 
-function submitPayloadViaHiddenForm(payload) {
-  return new Promise((resolve, reject) => {
-    try {
-      const iframeName = 'hiddenSubmitFrame';
+async function postSaveRow(payload) {
+  const body = new URLSearchParams();
+  body.append('payload', JSON.stringify(payload));
 
-      let iframe = document.getElementById(iframeName);
-      if (!iframe) {
-        iframe = document.createElement('iframe');
-        iframe.name = iframeName;
-        iframe.id = iframeName;
-        iframe.style.display = 'none';
-        document.body.appendChild(iframe);
-      }
-
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = API_URL;
-      form.target = iframeName;
-      form.style.display = 'none';
-
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = 'payload';
-      input.value = JSON.stringify(payload);
-
-      form.appendChild(input);
-      document.body.appendChild(form);
-
-      let done = false;
-
-      const cleanup = () => {
-        if (form.parentNode) {
-          form.parentNode.removeChild(form);
-        }
-      };
-
-      iframe.onload = () => {
-        if (done) return;
-        done = true;
-        cleanup();
-        resolve();
-      };
-
-      form.submit();
-
-      setTimeout(() => {
-        if (done) return;
-        done = true;
-        cleanup();
-        resolve();
-      }, 1200);
-    } catch (error) {
-      reject(error);
-    }
+  await fetch(API_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+    },
+    body: body.toString()
   });
 }
 
@@ -303,6 +264,10 @@ function setRowButtonsDisabled(disabled) {
   document.querySelectorAll('#staffTableBody button').forEach(button => {
     button.disabled = disabled;
   });
+}
+
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 function escapeAttr(value) {
