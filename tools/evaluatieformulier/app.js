@@ -1,18 +1,18 @@
 /**
- * EMS Evaluatieformulier V6
+ * EMS Evaluatieformulier V8
  * -------------------------
- * Koppelt rechtstreeks met EmsStaffService en gebruikt de centrale
- * personeels-API als bron voor medewerkers en evaluators.
- *
- * Belangrijk:
- * - geen lokaal personeel.json meer
- * - dropdowns worden gevuld via EmsStaffService.populateSelect(...)
- * - evaluatorrangen zijn configureerbaar via config.json
+ * Extra functies:
+ * - alles openen / sluiten
+ * - accordion-status onthouden via localStorage
+ * - automatisch openen bij validatiefouten
+ * - progress bar bovenaan
  */
 
 let config = {};
 let staffRows = [];
 let evaluatorRows = [];
+
+const ACCORDION_STORAGE_KEY = "ems-evaluation-accordion-state";
 
 document.addEventListener("DOMContentLoaded", init);
 
@@ -30,6 +30,8 @@ async function init() {
     createEvaluationBlocks(config.categories || []);
     setDefaultDate();
     bindEvents();
+    initAccordionState();
+    updateProgress();
 
     await loadStaffData();
   } catch (error) {
@@ -67,7 +69,7 @@ function createEvaluationBlocks(categories) {
       <div class="evaluation-block__grid">
         <div class="form-field">
           <label>Score</label>
-          <select class="form-select js-category-score">
+          <select class="form-select js-category-score" required>
             <option value="">Kies score</option>
             ${(config.scores || [])
               .map(score => `<option value="${escapeAttr(score)}">${escapeHtml(score)}</option>`)
@@ -83,6 +85,7 @@ function createEvaluationBlocks(categories) {
           <textarea
             class="form-textarea js-category-comment"
             placeholder="Korte motivering, observatie of voorbeeld..."
+            required
           ></textarea>
         </div>
       </div>
@@ -122,6 +125,7 @@ async function loadStaffData() {
 
   populateEmployeeSelect();
   populateEvaluatorSelect();
+  enableStaffSelects();
 
   const loadedAt = window.EmsStaffService.getLastLoadedAt();
   qs("#staffLoadInfo").textContent = loadedAt
@@ -171,14 +175,223 @@ function bindEvents() {
   qs("#printBtn").addEventListener("click", printOutput);
   qs("#employeeSelect").addEventListener("change", handleEmployeeSelect);
   qs("#evaluatorSelect").addEventListener("change", handleEvaluatorSelect);
+  qs("#toggleAccordionBtn").addEventListener("click", toggleAllAccordionSections);
 
   bindCategoryScoreEvents();
+  bindProgressInputs();
+  bindAccordionPersistence();
 }
 
 function bindCategoryScoreEvents() {
   qsa(".js-category-score").forEach(select => {
     select.addEventListener("change", handleLiveScoreChange);
   });
+}
+
+function bindProgressInputs() {
+  qsa("#evaluationForm input, #evaluationForm select, #evaluationForm textarea").forEach(el => {
+    el.addEventListener("input", updateProgress);
+    el.addEventListener("change", updateProgress);
+  });
+}
+
+function bindAccordionPersistence() {
+  getAccordionSections().forEach(section => {
+    section.addEventListener("toggle", () => {
+      saveAccordionState();
+      updateToggleAccordionButton();
+      updateProgress();
+    });
+  });
+}
+
+// =========================
+// ACCORDION
+// =========================
+
+function getAccordionSections() {
+  return qsa(".accordion-section");
+}
+
+function initAccordionState() {
+  const sections = getAccordionSections();
+  const saved = loadAccordionState();
+
+  if (saved && Array.isArray(saved) && saved.length === sections.length) {
+    sections.forEach((section, index) => {
+      section.open = Boolean(saved[index]);
+    });
+  } else {
+    sections.forEach((section, index) => {
+      section.open = index === 0;
+    });
+  }
+
+  updateToggleAccordionButton();
+}
+
+function saveAccordionState() {
+  const state = getAccordionSections().map(section => section.open);
+  localStorage.setItem(ACCORDION_STORAGE_KEY, JSON.stringify(state));
+}
+
+function loadAccordionState() {
+  try {
+    const raw = localStorage.getItem(ACCORDION_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function openAccordionSection(index) {
+  const sections = getAccordionSections();
+  if (sections[index]) {
+    sections[index].open = true;
+    saveAccordionState();
+    updateToggleAccordionButton();
+    updateProgress();
+  }
+}
+
+function resetAccordionState() {
+  const sections = getAccordionSections();
+  sections.forEach((section, index) => {
+    section.open = index === 0;
+  });
+  saveAccordionState();
+  updateToggleAccordionButton();
+  updateProgress();
+}
+
+function toggleAllAccordionSections() {
+  const sections = getAccordionSections();
+  const allOpen = sections.every(section => section.open);
+
+  sections.forEach(section => {
+    section.open = !allOpen;
+  });
+
+  saveAccordionState();
+  updateToggleAccordionButton();
+  updateProgress();
+}
+
+function updateToggleAccordionButton() {
+  const btn = qs("#toggleAccordionBtn");
+  const sections = getAccordionSections();
+  const allOpen = sections.length > 0 && sections.every(section => section.open);
+  btn.textContent = allOpen ? "Alles sluiten" : "Alles openen";
+}
+
+// =========================
+// PROGRESS
+// =========================
+
+function updateProgress() {
+  const steps = [
+    isStepComplete(0),
+    isStepComplete(1),
+    isStepComplete(2),
+    isStepComplete(3),
+    isStepComplete(4)
+  ];
+
+  const completed = steps.filter(Boolean).length;
+  const currentStep = Math.min(completed + 1, 5);
+  const percent = (completed / 5) * 100;
+
+  qs("#progressFill").style.width = `${percent}%`;
+  qs("#progressLabel").textContent = `Stap ${currentStep}/5`;
+  qs("#progressText").textContent = getProgressText(completed);
+}
+
+function isStepComplete(stepIndex) {
+  switch (stepIndex) {
+    case 0:
+      return Boolean(qs("#employeeSelect").value && qs("#evaluatorSelect").value);
+    case 1:
+      return Boolean(
+        qs("#evaluationType").value &&
+        qs("#date").value &&
+        qs("#decision").value &&
+        qs("#context").value.trim()
+      );
+    case 2:
+      return Boolean(
+        qs("#finalScore").value &&
+        qsa(".js-category-score").every(el => el.value) &&
+        qsa(".js-category-comment").every(el => el.value.trim())
+      );
+    case 3:
+      return Boolean(qs("#strengths").value.trim() && qs("#improvements").value.trim());
+    case 4:
+      return Boolean(qs("#agreements").value.trim());
+    default:
+      return false;
+  }
+}
+
+function getProgressText(completed) {
+  if (completed <= 0) return "Start met medewerker en evaluator.";
+  if (completed === 1) return "Vul nu de algemene evaluatiegegevens in.";
+  if (completed === 2) return "Werk de beoordeling per onderdeel af.";
+  if (completed === 3) return "Voeg sterktes en werkpunten toe.";
+  if (completed === 4) return "Werk afspraken en ondertekening af.";
+  return "Formulier volledig ingevuld.";
+}
+
+// =========================
+// VALIDATION
+// =========================
+
+function validateForm() {
+  clearValidationState();
+
+  const errors = [];
+
+  const requiredFields = qsa("#evaluationForm [required]");
+
+  requiredFields.forEach(field => {
+    const isEmpty = field.tagName === "SELECT"
+      ? !field.value
+      : !String(field.value || "").trim();
+
+    if (isEmpty) {
+      field.classList.add("field-error");
+      const section = field.closest(".accordion-section");
+      if (section) {
+        section.classList.add("has-error");
+      }
+      errors.push({ field, section });
+    }
+  });
+
+  if (errors.length) {
+    const uniqueSections = [...new Set(errors.map(item => item.section).filter(Boolean))];
+    uniqueSections.forEach(section => {
+      section.open = true;
+    });
+
+    saveAccordionState();
+    updateToggleAccordionButton();
+    updateProgress();
+
+    const firstField = errors[0].field;
+    if (firstField) {
+      firstField.focus();
+    }
+
+    showStatus("#statusBox", "Vul eerst alle verplichte velden in.", "warning");
+    return false;
+  }
+
+  return true;
+}
+
+function clearValidationState() {
+  qsa(".field-error").forEach(el => el.classList.remove("field-error"));
+  qsa(".accordion-section.has-error").forEach(el => el.classList.remove("has-error"));
 }
 
 // =========================
@@ -189,6 +402,7 @@ function handleEmployeeSelect(event) {
   const option = event.target.selectedOptions[0];
   if (!option || !option.value) {
     clearEmployeeFields();
+    updateProgress();
     return;
   }
 
@@ -196,27 +410,40 @@ function handleEmployeeSelect(event) {
   qs("#callSign").value = option.dataset.roepnummer || "";
   qs("#rank").value = option.dataset.rang || "";
   qs("#employeeSignatureName").value = option.dataset.naam || "";
+
+  openAccordionSection(1);
+  updateProgress();
 }
 
 function handleEvaluatorSelect(event) {
   const option = event.target.selectedOptions[0];
   if (!option || !option.value) {
     clearEvaluatorFields();
+    updateProgress();
     return;
   }
 
   qs("#evaluatorName").value = option.dataset.naam || "";
   qs("#evaluatorRank").value = option.dataset.rang || "";
   qs("#evaluatorSignatureName").value = option.dataset.naam || "";
+
+  openAccordionSection(1);
+  updateProgress();
 }
 
 function handleLiveScoreChange(event) {
   updateScoreBadge(event.target);
   updateScoreSummaryPreview();
+  openAccordionSection(2);
+  updateProgress();
 }
 
 function handleSubmit(event) {
   event.preventDefault();
+
+  if (!validateForm()) {
+    return;
+  }
 
   const formData = getFormData();
   const categoryResults = getCategoryResults();
@@ -230,6 +457,11 @@ function handleSubmit(event) {
   renderAutoFeedback(autoFeedback);
   buildPrintSheet(formData, categoryResults, scoreSummary, autoFeedback);
 
+  openAccordionSection(2);
+  openAccordionSection(3);
+  openAccordionSection(4);
+
+  updateProgress();
   showStatus("#statusBox", "Evaluatieverslag succesvol opgebouwd.", "success");
 }
 
@@ -555,18 +787,19 @@ function resetForm() {
 
   clearEmployeeFields();
   clearEvaluatorFields();
+  clearValidationState();
 
   setDefaultDate();
   createEvaluationBlocks(config.categories || []);
   bindCategoryScoreEvents();
+  bindProgressInputs();
+  resetAccordionState();
 
   if (staffRows.length) {
-    enableStaffSelects();
     populateEmployeeSelect();
   }
 
   if (evaluatorRows.length) {
-    enableStaffSelects();
     populateEvaluatorSelect();
   }
 
@@ -578,6 +811,7 @@ function resetForm() {
 
   renderAutoFeedback(["Feedback verschijnt na het opbouwen van het verslag."]);
   clearStatus("#statusBox");
+  updateProgress();
 }
 
 function clearEmployeeFields() {

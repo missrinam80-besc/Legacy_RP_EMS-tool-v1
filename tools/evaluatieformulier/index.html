@@ -30,16 +30,32 @@
       <h1 id="toolTitle">Evaluatieformulier</h1>
       <p id="toolDescription" class="text-soft"></p>
       <p id="staffLoadInfo" class="text-soft mt-1"></p>
+
+      <div class="progress-wrap mt-2">
+        <div class="progress-meta">
+          <strong id="progressLabel">Stap 1/5</strong>
+          <span id="progressText" class="text-soft">Start met medewerker en evaluator.</span>
+        </div>
+        <div class="progress-bar" aria-hidden="true">
+          <div id="progressFill" class="progress-bar__fill"></div>
+        </div>
+      </div>
+
+      <div class="accordion-toolbar mt-2">
+        <button type="button" class="btn btn-secondary" id="toggleAccordionBtn">
+          Alles openen
+        </button>
+      </div>
     </section>
 
     <section class="panel mt-2">
-      <form id="evaluationForm">
-        <details class="accordion-section" open>
+      <form id="evaluationForm" novalidate>
+        <details class="accordion-section" id="section-staff" data-step="1" open>
           <summary>👤 Medewerker en evaluator</summary>
           <div class="accordion-content">
             <div class="form-field">
               <label for="employeeSelect">Medewerker selecteren</label>
-              <select class="form-select" id="employeeSelect"></select>
+              <select class="form-select" id="employeeSelect" required></select>
             </div>
 
             <div class="readonly-grid mt-2">
@@ -62,7 +78,7 @@
             <div class="form-grid mt-2">
               <div class="form-field">
                 <label for="evaluatorSelect">Evaluator</label>
-                <select class="form-select" id="evaluatorSelect"></select>
+                <select class="form-select" id="evaluatorSelect" required></select>
               </div>
 
               <div class="form-field">
@@ -78,23 +94,23 @@
           </div>
         </details>
 
-        <details class="accordion-section">
+        <details class="accordion-section" id="section-general" data-step="2">
           <summary>📋 Algemene evaluatiegegevens</summary>
           <div class="accordion-content">
             <div class="form-grid">
               <div class="form-field">
                 <label for="evaluationType">Type evaluatie</label>
-                <select class="form-select" id="evaluationType"></select>
+                <select class="form-select" id="evaluationType" required></select>
               </div>
 
               <div class="form-field">
                 <label for="date">Datum evaluatie</label>
-                <input class="form-input" id="date" type="date" />
+                <input class="form-input" id="date" type="date" required />
               </div>
 
               <div class="form-field">
                 <label for="decision">Eindbesluit</label>
-                <select class="form-select" id="decision"></select>
+                <select class="form-select" id="decision" required></select>
               </div>
             </div>
 
@@ -104,12 +120,13 @@
                 class="form-textarea"
                 id="context"
                 placeholder="Bijvoorbeeld: periodieke evaluatie, proefperiode, opvolgingsgesprek, incident..."
+                required
               ></textarea>
             </div>
           </div>
         </details>
 
-        <details class="accordion-section">
+        <details class="accordion-section" id="section-scores" data-step="3">
           <summary>📊 Beoordeling per onderdeel</summary>
           <div class="accordion-content">
             <div id="evaluationBlocks" class="evaluation-list"></div>
@@ -131,32 +148,32 @@
 
             <div class="form-field mt-2">
               <label for="finalScore">Algemene beoordeling</label>
-              <select class="form-select" id="finalScore"></select>
+              <select class="form-select" id="finalScore" required></select>
             </div>
           </div>
         </details>
 
-        <details class="accordion-section">
+        <details class="accordion-section" id="section-feedback" data-step="4">
           <summary>💬 Sterktes en werkpunten</summary>
           <div class="accordion-content">
             <div class="form-field">
               <label for="strengths">Sterktes</label>
-              <textarea class="form-textarea" id="strengths"></textarea>
+              <textarea class="form-textarea" id="strengths" required></textarea>
             </div>
 
             <div class="form-field mt-2">
               <label for="improvements">Werkpunten / aandachtspunten</label>
-              <textarea class="form-textarea" id="improvements"></textarea>
+              <textarea class="form-textarea" id="improvements" required></textarea>
             </div>
           </div>
         </details>
 
-        <details class="accordion-section">
+        <details class="accordion-section" id="section-signoff" data-step="5">
           <summary>✍️ Afspraken en ondertekening</summary>
           <div class="accordion-content">
             <div class="form-field">
               <label for="agreements">Afspraken / opvolging</label>
-              <textarea class="form-textarea" id="agreements"></textarea>
+              <textarea class="form-textarea" id="agreements" required></textarea>
             </div>
 
             <div class="signature-grid mt-2">
