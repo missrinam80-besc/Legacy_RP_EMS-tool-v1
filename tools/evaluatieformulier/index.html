@@ -10,109 +10,7 @@
   <link rel="stylesheet" href="../../assets/styles/layout.css" />
   <link rel="stylesheet" href="../../assets/styles/components.css" />
   <link rel="stylesheet" href="../../assets/styles/utilities.css" />
-
-  <style>
-    .evaluation-list {
-      display: grid;
-      gap: 14px;
-    }
-
-    .evaluation-block {
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 12px;
-      padding: 16px;
-      background: rgba(255,255,255,0.03);
-    }
-
-    .evaluation-block h4 {
-      margin: 0 0 12px;
-    }
-
-    .evaluation-block__grid {
-      display: grid;
-      grid-template-columns: 220px 1fr;
-      gap: 12px;
-      align-items: start;
-    }
-
-    .score-badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      border: 1px solid transparent;
-      min-height: 34px;
-    }
-
-    .score-badge.is-empty {
-      opacity: 0.65;
-    }
-
-    .score-badge.score-1 {
-      background: rgba(220, 53, 69, 0.15);
-      color: #ff8c96;
-      border-color: rgba(220, 53, 69, 0.35);
-    }
-
-    .score-badge.score-2 {
-      background: rgba(255, 193, 7, 0.14);
-      color: #ffd666;
-      border-color: rgba(255, 193, 7, 0.35);
-    }
-
-    .score-badge.score-3 {
-      background: rgba(13, 110, 253, 0.14);
-      color: #87b7ff;
-      border-color: rgba(13, 110, 253, 0.35);
-    }
-
-    .score-badge.score-4 {
-      background: rgba(25, 135, 84, 0.15);
-      color: #8ce0b2;
-      border-color: rgba(25, 135, 84, 0.35);
-    }
-
-    .summary-grid {
-      display: grid;
-      gap: 16px;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    }
-
-    .summary-card {
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 12px;
-      padding: 16px;
-      background: rgba(255,255,255,0.03);
-    }
-
-    .summary-card h3 {
-      margin-top: 0;
-      margin-bottom: 8px;
-      font-size: 1rem;
-    }
-
-    .summary-value {
-      font-size: 1.5rem;
-      font-weight: 700;
-    }
-
-    .auto-feedback-list {
-      margin: 0;
-      padding-left: 18px;
-    }
-
-    .output-card textarea {
-      min-height: 460px;
-    }
-
-    @media (max-width: 800px) {
-      .evaluation-block__grid {
-        grid-template-columns: 1fr;
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="../../assets/styles/evaluation.css" />
 </head>
 <body>
   <header class="site-header">
@@ -135,25 +33,32 @@
 
     <section class="panel mt-2">
       <form id="evaluationForm">
-        <div class="form-grid">
+        <div class="form-field">
+          <label for="employeeSelect">Medewerker selecteren</label>
+          <select class="form-select" id="employeeSelect"></select>
+        </div>
+
+        <div class="readonly-grid mt-2">
           <div class="form-field">
             <label for="employeeName">Naam medewerker</label>
-            <input class="form-input" id="employeeName" type="text" />
+            <input class="form-input" id="employeeName" type="text" readonly />
           </div>
 
           <div class="form-field">
             <label for="callSign">Roepnummer</label>
-            <input class="form-input" id="callSign" type="text" />
+            <input class="form-input" id="callSign" type="text" readonly />
           </div>
 
           <div class="form-field">
             <label for="rank">Rang / functie</label>
-            <input class="form-input" id="rank" type="text" />
+            <input class="form-input" id="rank" type="text" readonly />
           </div>
+        </div>
 
+        <div class="form-grid mt-2">
           <div class="form-field">
-            <label for="evaluatorName">Evaluator</label>
-            <input class="form-input" id="evaluatorName" type="text" />
+            <label for="evaluatorSelect">Evaluator</label>
+            <select class="form-select" id="evaluatorSelect"></select>
           </div>
 
           <div class="form-field">
@@ -167,9 +72,25 @@
           </div>
         </div>
 
+        <div class="readonly-grid readonly-grid--2 mt-2">
+          <div class="form-field">
+            <label for="evaluatorName">Naam evaluator</label>
+            <input class="form-input" id="evaluatorName" type="text" readonly />
+          </div>
+
+          <div class="form-field">
+            <label for="evaluatorRank">Rang evaluator</label>
+            <input class="form-input" id="evaluatorRank" type="text" readonly />
+          </div>
+        </div>
+
         <div class="form-field mt-2">
           <label for="context">Context / aanleiding</label>
-          <textarea class="form-textarea" id="context" placeholder="Bijvoorbeeld: periodieke evaluatie, evaluatie na incident, opvolgingsgesprek, proefperiode..."></textarea>
+          <textarea
+            class="form-textarea"
+            id="context"
+            placeholder="Bijvoorbeeld: periodieke evaluatie, evaluatie na incident, opvolgingsgesprek, proefperiode..."
+          ></textarea>
         </div>
 
         <div class="form-section mt-2">
@@ -206,17 +127,33 @@
 
         <div class="form-field mt-2">
           <label for="strengths">Sterktes</label>
-          <textarea class="form-textarea" id="strengths" placeholder="Beschrijf hier de sterke punten van de medewerker."></textarea>
+          <textarea class="form-textarea" id="strengths"></textarea>
         </div>
 
         <div class="form-field mt-2">
           <label for="improvements">Werkpunten / aandachtspunten</label>
-          <textarea class="form-textarea" id="improvements" placeholder="Beschrijf hier concrete verbeterpunten of afspraken."></textarea>
+          <textarea class="form-textarea" id="improvements"></textarea>
         </div>
 
         <div class="form-field mt-2">
-          <label for="agreements">Afspraken / opvolgacties</label>
-          <textarea class="form-textarea" id="agreements" placeholder="Welke acties, begeleiding of opvolging zijn afgesproken?"></textarea>
+          <label for="agreements">Afspraken / opvolging</label>
+          <textarea class="form-textarea" id="agreements"></textarea>
+        </div>
+
+        <div class="signature-grid mt-2">
+          <div class="signature-card">
+            <h3>Handtekening evaluator</h3>
+            <div class="signature-line"></div>
+            <label for="evaluatorSignatureName">Naam</label>
+            <input class="form-input" id="evaluatorSignatureName" type="text" readonly />
+          </div>
+
+          <div class="signature-card">
+            <h3>Handtekening medewerker</h3>
+            <div class="signature-line"></div>
+            <label for="employeeSignatureName">Naam</label>
+            <input class="form-input" id="employeeSignatureName" type="text" readonly />
+          </div>
         </div>
 
         <div class="button-row">
@@ -224,7 +161,7 @@
           <button type="button" class="btn btn-secondary" id="resetBtn">Leegmaken</button>
           <button type="button" class="btn btn-secondary" id="copyBtn">Kopiëren</button>
           <button type="button" class="btn btn-secondary" id="downloadBtn">Download .txt</button>
-          <button type="button" class="btn btn-secondary" id="printBtn">Print</button>
+          <button type="button" class="btn btn-secondary" id="printBtn">Printversie</button>
         </div>
       </form>
 
@@ -235,6 +172,8 @@
       <h2>Evaluatieverslag</h2>
       <textarea id="output" class="form-textarea" readonly></textarea>
     </section>
+
+    <section id="printSheet" class="print-sheet"></section>
   </main>
 
   <script src="../../assets/scripts/core.js"></script>

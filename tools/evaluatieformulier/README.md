@@ -1,54 +1,98 @@
-# Evaluatieformulier V3
+# Evaluatieformulier – EMS Tools
 
-Volledige evaluatietool voor EMS-medewerkers, opgebouwd als client-side webtool zonder database.
+## Doel van deze tool
+Dit evaluatieformulier helpt leidinggevenden binnen de EMS om medewerkers op een gestructureerde en uniforme manier te evalueren. De tool bouwt automatisch een volledig evaluatieverslag op basis van ingevulde gegevens, scores en opmerkingen.
 
-## Functionaliteiten
+De tool is bedoeld voor gebruik in een EMS-omgeving binnen GTA RP, maar is technisch ook bruikbaar in andere gelijkaardige organisatiestructuren.
 
-- Dynamische evaluatiecategorieën via `config.json`
-- Score per onderdeel
-- Kleurbadge per score
-- Automatische gemiddelde score
+---
+
+## Belangrijkste functies
+
+- Selectie van een medewerker uit de personeelslijst
+- Automatische invulling van:
+  - naam
+  - roepnummer
+  - rang
+- Selectie van een evaluator uit de personeelslijst
+- Evaluator is beperkt tot leidinggevende rangen:
+  - Lieutenant
+  - Captain
+  - Assistant Chief
+  - Deputy Chief
+  - Chief of EMS
+- Automatische invulling van:
+  - naam evaluator
+  - rang evaluator
+- Beoordeling per onderdeel met score en opmerking
+- Automatische berekening van een gemiddeld scorebeeld
 - Automatische samenvattende feedback
-- Eindbeoordeling en eindbesluit
-- Secties voor sterktes, werkpunten en opvolgafspraken
-- Kopiëren, downloaden en printen
+- Generatie van een volledig evaluatieverslag
+- Kopiëren van de output
+- Download als `.txt`
+- Printvriendelijke versie
 
-## Bestanden
+---
 
-- `index.html`  
-  Structuur van de tool en de UI
+## Bestandsstructuur
 
-- `app.js`  
-  Alle logica voor scores, feedback en output
+Deze module bestaat minimaal uit de volgende bestanden:
 
-- `config.json`  
-  Instellingen, categorieën, scoremapping en besluitopties
+- `index.html`
+- `app.js`
+- `config.json`
+- `personeel.json`
+- `README.md`
 
-- `README.md`  
-  Korte documentatie
+Daarnaast gebruikt deze tool gedeelde styles en scripts uit de centrale assets-map:
 
-## Gebruik
+- `../../assets/styles/theme.css`
+- `../../assets/styles/base.css`
+- `../../assets/styles/layout.css`
+- `../../assets/styles/components.css`
+- `../../assets/styles/utilities.css`
+- `../../assets/styles/evaluation.css`
+- `../../assets/scripts/core.js`
+- `../../assets/scripts/ui.js`
+- `../../assets/scripts/export.js`
 
-1. Vul de algemene gegevens in
-2. Geef per onderdeel een score en optionele opmerking
-3. Vul sterktes, werkpunten en afspraken aan
-4. Klik op **Verslag opbouwen**
-5. Kopieer, download of print het resultaat
+---
 
-## Aanpassen
+## Werking van de personeelskoppeling
 
-### Categorieën wijzigen
-Pas in `config.json` de lijst onder `"categories"` aan.
+De tool leest medewerkers in vanuit `personeel.json`.
 
-### Evaluatietypes wijzigen
-Pas in `config.json` de lijst onder `"evaluationTypes"` aan.
+### Medewerker
+Bij selectie van een medewerker worden automatisch ingevuld:
+- naam
+- roepnummer
+- rang
 
-### Besluitopties wijzigen
-Pas in `config.json` de lijst onder `"decisions"` aan.
+Deze velden zijn readonly en worden dus niet handmatig aangepast in het formulier.
 
-### Scoresysteem wijzigen
-Pas `"scores"` en `"scoreMap"` samen aan.
+### Evaluator
+Bij selectie van een evaluator worden automatisch ingevuld:
+- naam evaluator
+- rang evaluator
 
-## Opmerking
+De evaluator-dropdown toont enkel medewerkers met één van deze rangen:
+- Lieutenant
+- Captain
+- Assistant Chief
+- Deputy Chief
+- Chief of EMS
 
-Deze tool bewaart geen gegevens en werkt volledig in de browser.
+In de dropdown zelf wordt enkel de naam getoond, zodat dit overzichtelijk blijft.
+
+---
+
+## Vereiste structuur van `personeel.json`
+
+Elke medewerker in `personeel.json` moet minstens deze velden bevatten:
+
+```json
+{
+  "name": "Lynn Wexler",
+  "callSign": "200",
+  "rank": "Chief of EMS"
+}

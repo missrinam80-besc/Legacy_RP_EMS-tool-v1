@@ -1,18 +1,26 @@
 /**
- * EMS Evaluatieformulier V3
+ * EMS Evaluatieformulier V5
  * -------------------------
- * Client-side evaluatietool zonder database.
- *
- * Functionaliteiten:
- * - Dynamische categorieblokken op basis van config.json
- * - Automatische scoreberekening
- * - Kleurcodes per score
- * - Automatische feedbackzinnen
- * - Tekstoutput voor intern verslag
- * - Kopiëren, downloaden en printen
+ * Functies:
+ * - medewerkerselectie via personeel.json
+ * - automatische invulling van naam / roepnummer / rang
+ * - evaluatorselectie via personeel.json
+ * - evaluator beperkt tot leidinggevende rangen
+ * - evaluator toont enkel naam in dropdown
+ * - handtekeningblokken
+ * - printvriendelijke weergave
  */
 
 let config = {};
+let personnel = [];
+
+const ALLOWED_EVALUATOR_RANKS = [
+  "lieutenant",
+  "captain",
+  "assistant chief",
+  "deputy chief",
+  "chief of ems"
+];
 
 document.addEventListener("DOMContentLoaded", init);
 
@@ -20,12 +28,22 @@ async function init() {
   try {
     config = await fetchJson("./config.json");
 
+    try {
+      personnel = await fetchJson("./personeel.json");
+      if (!Array.isArray(personnel)) personnel = [];
+    } catch (error) {
+      personnel = [];
+    }
+
     qs("#toolTitle").textContent = config.toolTitle || "Evaluatieformulier";
     qs("#toolDescription").textContent = config.toolDescription || "";
 
     fillSelect("#evaluationType", config.evaluationTypes || [], "Kies type evaluatie");
     fillSelect("#finalScore", config.scores || [], "Kies algemene beoordeling");
     fillSelect("#decision", config.decisions || [], "Kies eindbesluit");
+
+    fillEmployeeSelect(personnel);
+    fillEvaluatorSelect(personnel);
 
     createEvaluationBlocks(config.categories || []);
     setDefaultDate();
@@ -41,7 +59,7 @@ async function init() {
 
 function fillSelect(selector, items, placeholder) {
   const select = qs(selector);
-  select.innerHTML = `<option value="">${placeholder}</option>`;
+  select.innerHTML = `<option value="">${escapeHtml(placeholder)}</option>`;
 
   items.forEach(item => {
     const option = document.createElement("option");
@@ -49,6 +67,37 @@ function fillSelect(selector, items, placeholder) {
     option.textContent = item;
     select.appendChild(option);
   });
+}
+
+function fillEmployeeSelect(items) {
+  const select = qs("#employeeSelect");
+  select.innerHTML = `<option value="">Kies medewerker</option>`;
+
+  items.forEach((item, index) => {
+    const option = document.createElement("option");
+    option.value = String(index);
+    option.textContent = `${item.name || "-"}${item.callSign ? ` (${item.callSign})` : ""}${item.rank ? ` - ${item.rank}` : ""}`;
+    select.appendChild(option);
+  });
+}
+
+function fillEvaluatorSelect(items) {
+  const select = qs("#evaluatorSelect");
+  select.innerHTML = `<option value="">Kies evaluator</option>`;
+
+  items
+    .filter(isAllowedEvaluator)
+    .forEach((item, index) => {
+      const option = document.createElement("option");
+      option.value = String(index);
+      option.textContent = item.name || "-";
+      select.appendChild(option);
+    });
+}
+
+function isAllowedEvaluator(item) {
+  const rank = String(item?.rank || "").trim().toLowerCase();
+  return ALLOWED_EVALUATOR_RANKS.includes(rank);
 }
 
 function createEvaluationBlocks(categories) {
@@ -99,6 +148,9 @@ function bindEvents() {
   qs("#downloadBtn").addEventListener("click", downloadOutput);
   qs("#printBtn").addEventListener("click", printOutput);
 
+  qs("#employeeSelect").addEventListener("change", handleEmployeeSelect);
+  qs("#evaluatorSelect").addEventListener("change", handleEvaluatorSelect);
+
   qsa(".js-category-score").forEach(select => {
     select.addEventListener("change", handleLiveScoreChange);
   });
@@ -107,6 +159,58 @@ function bindEvents() {
 // =========================
 // EVENTS
 // =========================
+
+function handleEmployeeSelect(event) {
+  const index = event.target.value;
+
+  if (index === "") {
+    clearEmployeeFields();
+    return;
+  }
+
+  const selected = personnel[Number(index)];
+  if (!selected) {
+    clearEmployeeFields();
+    return;
+  }
+
+  qs("#employeeName").value = selected.name || "";
+  qs("#callSign").value = selected.callSign || "";
+  qs("#rank").value = selected.rank || "";
+  qs("#employeeSignatureName").value = selected.name || "";
+}
+
+function handleEvaluatorSelect(event) {
+  const index = event.target.value;
+
+  if (index === "") {
+    clearEvaluatorFields();
+    return;
+  }
+
+  const selected = personnel[Number(index)];
+  if (!selected || !isAllowedEvaluator(selected)) {
+    clearEvaluatorFields();
+    return;
+  }
+
+  qs("#evaluatorName").value = selected.name || "";
+  qs("#evaluatorRank").value = selected.rank || "";
+  qs("#evaluatorSignatureName").value = selected.name || "";
+}
+
+function clearEmployeeFields() {
+  qs("#employeeName").value = "";
+  qs("#callSign").value = "";
+  qs("#rank").value = "";
+  qs("#employeeSignatureName").value = "";
+}
+
+function clearEvaluatorFields() {
+  qs("#evaluatorName").value = "";
+  qs("#evaluatorRank").value = "";
+  qs("#evaluatorSignatureName").value = "";
+}
 
 function handleLiveScoreChange(event) {
   updateScoreBadge(event.target);
@@ -126,6 +230,7 @@ function handleSubmit(event) {
 
   renderAverageScore(scoreSummary);
   renderAutoFeedback(autoFeedback);
+  buildPrintSheet(formData, categoryResults, scoreSummary, autoFeedback);
 
   showStatus("#statusBox", "Evaluatieverslag succesvol opgebouwd.", "success");
 }
@@ -140,6 +245,7 @@ function getFormData() {
     callSign: sanitizeText(qs("#callSign").value),
     rank: sanitizeText(qs("#rank").value),
     evaluatorName: sanitizeText(qs("#evaluatorName").value),
+    evaluatorRank: sanitizeText(qs("#evaluatorRank").value),
     evaluationType: sanitizeText(qs("#evaluationType").value),
     date: sanitizeText(qs("#date").value),
     context: sanitizeText(qs("#context").value),
@@ -147,7 +253,9 @@ function getFormData() {
     decision: sanitizeText(qs("#decision").value),
     strengths: sanitizeText(qs("#strengths").value),
     improvements: sanitizeText(qs("#improvements").value),
-    agreements: sanitizeText(qs("#agreements").value)
+    agreements: sanitizeText(qs("#agreements").value),
+    evaluatorSignatureName: sanitizeText(qs("#evaluatorSignatureName").value),
+    employeeSignatureName: sanitizeText(qs("#employeeSignatureName").value)
   };
 }
 
@@ -268,18 +376,11 @@ function buildAutoFeedback(categoryResults, scoreSummary) {
   }
 
   if (scoreSummary.strongestItems.length) {
-    const strongNames = scoreSummary.strongestItems.map(item => item.category.toLowerCase()).join(", ");
-    feedback.push(`Sterke punten komen vooral naar voren binnen: ${strongNames}.`);
+    feedback.push(`Sterke punten komen vooral naar voren binnen: ${scoreSummary.strongestItems.map(item => item.category.toLowerCase()).join(", ")}.`);
   }
 
   if (scoreSummary.weakestItems.length) {
-    const weakNames = scoreSummary.weakestItems.map(item => item.category.toLowerCase()).join(", ");
-    feedback.push(`Extra aandacht en opvolging zijn aangewezen voor: ${weakNames}.`);
-  }
-
-  const commentedLowItems = categoryResults.filter(item => item.numericScore <= 2 && item.comment);
-  if (commentedLowItems.length) {
-    feedback.push("Bij enkele onderdelen werd een lagere score gemotiveerd met concrete observaties, wat gerichte opvolging mogelijk maakt.");
+    feedback.push(`Extra aandacht en opvolging zijn aangewezen voor: ${scoreSummary.weakestItems.map(item => item.category.toLowerCase()).join(", ")}.`);
   }
 
   return feedback;
@@ -309,20 +410,12 @@ function buildReportText(formData, categoryResults, scoreSummary, autoFeedback) 
     ].join("\n");
   }).join("\n\n");
 
-  const strongPointsLine = scoreSummary.strongestItems.length
-    ? scoreSummary.strongestItems.map(item => item.category).join(", ")
-    : "-";
-
-  const weakPointsLine = scoreSummary.weakestItems.length
-    ? scoreSummary.weakestItems.map(item => item.category).join(", ")
-    : "-";
-
   return [
     "EVALUATIEVERSLAG",
     "",
     "ALGEMENE GEGEVENS",
     `Medewerker: ${formatEmployeeLine(formData)}`,
-    `Evaluator: ${formData.evaluatorName || "-"}`,
+    `Evaluator: ${formatEvaluatorLine(formData)}`,
     `Type evaluatie: ${formData.evaluationType || "-"}`,
     `Datum evaluatie: ${formatDateForReport(formData.date)}`,
     "",
@@ -335,8 +428,8 @@ function buildReportText(formData, categoryResults, scoreSummary, autoFeedback) 
     "SCOREOVERZICHT",
     `Gemiddelde score: ${scoreSummary.averageRounded}`,
     `Algemeen scorebeeld: ${scoreSummary.averageLabel}`,
-    `Sterkste onderdelen: ${strongPointsLine}`,
-    `Belangrijkste aandachtspunten: ${weakPointsLine}`,
+    `Sterkste onderdelen: ${scoreSummary.strongestItems.length ? scoreSummary.strongestItems.map(item => item.category).join(", ") : "-"}`,
+    `Belangrijkste aandachtspunten: ${scoreSummary.weakestItems.length ? scoreSummary.weakestItems.map(item => item.category).join(", ") : "-"}`,
     "",
     "AUTOMATISCHE SAMENVATTING",
     ...autoFeedback.map(line => `- ${line}`),
@@ -356,8 +449,91 @@ function buildReportText(formData, categoryResults, scoreSummary, autoFeedback) 
     "AFSPRAKEN / OPVOLGING",
     formData.agreements || "-",
     "",
+    "ONDERTEKENING",
+    `Evaluator: ${formData.evaluatorSignatureName || "-"}`,
+    `Medewerker: ${formData.employeeSignatureName || "-"}`,
+    "",
     `Opgesteld op: ${formatDateTime()}`
   ].join("\n");
+}
+
+function buildPrintSheet(formData, categoryResults, scoreSummary, autoFeedback) {
+  const detailRows = categoryResults.map(item => `
+    <tr>
+      <td style="padding:8px;border:1px solid #ccc;">${escapeHtml(item.category)}</td>
+      <td style="padding:8px;border:1px solid #ccc;">${escapeHtml(item.score || "-")}</td>
+      <td style="padding:8px;border:1px solid #ccc;">${escapeHtml(item.comment || "-")}</td>
+    </tr>
+  `).join("");
+
+  const feedbackRows = autoFeedback.map(item => `<li>${escapeHtml(item)}</li>`).join("");
+
+  qs("#printSheet").innerHTML = `
+    <div style="display:block;color:#000;background:#fff;font-family:Arial,sans-serif;">
+      <h1 style="margin-top:0;">Evaluatieverslag</h1>
+
+      <h2>Algemene gegevens</h2>
+      <p><strong>Medewerker:</strong> ${escapeHtml(formatEmployeeLine(formData))}</p>
+      <p><strong>Evaluator:</strong> ${escapeHtml(formatEvaluatorLine(formData))}</p>
+      <p><strong>Type evaluatie:</strong> ${escapeHtml(formData.evaluationType || "-")}</p>
+      <p><strong>Datum evaluatie:</strong> ${escapeHtml(formatDateForReport(formData.date))}</p>
+
+      <h2>Context / aanleiding</h2>
+      <p>${nl2br(formData.context || "-")}</p>
+
+      <h2>Detailbeoordeling</h2>
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr>
+            <th style="text-align:left;padding:8px;border:1px solid #ccc;">Onderdeel</th>
+            <th style="text-align:left;padding:8px;border:1px solid #ccc;">Score</th>
+            <th style="text-align:left;padding:8px;border:1px solid #ccc;">Opmerking</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${detailRows}
+        </tbody>
+      </table>
+
+      <h2>Scoreoverzicht</h2>
+      <p><strong>Gemiddelde score:</strong> ${escapeHtml(scoreSummary.averageRounded)}</p>
+      <p><strong>Algemeen scorebeeld:</strong> ${escapeHtml(scoreSummary.averageLabel)}</p>
+      <p><strong>Sterkste onderdelen:</strong> ${escapeHtml(scoreSummary.strongestItems.length ? scoreSummary.strongestItems.map(item => item.category).join(", ") : "-")}</p>
+      <p><strong>Aandachtspunten:</strong> ${escapeHtml(scoreSummary.weakestItems.length ? scoreSummary.weakestItems.map(item => item.category).join(", ") : "-")}</p>
+
+      <h2>Automatische samenvatting</h2>
+      <ul>${feedbackRows}</ul>
+
+      <h2>Algemene beoordeling</h2>
+      <p>${escapeHtml(formData.finalScore || "-")}</p>
+
+      <h2>Eindbesluit</h2>
+      <p>${escapeHtml(formData.decision || "-")}</p>
+
+      <h2>Sterktes</h2>
+      <p>${nl2br(formData.strengths || "-")}</p>
+
+      <h2>Werkpunten / aandachtspunten</h2>
+      <p>${nl2br(formData.improvements || "-")}</p>
+
+      <h2>Afspraken / opvolging</h2>
+      <p>${nl2br(formData.agreements || "-")}</p>
+
+      <h2>Ondertekening</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:24px;">
+        <div>
+          <div style="height:60px;border-bottom:1px solid #000;margin-bottom:8px;"></div>
+          <strong>Evaluator</strong><br>
+          ${escapeHtml(formData.evaluatorSignatureName || "-")}
+        </div>
+        <div>
+          <div style="height:60px;border-bottom:1px solid #000;margin-bottom:8px;"></div>
+          <strong>Medewerker</strong><br>
+          ${escapeHtml(formData.employeeSignatureName || "-")}
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 // =========================
@@ -367,19 +543,31 @@ function buildReportText(formData, categoryResults, scoreSummary, autoFeedback) 
 function resetForm() {
   qs("#evaluationForm").reset();
   qs("#output").value = "";
+  qs("#printSheet").innerHTML = "";
+
   setDefaultDate();
   createEvaluationBlocks(config.categories || []);
+  fillEmployeeSelect(personnel);
+  fillEvaluatorSelect(personnel);
   bindEventsAfterReset();
+
+  clearEmployeeFields();
+  clearEvaluatorFields();
+
   renderAverageScore({
     averageRounded: "-",
     averageLabel: "Nog geen beoordeling",
     count: 0
   });
+
   renderAutoFeedback(["Feedback verschijnt na het opbouwen van het verslag."]);
   clearStatus("#statusBox");
 }
 
 function bindEventsAfterReset() {
+  qs("#employeeSelect").addEventListener("change", handleEmployeeSelect);
+  qs("#evaluatorSelect").addEventListener("change", handleEvaluatorSelect);
+
   qsa(".js-category-score").forEach(select => {
     select.addEventListener("change", handleLiveScoreChange);
   });
@@ -408,37 +596,16 @@ function downloadOutput() {
 }
 
 function printOutput() {
-  const text = qs("#output").value.trim();
+  const printSheet = qs("#printSheet");
 
-  if (!text) {
-    return showStatus("#statusBox", "Geen verslag om af te drukken.", "warning");
+  if (!printSheet.innerHTML.trim()) {
+    return showStatus("#statusBox", "Bouw eerst een verslag op voor je print.", "warning");
   }
 
-  const printWindow = window.open("", "_blank");
-  if (!printWindow) {
-    return showStatus("#statusBox", "Printvenster kon niet geopend worden.", "danger");
-  }
-
-  printWindow.document.write(`
-    <html>
-      <head>
-        <title>Evaluatieverslag</title>
-        <style>
-          body {
-            font-family: Arial, sans-serif;
-            padding: 24px;
-            white-space: pre-wrap;
-            line-height: 1.5;
-          }
-        </style>
-      </head>
-      <body>${escapeHtml(text)}</body>
-    </html>
-  `);
-
-  printWindow.document.close();
-  printWindow.focus();
-  printWindow.print();
+  const originalDisplay = printSheet.style.display;
+  printSheet.style.display = "block";
+  window.print();
+  printSheet.style.display = originalDisplay || "none";
 }
 
 // =========================
@@ -455,6 +622,15 @@ function formatEmployeeLine(formData) {
   return parts.length ? parts.join(" ") : "-";
 }
 
+function formatEvaluatorLine(formData) {
+  const parts = [];
+
+  if (formData.evaluatorName) parts.push(formData.evaluatorName);
+  if (formData.evaluatorRank) parts.push(`- ${formData.evaluatorRank}`);
+
+  return parts.length ? parts.join(" ") : "-";
+}
+
 function formatDateForReport(value) {
   if (!value) return "-";
 
@@ -462,6 +638,10 @@ function formatDateForReport(value) {
   if (Number.isNaN(date.getTime())) return value;
 
   return new Intl.DateTimeFormat("nl-BE").format(date);
+}
+
+function nl2br(value) {
+  return escapeHtml(value).replace(/\n/g, "<br>");
 }
 
 // =========================
