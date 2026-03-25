@@ -261,17 +261,36 @@ async function saveRow(key) {
   setRowButtonsDisabled(true);
   setMessage(messageBox, `Rij ${draft.roepnummer} wordt opgeslagen...`, 'info');
 
-  const payload = {
-    action: 'saveRow',
-    actor,
-    row: {
-      roepnummer: draft.roepnummer,
-      naam: draft.naam,
-      afdeling: draft.afdeling,
-      status: draft.status,
-      is_active: draft.is_active
-    }
-  };
+  try {
+    await getSaveRow({
+      action: 'saveRow',
+      actor,
+      row: {
+        roepnummer: draft.roepnummer,
+        naam: draft.naam,
+        afdeling: draft.afdeling,
+        status: draft.status,
+        is_active: draft.is_active
+      }
+    });
+
+    debugLog('GET saveRow verzonden');
+
+    delete editStateByKey[key];
+
+    await wait(1000);
+    debugLog('Lijst wordt herladen na save');
+    await loadRows();
+
+    setMessage(messageBox, `Rij ${draft.roepnummer} is opgeslagen.`, 'success');
+  } catch (error) {
+    setMessage(messageBox, error.message || 'Fout bij opslaan.', 'error');
+    debugLog('FOUT saveRow: ' + (error.message || error));
+  } finally {
+    loadBtn.disabled = false;
+    setRowButtonsDisabled(false);
+  }
+}
 
   debugLog('payload=' + JSON.stringify(payload));
 
@@ -347,4 +366,30 @@ function escapeAttr(value) {
     .replaceAll('"', '&quot;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;');
+}
+
+async function getSaveRow(payload) {
+  const params = new URLSearchParams({
+    action: payload.action,
+    actor: payload.actor,
+    roepnummer: payload.row.roepnummer,
+    naam: payload.row.naam,
+    afdeling: payload.row.afdeling,
+    status: payload.row.status,
+    is_active: payload.row.is_active ? 'true' : 'false'
+  });
+
+  const url = `${API_URL}?${params.toString()}`;
+  debugLog('GET save URL=' + url);
+
+  const response = await fetch(url);
+  const data = await response.json();
+
+  debugLog('GET save response=' + JSON.stringify(data));
+
+  if (!data.success) {
+    throw new Error(data.message || 'Opslaan mislukt.');
+  }
+
+  return data;
 }
