@@ -266,7 +266,7 @@ function setRowButtonsDisabled(disabled) {
 
 /* function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
-}
+}*/
 
 function escapeAttr(value) {
   return String(value || '')
@@ -274,4 +274,4 @@ function escapeAttr(value) {
     .replaceAll('"', '&quot;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;');
-} */
+} 
