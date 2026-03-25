@@ -318,7 +318,7 @@
 
 .form-input[readonly],
 .form-textarea[readonly] {
-  background: rgba(0, 0, 0, 0.28);
+  background: rgba(167, 163, 163, 0.445);
   border-color: rgba(255, 255, 255, 0.12);
   color: rgba(255, 255, 255, 0.92);
   cursor: not-allowed;
