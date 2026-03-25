@@ -160,3 +160,38 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ACCORDION */
+.accordion-section {
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  margin-top: 16px;
+  background: rgba(255,255,255,0.03);
+  overflow: hidden;
+}
+
+.accordion-section summary {
+  cursor: pointer;
+  padding: 16px;
+  font-weight: 700;
+  position: relative;
+}
+
+.accordion-section summary::-webkit-details-marker {
+  display: none;
+}
+
+.accordion-section summary::after {
+  content: "▾";
+  position: absolute;
+  right: 16px;
+  transition: 0.2s;
+}
+
+.accordion-section[open] summary::after {
+  transform: rotate(180deg);
+}
+
+.accordion-content {
+  padding: 16px;
+}
