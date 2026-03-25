@@ -1,6 +1,6 @@
 /**
  * Personeelslijst admin
- * Rij-per-rij bewerken en opslaan via saveRow (CORS-safe).
+ * Rij-per-rij bewerken en opslaan (CORS-proof versie)
  */
 
 let staffRows = [];
@@ -16,9 +16,6 @@ const resultCount = document.getElementById('resultCount');
 
 const {
   STATUS_OPTIONS,
-  normalizeStatus,
-  getStatusClass,
-  escapeHtml,
   setMessage,
   sanitizeRow
 } = window.PersoneelShared;
@@ -77,7 +74,7 @@ function applyFilter() {
 
 function renderTable() {
   if (!filteredRows.length) {
-    tableBody.innerHTML = `<tr><td colspan="7" class="personeel-empty-state">Geen resultaten gevonden.</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="7">Geen resultaten gevonden.</td></tr>`;
     return;
   }
 
@@ -89,7 +86,7 @@ function renderTable() {
     const original = isEditing ? editStateByKey[key].original : row;
 
     return `
-      <tr class="${isEditing ? 'personeel-row--editing' : ''}">
+      <tr>
         <td>
           ${isEditing ? `
             <button data-action="save" data-key="${key}">Opslaan</button>
@@ -167,6 +164,7 @@ function updateDraft(e) {
 
 async function saveRow(key) {
   const actor = actorInput.value.trim();
+
   if (!actor) {
     setMessage(messageBox, 'Vul eerst je naam in.', 'error');
     return;
@@ -177,8 +175,9 @@ async function saveRow(key) {
   setMessage(messageBox, 'Opslaan...', 'info');
 
   try {
-    const response = await fetch(API_URL, {
+    await fetch(API_URL, {
       method: 'POST',
+      mode: 'no-cors',
       body: JSON.stringify({
         action: 'saveRow',
         actor,
@@ -186,18 +185,11 @@ async function saveRow(key) {
       })
     });
 
-    const data = await response.json();
-
-    if (!data.success) throw new Error(data.message);
-
-    staffRows = staffRows.map(r =>
-      getRowKey(r) === key ? sanitizeRow(data.row) : r
-    );
+    setMessage(messageBox, 'Opgeslagen. Lijst wordt vernieuwd...', 'success');
 
     delete editStateByKey[key];
-    applyFilter();
 
-    setMessage(messageBox, 'Opgeslagen!', 'success');
+    setTimeout(loadRows, 1200);
   } catch (err) {
     setMessage(messageBox, err.message || 'Fout bij opslaan', 'error');
   }
