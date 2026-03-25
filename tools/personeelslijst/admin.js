@@ -21,7 +21,6 @@ const {
 } = window.PersoneelShared;
 
 document.addEventListener('DOMContentLoaded', () => {
-  ensureHiddenSubmitFrame();
   bindEvents();
   loadRows();
 });
@@ -205,15 +204,11 @@ async function saveRow(key) {
       }
     });
 
-    setMessage(messageBox, `Rij ${draft.roepnummer} werd verzonden. Lijst wordt vernieuwd...`, 'success');
-
-    delete editStateByKey[key];
-
-    await wait(1500);
-    await loadRows();
+    // Let op:
+    // De pagina navigeert nu naar Apps Script door de form submit.
+    // Daarom komt de code hieronder normaal niet meer in beeld.
   } catch (error) {
     setMessage(messageBox, error.message || 'Fout bij opslaan.', 'error');
-  } finally {
     loadBtn.disabled = false;
     setRowButtonsDisabled(false);
   }
@@ -225,7 +220,6 @@ function submitPayloadViaHiddenForm(payload) {
       const form = document.createElement('form');
       form.method = 'POST';
       form.action = API_URL;
-      form.target = 'hiddenSubmitFrame';
       form.style.display = 'none';
 
       const input = document.createElement('input');
@@ -237,25 +231,11 @@ function submitPayloadViaHiddenForm(payload) {
       document.body.appendChild(form);
 
       form.submit();
-
-      setTimeout(() => {
-        form.remove();
-        resolve();
-      }, 500);
+      resolve();
     } catch (error) {
       reject(error);
     }
   });
-}
-
-function ensureHiddenSubmitFrame() {
-  if (document.getElementById('hiddenSubmitFrame')) return;
-
-  const iframe = document.createElement('iframe');
-  iframe.name = 'hiddenSubmitFrame';
-  iframe.id = 'hiddenSubmitFrame';
-  iframe.style.display = 'none';
-  document.body.appendChild(iframe);
 }
 
 function validateSingleRow(row) {
@@ -284,7 +264,7 @@ function setRowButtonsDisabled(disabled) {
   });
 }
 
-function wait(ms) {
+/* function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
@@ -294,4 +274,4 @@ function escapeAttr(value) {
     .replaceAll('"', '&quot;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;');
-}
+} */
