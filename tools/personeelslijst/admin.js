@@ -1,6 +1,6 @@
 /**
  * Personeelslijst admin
- * Rij-per-rij bewerken en opslaan via hidden form POST.
+ * Rij-per-rij bewerken en opslaan via hidden form POST in een verborgen iframe.
  */
 
 let staffRows = [];
@@ -32,6 +32,7 @@ function bindEvents() {
 
 async function loadRows() {
   loadBtn.disabled = true;
+  setRowButtonsDisabled(true);
   setMessage(messageBox, 'Personeelslijst wordt geladen...', 'info');
 
   try {
@@ -51,6 +52,7 @@ async function loadRows() {
     setMessage(messageBox, error.message || 'Fout bij laden.', 'error');
   } finally {
     loadBtn.disabled = false;
+    setRowButtonsDisabled(false);
   }
 }
 
@@ -139,7 +141,12 @@ function handleAction(e) {
   if (action === 'edit') {
     const row = staffRows.find(r => getRowKey(r) === key);
     if (!row) return;
-    editStateByKey[key] = { original: { ...row }, draft: { ...row } };
+
+    editStateByKey[key] = {
+      original: { ...row },
+      draft: { ...row }
+    };
+
     renderTable();
     return;
   }
@@ -204,11 +211,12 @@ async function saveRow(key) {
       }
     });
 
-    // Let op:
-    // De pagina navigeert nu naar Apps Script door de form submit.
-    // Daarom komt de code hieronder normaal niet meer in beeld.
+    delete editStateByKey[key];
+    await loadRows();
+    setMessage(messageBox, `Rij ${draft.roepnummer} is opgeslagen.`, 'success');
   } catch (error) {
     setMessage(messageBox, error.message || 'Fout bij opslaan.', 'error');
+  } finally {
     loadBtn.disabled = false;
     setRowButtonsDisabled(false);
   }
@@ -217,9 +225,21 @@ async function saveRow(key) {
 function submitPayloadViaHiddenForm(payload) {
   return new Promise((resolve, reject) => {
     try {
+      const iframeName = 'hiddenSubmitFrame';
+
+      let iframe = document.getElementById(iframeName);
+      if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.name = iframeName;
+        iframe.id = iframeName;
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+      }
+
       const form = document.createElement('form');
       form.method = 'POST';
       form.action = API_URL;
+      form.target = iframeName;
       form.style.display = 'none';
 
       const input = document.createElement('input');
@@ -230,8 +250,30 @@ function submitPayloadViaHiddenForm(payload) {
       form.appendChild(input);
       document.body.appendChild(form);
 
+      let done = false;
+
+      const cleanup = () => {
+        if (form && form.parentNode) {
+          form.parentNode.removeChild(form);
+        }
+      };
+
+      iframe.onload = () => {
+        if (done) return;
+        done = true;
+        cleanup();
+        resolve();
+      };
+
       form.submit();
-      resolve();
+
+      // fallback indien onload niet betrouwbaar triggert
+      setTimeout(() => {
+        if (done) return;
+        done = true;
+        cleanup();
+        resolve();
+      }, 1200);
     } catch (error) {
       reject(error);
     }
@@ -264,14 +306,10 @@ function setRowButtonsDisabled(disabled) {
   });
 }
 
-/* function wait(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}*/
-
 function escapeAttr(value) {
   return String(value || '')
     .replaceAll('&', '&amp;')
     .replaceAll('"', '&quot;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;');
-} 
+}
