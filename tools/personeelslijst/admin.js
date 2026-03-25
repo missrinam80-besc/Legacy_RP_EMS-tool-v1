@@ -1,6 +1,6 @@
 /**
  * Personeelslijst admin
- * Rij-per-rij bewerken en opslaan (CORS-proof versie)
+ * Rij-per-rij bewerken en opslaan via hidden form POST.
  */
 
 let staffRows = [];
@@ -21,6 +21,7 @@ const {
 } = window.PersoneelShared;
 
 document.addEventListener('DOMContentLoaded', () => {
+  ensureHiddenSubmitFrame();
   bindEvents();
   loadRows();
 });
@@ -38,9 +39,11 @@ async function loadRows() {
     const response = await fetch(`${API_URL}?action=list`);
     const data = await response.json();
 
-    if (!data.success) throw new Error(data.message || 'Laden mislukt.');
+    if (!data.success) {
+      throw new Error(data.message || 'Laden mislukt.');
+    }
 
-    staffRows = data.rows.map(sanitizeRow);
+    staffRows = Array.isArray(data.rows) ? data.rows.map(sanitizeRow) : [];
     editStateByKey = {};
     applyFilter();
 
@@ -68,13 +71,13 @@ function applyFilter() {
         ].some(v => String(v || '').toLowerCase().includes(query))
       );
 
-  resultCount.textContent = filteredRows.length;
+  resultCount.textContent = String(filteredRows.length);
   renderTable();
 }
 
 function renderTable() {
   if (!filteredRows.length) {
-    tableBody.innerHTML = `<tr><td colspan="7">Geen resultaten gevonden.</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="7" class="personeel-empty-state">Geen resultaten gevonden.</td></tr>`;
     return;
   }
 
@@ -86,31 +89,31 @@ function renderTable() {
     const original = isEditing ? editStateByKey[key].original : row;
 
     return `
-      <tr>
+      <tr class="${isEditing ? 'personeel-row--editing' : ''}">
         <td>
           ${isEditing ? `
-            <button data-action="save" data-key="${key}">Opslaan</button>
-            <button data-action="cancel" data-key="${key}">Annuleren</button>
+            <button type="button" data-action="save" data-key="${escapeAttr(key)}">Opslaan</button>
+            <button type="button" data-action="cancel" data-key="${escapeAttr(key)}">Annuleren</button>
           ` : `
-            <button data-action="edit" data-key="${key}">Bewerken</button>
+            <button type="button" data-action="edit" data-key="${escapeAttr(key)}">Bewerken</button>
           `}
         </td>
 
-        <td><input value="${original.roepnummer}" disabled></td>
-        <td><input value="${draft.naam}" data-field="naam" data-key="${key}" ${isEditing ? '' : 'disabled'}></td>
-        <td><input value="${original.rang}" disabled></td>
-        <td><input value="${draft.afdeling}" data-field="afdeling" data-key="${key}" ${isEditing ? '' : 'disabled'}></td>
+        <td><input value="${escapeAttr(original.roepnummer)}" disabled></td>
+        <td><input value="${escapeAttr(draft.naam)}" data-field="naam" data-key="${escapeAttr(key)}" ${isEditing ? '' : 'disabled'}></td>
+        <td><input value="${escapeAttr(original.rang)}" disabled></td>
+        <td><input value="${escapeAttr(draft.afdeling)}" data-field="afdeling" data-key="${escapeAttr(key)}" ${isEditing ? '' : 'disabled'}></td>
 
         <td>
-          <select data-field="status" data-key="${key}" ${isEditing ? '' : 'disabled'}>
+          <select data-field="status" data-key="${escapeAttr(key)}" ${isEditing ? '' : 'disabled'}>
             ${STATUS_OPTIONS.map(s =>
-              `<option ${s === draft.status ? 'selected' : ''}>${s}</option>`
+              `<option value="${escapeAttr(s)}" ${s === draft.status ? 'selected' : ''}>${s}</option>`
             ).join('')}
           </select>
         </td>
 
         <td>
-          <input type="checkbox" ${draft.is_active ? 'checked' : ''} data-field="is_active" data-key="${key}" ${isEditing ? '' : 'disabled'}>
+          <input type="checkbox" ${draft.is_active ? 'checked' : ''} data-field="is_active" data-key="${escapeAttr(key)}" ${isEditing ? '' : 'disabled'}>
         </td>
       </tr>
     `;
@@ -136,13 +139,17 @@ function handleAction(e) {
 
   if (action === 'edit') {
     const row = staffRows.find(r => getRowKey(r) === key);
+    if (!row) return;
     editStateByKey[key] = { original: { ...row }, draft: { ...row } };
     renderTable();
+    return;
   }
 
   if (action === 'cancel') {
     delete editStateByKey[key];
     renderTable();
+    setMessage(messageBox, 'Wijzigingen geannuleerd.', 'info');
+    return;
   }
 
   if (action === 'save') {
@@ -170,31 +177,121 @@ async function saveRow(key) {
     return;
   }
 
-  const draft = sanitizeRow(editStateByKey[key].draft);
+  const state = editStateByKey[key];
+  if (!state) return;
 
-  setMessage(messageBox, 'Opslaan...', 'info');
+  const draft = sanitizeRow(state.draft);
+  const validationError = validateSingleRow(draft);
+
+  if (validationError) {
+    setMessage(messageBox, validationError, 'error');
+    return;
+  }
+
+  loadBtn.disabled = true;
+  setRowButtonsDisabled(true);
+  setMessage(messageBox, `Rij ${draft.roepnummer} wordt opgeslagen...`, 'info');
 
   try {
-    await fetch(API_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      body: JSON.stringify({
-        action: 'saveRow',
-        actor,
-        row: draft
-      })
+    await submitPayloadViaHiddenForm({
+      action: 'saveRow',
+      actor,
+      row: {
+        roepnummer: draft.roepnummer,
+        naam: draft.naam,
+        afdeling: draft.afdeling,
+        status: draft.status,
+        is_active: draft.is_active
+      }
     });
 
-    setMessage(messageBox, 'Opgeslagen. Lijst wordt vernieuwd...', 'success');
+    setMessage(messageBox, `Rij ${draft.roepnummer} werd verzonden. Lijst wordt vernieuwd...`, 'success');
 
     delete editStateByKey[key];
 
-    setTimeout(loadRows, 1200);
-  } catch (err) {
-    setMessage(messageBox, err.message || 'Fout bij opslaan', 'error');
+    await wait(1500);
+    await loadRows();
+  } catch (error) {
+    setMessage(messageBox, error.message || 'Fout bij opslaan.', 'error');
+  } finally {
+    loadBtn.disabled = false;
+    setRowButtonsDisabled(false);
   }
+}
+
+function submitPayloadViaHiddenForm(payload) {
+  return new Promise((resolve, reject) => {
+    try {
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = API_URL;
+      form.target = 'hiddenSubmitFrame';
+      form.style.display = 'none';
+
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'payload';
+      input.value = JSON.stringify(payload);
+
+      form.appendChild(input);
+      document.body.appendChild(form);
+
+      form.submit();
+
+      setTimeout(() => {
+        form.remove();
+        resolve();
+      }, 500);
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
+function ensureHiddenSubmitFrame() {
+  if (document.getElementById('hiddenSubmitFrame')) return;
+
+  const iframe = document.createElement('iframe');
+  iframe.name = 'hiddenSubmitFrame';
+  iframe.id = 'hiddenSubmitFrame';
+  iframe.style.display = 'none';
+  document.body.appendChild(iframe);
+}
+
+function validateSingleRow(row) {
+  if (!row.roepnummer) {
+    return 'Roepnummer ontbreekt.';
+  }
+
+  if (!row.naam) {
+    return `Naam ontbreekt voor roepnummer ${row.roepnummer}.`;
+  }
+
+  if (!STATUS_OPTIONS.includes(row.status)) {
+    return `Ongeldige status voor roepnummer ${row.roepnummer}.`;
+  }
+
+  return null;
 }
 
 function getRowKey(row) {
   return String(row.roepnummer || '').trim();
+}
+
+function setRowButtonsDisabled(disabled) {
+  document.querySelectorAll('#staffTableBody button').forEach(button => {
+    button.disabled = disabled;
+  });
+}
+
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function escapeAttr(value) {
+  return String(value || '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('"', '&quot;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
 }
