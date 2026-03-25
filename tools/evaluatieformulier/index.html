@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Evaluatieformulier</title>
 
   <link rel="stylesheet" href="../../assets/styles/theme.css" />
@@ -10,68 +10,110 @@
   <link rel="stylesheet" href="../../assets/styles/layout.css" />
   <link rel="stylesheet" href="../../assets/styles/components.css" />
   <link rel="stylesheet" href="../../assets/styles/utilities.css" />
+
+  <style>
+    .evaluation-block {
+      border: 1px solid #ddd;
+      padding: 12px;
+      margin-bottom: 12px;
+      border-radius: 6px;
+      background: #fafafa;
+    }
+  </style>
 </head>
+
 <body>
-  <main class="page-container">
-    <section class="panel">
-      <h1 id="toolTitle">Evaluatieformulier</h1>
-      <p id="toolDescription" class="text-soft"></p>
-    </section>
 
-    <section class="panel mt-2">
-      <form id="evaluationForm">
-        <div class="form-grid">
-          <div class="form-field">
-            <label for="employeeName">Naam medewerker</label>
-            <input class="form-input" id="employeeName" type="text" />
-          </div>
+<header class="site-header">
+  <img src="../../assets/images/Banner.png" class="site-banner">
+</header>
 
-          <div class="form-field">
-            <label for="evaluatorName">Evaluator</label>
-            <input class="form-input" id="evaluatorName" type="text" />
-          </div>
+<main class="page-container">
 
-          <div class="form-field">
-            <label for="category">Categorie</label>
-            <select class="form-select" id="category"></select>
-          </div>
+  <div class="tool-nav">
+    <a href="../../index.html">← Terug naar EMS Tools Hub</a>
+  </div>
 
-          <div class="form-field">
-            <label for="score">Beoordeling</label>
-            <select class="form-select" id="score"></select>
-          </div>
+  <section class="panel">
+    <h1 id="toolTitle">Evaluatieformulier</h1>
+    <p id="toolDescription"></p>
+  </section>
+
+  <section class="panel mt-2">
+    <form id="evaluationForm">
+
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Naam medewerker</label>
+          <input class="form-input" id="employeeName">
         </div>
 
-        <div class="form-field mt-2">
-          <label for="strengths">Sterktes</label>
-          <textarea class="form-textarea" id="strengths"></textarea>
+        <div class="form-field">
+          <label>Roepnummer</label>
+          <input class="form-input" id="callSign">
         </div>
 
-        <div class="form-field mt-2">
-          <label for="improvements">Werkpunten / verbeterpunten</label>
-          <textarea class="form-textarea" id="improvements"></textarea>
+        <div class="form-field">
+          <label>Evaluator</label>
+          <input class="form-input" id="evaluatorName">
         </div>
 
-        <div class="button-row">
-          <button type="submit" class="btn btn-primary">Verslag opbouwen</button>
-          <button type="button" class="btn btn-secondary" id="resetBtn">Leegmaken</button>
-          <button type="button" class="btn btn-secondary" id="copyBtn">Kopiëren</button>
-          <button type="button" class="btn btn-secondary" id="downloadBtn">Download .txt</button>
+        <div class="form-field">
+          <label>Datum</label>
+          <input type="date" class="form-input" id="date">
         </div>
-      </form>
+      </div>
 
-      <div id="statusBox" class="status-box hidden mt-2"></div>
-    </section>
+      <div class="form-section mt-2">
+        <h3>Evaluatie per onderdeel</h3>
+        <div id="evaluationBlocks"></div>
+      </div>
 
-    <section class="output-card mt-2">
-      <h2>Evaluatieverslag</h2>
-      <textarea id="output" class="form-textarea" readonly></textarea>
-    </section>
-  </main>
+      <div class="form-grid mt-2">
+        <div class="form-field">
+          <label>Algemene beoordeling</label>
+          <select class="form-select" id="finalScore"></select>
+        </div>
 
-  <script src="../../assets/scripts/core.js"></script>
-  <script src="../../assets/scripts/ui.js"></script>
-  <script src="../../assets/scripts/export.js"></script>
-  <script src="app.js"></script>
+        <div class="form-field">
+          <label>Eindbesluit</label>
+          <select class="form-select" id="decision"></select>
+        </div>
+      </div>
+
+      <div class="form-field mt-2">
+        <label>Sterktes</label>
+        <textarea class="form-textarea" id="strengths"></textarea>
+      </div>
+
+      <div class="form-field mt-2">
+        <label>Werkpunten</label>
+        <textarea class="form-textarea" id="improvements"></textarea>
+      </div>
+
+      <div class="button-row">
+        <button type="submit" class="btn btn-primary">Verslag opbouwen</button>
+        <button type="button" class="btn btn-secondary" id="resetBtn">Reset</button>
+        <button type="button" class="btn btn-secondary" id="copyBtn">Kopieer</button>
+        <button type="button" class="btn btn-secondary" id="downloadBtn">Download</button>
+      </div>
+
+    </form>
+
+    <div id="statusBox" class="status-box hidden mt-2"></div>
+  </section>
+
+  <section class="output-card mt-2">
+    <h2>Evaluatieverslag</h2>
+    <textarea id="output" class="form-textarea" readonly></textarea>
+  </section>
+
+</main>
+
+<script src="../../assets/scripts/core.js"></script>
+<script src="../../assets/scripts/ui.js"></script>
+<script src="../../assets/scripts/export.js"></script>
+<script src="app.js"></script>
+
 </body>
 </html>

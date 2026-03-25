@@ -1,17 +1,22 @@
 {
   "toolTitle": "Evaluatieformulier",
-  "toolDescription": "Vul evaluaties gestructureerd en uniform in.",
+  "toolDescription": "Gestandaardiseerde evaluaties voor EMS-medewerkers.",
   "categories": [
-    "Algemene werking",
     "Communicatie",
-    "Patiëntenzorg",
+    "Medische kennis",
+    "Teamwork",
     "Administratie",
-    "Samenwerking"
+    "Professionaliteit"
   ],
   "scores": [
     "Onvoldoende",
     "Voldoende",
     "Goed",
     "Zeer goed"
+  ],
+  "decisions": [
+    "Positief",
+    "Opvolging nodig",
+    "Onvoldoende"
   ]
 }

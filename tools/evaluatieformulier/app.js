@@ -1,30 +1,64 @@
+/**
+ * EMS Evaluatieformulier V2
+ * Volledig modulair en zonder database
+ */
+
 let config = {};
 
 document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
-  try {
-    config = await fetchJson("./config.json");
-    qs("#toolTitle").textContent = config.toolTitle || "Evaluatieformulier";
-    qs("#toolDescription").textContent = config.toolDescription || "";
-    fillSelect("#category", config.categories || [], "Kies een categorie");
-    fillSelect("#score", config.scores || [], "Kies een score");
-    bindEvents();
-  } catch (error) {
-    showStatus("#statusBox", `Fout bij laden: ${error.message}`, "danger");
-  }
+  config = await fetchJson("./config.json");
+
+  qs("#toolTitle").textContent = config.toolTitle;
+  qs("#toolDescription").textContent = config.toolDescription;
+
+  createEvaluationBlocks(config.categories);
+  fillSelect("#finalScore", config.scores, "Kies score");
+  fillSelect("#decision", config.decisions, "Kies besluit");
+
+  bindEvents();
+}
+
+// =========================
+// UI BUILD
+// =========================
+
+function createEvaluationBlocks(categories) {
+  const container = qs("#evaluationBlocks");
+  container.innerHTML = "";
+
+  categories.forEach(cat => {
+    const block = document.createElement("div");
+    block.className = "evaluation-block";
+
+    block.innerHTML = `
+      <h4>${cat}</h4>
+      <select class="form-select" data-cat="${cat}">
+        <option value="">Score</option>
+        ${config.scores.map(s => `<option>${s}</option>`).join("")}
+      </select>
+      <textarea class="form-textarea" data-comment="${cat}" placeholder="Opmerking"></textarea>
+    `;
+
+    container.appendChild(block);
+  });
 }
 
 function fillSelect(selector, items, placeholder) {
   const select = qs(selector);
   select.innerHTML = `<option value="">${placeholder}</option>`;
-  items.forEach(item => {
-    const option = document.createElement("option");
-    option.value = item;
-    option.textContent = item;
-    select.appendChild(option);
+  items.forEach(i => {
+    const o = document.createElement("option");
+    o.value = i;
+    o.textContent = i;
+    select.appendChild(o);
   });
 }
+
+// =========================
+// EVENTS
+// =========================
 
 function bindEvents() {
   qs("#evaluationForm").addEventListener("submit", handleSubmit);
@@ -33,37 +67,94 @@ function bindEvents() {
   qs("#downloadBtn").addEventListener("click", downloadOutput);
 }
 
-function handleSubmit(event) {
-  event.preventDefault();
+// =========================
+// LOGICA
+// =========================
+
+function handleSubmit(e) {
+  e.preventDefault();
 
   const data = {
-    employeeName: sanitizeText(qs("#employeeName").value),
-    evaluatorName: sanitizeText(qs("#evaluatorName").value),
-    category: sanitizeText(qs("#category").value),
-    score: sanitizeText(qs("#score").value),
-    strengths: sanitizeText(qs("#strengths").value),
-    improvements: sanitizeText(qs("#improvements").value)
+    name: qs("#employeeName").value,
+    callSign: qs("#callSign").value,
+    evaluator: qs("#evaluatorName").value,
+    date: qs("#date").value,
+    strengths: qs("#strengths").value,
+    improvements: qs("#improvements").value
   };
 
-  qs("#output").value = [
-    "EVALUATIEVERSLAG",
-    "",
-    `Medewerker: ${data.employeeName || "-"}`,
-    `Evaluator: ${data.evaluatorName || "-"}`,
-    `Categorie: ${data.category || "-"}`,
-    `Beoordeling: ${data.score || "-"}`,
-    "",
-    "Sterktes:",
-    data.strengths || "-",
-    "",
-    "Werkpunten / verbeterpunten:",
-    data.improvements || "-",
-    "",
-    `Opgesteld op: ${formatDateTime()}`
-  ].join("\n");
+  const blocks = document.querySelectorAll(".evaluation-block");
 
-  showStatus("#statusBox", "Verslag succesvol opgebouwd.", "success");
+  let details = "";
+  let totalScore = 0;
+  let count = 0;
+
+  blocks.forEach(b => {
+    const cat = b.querySelector("h4").textContent;
+    const score = b.querySelector("select").value;
+    const comment = b.querySelector("textarea").value;
+
+    if (score) {
+      totalScore += scoreToNumber(score);
+      count++;
+    }
+
+    details += `
+${cat}
+Score: ${score || "-"}
+Opmerking: ${comment || "-"}
+`;
+  });
+
+  const avg = count ? (totalScore / count).toFixed(1) : "-";
+
+  qs("#output").value = `
+EVALUATIEVERSLAG
+
+Medewerker: ${data.name || "-"} (${data.callSign || "-"})
+Evaluator: ${data.evaluator || "-"}
+Datum: ${data.date || "-"}
+
+DETAILBEOORDELING:
+${details}
+
+GEMIDDELDE SCORE: ${avg}
+
+ALGEMENE BEOORDELING:
+${qs("#finalScore").value || "-"}
+
+EINDBESLUIT:
+${qs("#decision").value || "-"}
+
+STERKTES:
+${data.strengths || "-"}
+
+WERKPUNTEN:
+${data.improvements || "-"}
+
+Opgesteld op: ${formatDateTime()}
+`;
+
+  showStatus("#statusBox", "Evaluatie opgebouwd.", "success");
 }
+
+// =========================
+// HELPERS
+// =========================
+
+function scoreToNumber(score) {
+  switch (score) {
+    case "Onvoldoende": return 1;
+    case "Voldoende": return 2;
+    case "Goed": return 3;
+    case "Zeer goed": return 4;
+    default: return 0;
+  }
+}
+
+// =========================
+// UTIL
+// =========================
 
 function resetForm() {
   qs("#evaluationForm").reset();
@@ -72,15 +163,14 @@ function resetForm() {
 }
 
 async function copyOutput() {
-  const text = qs("#output").value.trim();
-  if (!text) return showStatus("#statusBox", "Geen verslag om te kopiëren.", "warning");
+  const text = qs("#output").value;
+  if (!text) return;
   await copyTextToClipboard(text);
-  showStatus("#statusBox", "Verslag gekopieerd.", "success");
+  showStatus("#statusBox", "Gekopieerd.", "success");
 }
 
 function downloadOutput() {
-  const text = qs("#output").value.trim();
-  if (!text) return showStatus("#statusBox", "Geen verslag om te downloaden.", "warning");
-  downloadTextFile("evaluatieverslag.txt", text);
-  showStatus("#statusBox", "Download gestart.", "success");
+  const text = qs("#output").value;
+  if (!text) return;
+  downloadTextFile("evaluatie.txt", text);
 }
