@@ -540,3 +540,17 @@
   background: #dbeafe;
   color: #1e3a8a;
 }
+
+.personeel-admin-note {
+  padding: 0.9rem 1rem;
+}
+
+.personeel-admin-note__content {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #475569;
+}
+
+.personeel-admin-note__content strong {
+  color: #0f172a;
+}
