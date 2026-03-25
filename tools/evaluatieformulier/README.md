@@ -1,26 +1,22 @@
-# Evaluatieformulier – EMS Tools
+# Evaluatieformulier V6 – EMS Tools
 
 ## Doel van deze tool
+
 Dit evaluatieformulier helpt leidinggevenden binnen de EMS om medewerkers op een gestructureerde en uniforme manier te evalueren. De tool bouwt automatisch een volledig evaluatieverslag op basis van ingevulde gegevens, scores en opmerkingen.
 
-De tool is bedoeld voor gebruik in een EMS-omgeving binnen GTA RP, maar is technisch ook bruikbaar in andere gelijkaardige organisatiestructuren.
+De tool gebruikt de centrale personeelsbron via `ems-staff-service.js` en de bestaande Apps Script API van de personeelslijst.
 
 ---
 
 ## Belangrijkste functies
 
-- Selectie van een medewerker uit de personeelslijst
+- Selectie van een medewerker uit de centrale personeelslijst
 - Automatische invulling van:
   - naam
   - roepnummer
   - rang
-- Selectie van een evaluator uit de personeelslijst
-- Evaluator is beperkt tot leidinggevende rangen:
-  - Lieutenant
-  - Captain
-  - Assistant Chief
-  - Deputy Chief
-  - Chief of EMS
+- Selectie van een evaluator uit de centrale personeelslijst
+- Evaluator beperkt tot configureerbare leidinggevende rangen
 - Automatische invulling van:
   - naam evaluator
   - rang evaluator
@@ -36,13 +32,11 @@ De tool is bedoeld voor gebruik in een EMS-omgeving binnen GTA RP, maar is techn
 
 ## Bestandsstructuur
 
-Deze module bestaat minimaal uit de volgende bestanden:
-
 - `index.html`
 - `app.js`
 - `config.json`
-- `personeel.json`
 - `README.md`
+- `ems-staff-service.js`
 
 Daarnaast gebruikt deze tool gedeelde styles en scripts uit de centrale assets-map:
 
@@ -55,44 +49,13 @@ Daarnaast gebruikt deze tool gedeelde styles en scripts uit de centrale assets-m
 - `../../assets/scripts/core.js`
 - `../../assets/scripts/ui.js`
 - `../../assets/scripts/export.js`
+- `../../assets/scripts/ems-staff-service.js`
 
 ---
 
-## Werking van de personeelskoppeling
+## Configuratie
 
-De tool leest medewerkers in vanuit `personeel.json`.
-
-### Medewerker
-Bij selectie van een medewerker worden automatisch ingevuld:
-- naam
-- roepnummer
-- rang
-
-Deze velden zijn readonly en worden dus niet handmatig aangepast in het formulier.
-
-### Evaluator
-Bij selectie van een evaluator worden automatisch ingevuld:
-- naam evaluator
-- rang evaluator
-
-De evaluator-dropdown toont enkel medewerkers met één van deze rangen:
-- Lieutenant
-- Captain
-- Assistant Chief
-- Deputy Chief
-- Chief of EMS
-
-In de dropdown zelf wordt enkel de naam getoond, zodat dit overzichtelijk blijft.
-
----
-
-## Vereiste structuur van `personeel.json`
-
-Elke medewerker in `personeel.json` moet minstens deze velden bevatten:
+In `config.json` moet je deze waarde invullen:
 
 ```json
-{
-  "name": "Lynn Wexler",
-  "callSign": "200",
-  "rank": "Chief of EMS"
-}
+"staffApiUrl": "https://script.google.com/macros/s/AKfycbxh-7nXpT8A7D4KCQJsvA3rS_fWbFZUPsxC6zjbiLuN5Cp2y8AZ35NrrtgwGhgX8KffRA/exec"

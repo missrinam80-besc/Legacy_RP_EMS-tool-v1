@@ -1,6 +1,14 @@
 {
   "toolTitle": "Evaluatieformulier",
   "toolDescription": "Gestandaardiseerde evaluaties voor EMS-medewerkers met personeelsselectie, score-overzicht, automatische samenvatting en printvriendelijke rapportweergave.",
+  "staffApiUrl": "https://script.google.com/macros/s/AKfycbxh-7nXpT8A7D4KCQJsvA3rS_fWbFZUPsxC6zjbiLuN5Cp2y8AZ35NrrtgwGhgX8KffRA/exec",
+  "allowedEvaluatorRanks": [
+    "Lieutenant",
+    "Captain",
+    "Assistant Chief",
+    "Deputy Chief",
+    "Chief of EMS"
+  ],
   "evaluationTypes": [
     "Periodieke evaluatie",
     "Evaluatie proefperiode",

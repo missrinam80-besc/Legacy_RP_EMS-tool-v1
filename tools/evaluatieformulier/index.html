@@ -29,6 +29,7 @@
     <section class="panel">
       <h1 id="toolTitle">Evaluatieformulier</h1>
       <p id="toolDescription" class="text-soft"></p>
+      <p id="staffLoadInfo" class="text-soft mt-1"></p>
     </section>
 
     <section class="panel mt-2">
@@ -62,18 +63,6 @@
           </div>
 
           <div class="form-field">
-            <label for="evaluationType">Type evaluatie</label>
-            <select class="form-select" id="evaluationType"></select>
-          </div>
-
-          <div class="form-field">
-            <label for="date">Datum evaluatie</label>
-            <input class="form-input" id="date" type="date" />
-          </div>
-        </div>
-
-        <div class="readonly-grid readonly-grid--2 mt-2">
-          <div class="form-field">
             <label for="evaluatorName">Naam evaluator</label>
             <input class="form-input" id="evaluatorName" type="text" readonly />
           </div>
@@ -84,12 +73,29 @@
           </div>
         </div>
 
+        <div class="form-grid mt-2">
+          <div class="form-field">
+            <label for="evaluationType">Type evaluatie</label>
+            <select class="form-select" id="evaluationType"></select>
+          </div>
+
+          <div class="form-field">
+            <label for="date">Datum evaluatie</label>
+            <input class="form-input" id="date" type="date" />
+          </div>
+
+          <div class="form-field">
+            <label for="decision">Eindbesluit</label>
+            <select class="form-select" id="decision"></select>
+          </div>
+        </div>
+
         <div class="form-field mt-2">
           <label for="context">Context / aanleiding</label>
           <textarea
             class="form-textarea"
             id="context"
-            placeholder="Bijvoorbeeld: periodieke evaluatie, evaluatie na incident, opvolgingsgesprek, proefperiode..."
+            placeholder="Bijvoorbeeld: periodieke evaluatie, proefperiode, opvolgingsgesprek, incident..."
           ></textarea>
         </div>
 
@@ -113,16 +119,9 @@
           </div>
         </div>
 
-        <div class="form-grid mt-2">
-          <div class="form-field">
-            <label for="finalScore">Algemene beoordeling</label>
-            <select class="form-select" id="finalScore"></select>
-          </div>
-
-          <div class="form-field">
-            <label for="decision">Eindbesluit</label>
-            <select class="form-select" id="decision"></select>
-          </div>
+        <div class="form-field mt-2">
+          <label for="finalScore">Algemene beoordeling</label>
+          <select class="form-select" id="finalScore"></select>
         </div>
 
         <div class="form-field mt-2">
@@ -179,6 +178,7 @@
   <script src="../../assets/scripts/core.js"></script>
   <script src="../../assets/scripts/ui.js"></script>
   <script src="../../assets/scripts/export.js"></script>
+  <script src="../../assets/scripts/ems-staff-service.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

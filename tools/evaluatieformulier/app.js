@@ -1,39 +1,24 @@
 /**
- * EMS Evaluatieformulier V5
+ * EMS Evaluatieformulier V6
  * -------------------------
- * Functies:
- * - medewerkerselectie via personeel.json
- * - automatische invulling van naam / roepnummer / rang
- * - evaluatorselectie via personeel.json
- * - evaluator beperkt tot leidinggevende rangen
- * - evaluator toont enkel naam in dropdown
- * - handtekeningblokken
- * - printvriendelijke weergave
+ * Koppelt rechtstreeks met EmsStaffService en gebruikt de centrale
+ * personeels-API als bron voor medewerkers en evaluators.
+ *
+ * Belangrijk:
+ * - geen lokaal personeel.json meer
+ * - dropdowns worden gevuld via EmsStaffService.populateSelect(...)
+ * - evaluatorrangen zijn configureerbaar via config.json
  */
 
 let config = {};
-let personnel = [];
-
-const ALLOWED_EVALUATOR_RANKS = [
-  "lieutenant",
-  "captain",
-  "assistant chief",
-  "deputy chief",
-  "chief of ems"
-];
+let staffRows = [];
+let evaluatorRows = [];
 
 document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
   try {
     config = await fetchJson("./config.json");
-
-    try {
-      personnel = await fetchJson("./personeel.json");
-      if (!Array.isArray(personnel)) personnel = [];
-    } catch (error) {
-      personnel = [];
-    }
 
     qs("#toolTitle").textContent = config.toolTitle || "Evaluatieformulier";
     qs("#toolDescription").textContent = config.toolDescription || "";
@@ -42,12 +27,11 @@ async function init() {
     fillSelect("#finalScore", config.scores || [], "Kies algemene beoordeling");
     fillSelect("#decision", config.decisions || [], "Kies eindbesluit");
 
-    fillEmployeeSelect(personnel);
-    fillEvaluatorSelect(personnel);
-
     createEvaluationBlocks(config.categories || []);
     setDefaultDate();
     bindEvents();
+
+    await loadStaffData();
   } catch (error) {
     showStatus("#statusBox", `Fout bij laden: ${error.message}`, "danger");
   }
@@ -69,37 +53,6 @@ function fillSelect(selector, items, placeholder) {
   });
 }
 
-function fillEmployeeSelect(items) {
-  const select = qs("#employeeSelect");
-  select.innerHTML = `<option value="">Kies medewerker</option>`;
-
-  items.forEach((item, index) => {
-    const option = document.createElement("option");
-    option.value = String(index);
-    option.textContent = `${item.name || "-"}${item.callSign ? ` (${item.callSign})` : ""}${item.rank ? ` - ${item.rank}` : ""}`;
-    select.appendChild(option);
-  });
-}
-
-function fillEvaluatorSelect(items) {
-  const select = qs("#evaluatorSelect");
-  select.innerHTML = `<option value="">Kies evaluator</option>`;
-
-  items
-    .filter(isAllowedEvaluator)
-    .forEach((item, index) => {
-      const option = document.createElement("option");
-      option.value = String(index);
-      option.textContent = item.name || "-";
-      select.appendChild(option);
-    });
-}
-
-function isAllowedEvaluator(item) {
-  const rank = String(item?.rank || "").trim().toLowerCase();
-  return ALLOWED_EVALUATOR_RANKS.includes(rank);
-}
-
 function createEvaluationBlocks(categories) {
   const container = qs("#evaluationBlocks");
   container.innerHTML = "";
@@ -116,7 +69,9 @@ function createEvaluationBlocks(categories) {
           <label>Score</label>
           <select class="form-select js-category-score">
             <option value="">Kies score</option>
-            ${(config.scores || []).map(score => `<option value="${escapeAttr(score)}">${escapeHtml(score)}</option>`).join("")}
+            ${(config.scores || [])
+              .map(score => `<option value="${escapeAttr(score)}">${escapeHtml(score)}</option>`)
+              .join("")}
           </select>
           <div class="mt-1">
             <span class="score-badge is-empty js-score-badge">Nog niet beoordeeld</span>
@@ -125,7 +80,10 @@ function createEvaluationBlocks(categories) {
 
         <div class="form-field">
           <label>Opmerking</label>
-          <textarea class="form-textarea js-category-comment" placeholder="Korte motivering, observatie of voorbeeld..."></textarea>
+          <textarea
+            class="form-textarea js-category-comment"
+            placeholder="Korte motivering, observatie of voorbeeld..."
+          ></textarea>
         </div>
       </div>
     `;
@@ -141,16 +99,83 @@ function setDefaultDate() {
   }
 }
 
+async function loadStaffData() {
+  const apiUrl = String(config.staffApiUrl || "").trim();
+
+  if (!apiUrl || apiUrl === "PLAK_HIER_JE_APPS_SCRIPT_WEBAPP_URL") {
+    qs("#staffLoadInfo").textContent = "Personeelsbron is nog niet ingesteld in config.json.";
+    disableStaffSelects();
+    return;
+  }
+
+  if (!window.EmsStaffService) {
+    throw new Error("ems-staff-service.js is niet geladen.");
+  }
+
+  window.EmsStaffService.setApiUrl(apiUrl);
+
+  staffRows = await window.EmsStaffService.getVisibleStaff(true);
+  evaluatorRows = await window.EmsStaffService.getByRole(
+    config.allowedEvaluatorRanks || [],
+    { visibleOnly: true }
+  );
+
+  populateEmployeeSelect();
+  populateEvaluatorSelect();
+
+  const loadedAt = window.EmsStaffService.getLastLoadedAt();
+  qs("#staffLoadInfo").textContent = loadedAt
+    ? `Personeelslijst geladen op ${formatDateTimeValue(loadedAt)}.`
+    : "Personeelslijst geladen.";
+}
+
+function populateEmployeeSelect() {
+  const select = qs("#employeeSelect");
+
+  window.EmsStaffService.populateSelect(select, staffRows, {
+    includeEmpty: true,
+    emptyLabel: "Kies medewerker",
+    labelFormat: "naam-roepnummer-rang",
+    valueField: "roepnummer"
+  });
+}
+
+function populateEvaluatorSelect() {
+  const select = qs("#evaluatorSelect");
+
+  window.EmsStaffService.populateSelect(select, evaluatorRows, {
+    includeEmpty: true,
+    emptyLabel: "Kies evaluator",
+    labelFormat: "naam",
+    valueField: "roepnummer"
+  });
+}
+
+function disableStaffSelects() {
+  qs("#employeeSelect").innerHTML = `<option value="">Geen personeelsbron ingesteld</option>`;
+  qs("#evaluatorSelect").innerHTML = `<option value="">Geen personeelsbron ingesteld</option>`;
+  qs("#employeeSelect").disabled = true;
+  qs("#evaluatorSelect").disabled = true;
+}
+
+function enableStaffSelects() {
+  qs("#employeeSelect").disabled = false;
+  qs("#evaluatorSelect").disabled = false;
+}
+
 function bindEvents() {
   qs("#evaluationForm").addEventListener("submit", handleSubmit);
   qs("#resetBtn").addEventListener("click", resetForm);
   qs("#copyBtn").addEventListener("click", copyOutput);
   qs("#downloadBtn").addEventListener("click", downloadOutput);
   qs("#printBtn").addEventListener("click", printOutput);
-
   qs("#employeeSelect").addEventListener("change", handleEmployeeSelect);
   qs("#evaluatorSelect").addEventListener("change", handleEvaluatorSelect);
 
+  bindCategoryScoreEvents();
+}
+
+function bindCategoryScoreEvents() {
   qsa(".js-category-score").forEach(select => {
     select.addEventListener("change", handleLiveScoreChange);
   });
@@ -161,55 +186,28 @@ function bindEvents() {
 // =========================
 
 function handleEmployeeSelect(event) {
-  const index = event.target.value;
-
-  if (index === "") {
+  const option = event.target.selectedOptions[0];
+  if (!option || !option.value) {
     clearEmployeeFields();
     return;
   }
 
-  const selected = personnel[Number(index)];
-  if (!selected) {
-    clearEmployeeFields();
-    return;
-  }
-
-  qs("#employeeName").value = selected.name || "";
-  qs("#callSign").value = selected.callSign || "";
-  qs("#rank").value = selected.rank || "";
-  qs("#employeeSignatureName").value = selected.name || "";
+  qs("#employeeName").value = option.dataset.naam || "";
+  qs("#callSign").value = option.dataset.roepnummer || "";
+  qs("#rank").value = option.dataset.rang || "";
+  qs("#employeeSignatureName").value = option.dataset.naam || "";
 }
 
 function handleEvaluatorSelect(event) {
-  const index = event.target.value;
-
-  if (index === "") {
+  const option = event.target.selectedOptions[0];
+  if (!option || !option.value) {
     clearEvaluatorFields();
     return;
   }
 
-  const selected = personnel[Number(index)];
-  if (!selected || !isAllowedEvaluator(selected)) {
-    clearEvaluatorFields();
-    return;
-  }
-
-  qs("#evaluatorName").value = selected.name || "";
-  qs("#evaluatorRank").value = selected.rank || "";
-  qs("#evaluatorSignatureName").value = selected.name || "";
-}
-
-function clearEmployeeFields() {
-  qs("#employeeName").value = "";
-  qs("#callSign").value = "";
-  qs("#rank").value = "";
-  qs("#employeeSignatureName").value = "";
-}
-
-function clearEvaluatorFields() {
-  qs("#evaluatorName").value = "";
-  qs("#evaluatorRank").value = "";
-  qs("#evaluatorSignatureName").value = "";
+  qs("#evaluatorName").value = option.dataset.naam || "";
+  qs("#evaluatorRank").value = option.dataset.rang || "";
+  qs("#evaluatorSignatureName").value = option.dataset.naam || "";
 }
 
 function handleLiveScoreChange(event) {
@@ -376,11 +374,15 @@ function buildAutoFeedback(categoryResults, scoreSummary) {
   }
 
   if (scoreSummary.strongestItems.length) {
-    feedback.push(`Sterke punten komen vooral naar voren binnen: ${scoreSummary.strongestItems.map(item => item.category.toLowerCase()).join(", ")}.`);
+    feedback.push(
+      `Sterke punten komen vooral naar voren binnen: ${scoreSummary.strongestItems.map(item => item.category.toLowerCase()).join(", ")}.`
+    );
   }
 
   if (scoreSummary.weakestItems.length) {
-    feedback.push(`Extra aandacht en opvolging zijn aangewezen voor: ${scoreSummary.weakestItems.map(item => item.category.toLowerCase()).join(", ")}.`);
+    feedback.push(
+      `Extra aandacht en opvolging zijn aangewezen voor: ${scoreSummary.weakestItems.map(item => item.category.toLowerCase()).join(", ")}.`
+    );
   }
 
   return feedback;
@@ -402,20 +404,23 @@ function renderAutoFeedback(feedbackItems) {
 // =========================
 
 function buildReportText(formData, categoryResults, scoreSummary, autoFeedback) {
-  const detailLines = categoryResults.map(item => {
-    return [
-      `${item.category}`,
-      `Score: ${item.score || "-"}`,
-      `Opmerking: ${item.comment || "-"}`
-    ].join("\n");
-  }).join("\n\n");
+  const detailLines = categoryResults
+    .map(item => {
+      return [
+        `${item.category}`,
+        `Score: ${item.score || "-"}`,
+        `Opmerking: ${item.comment || "-"}`
+      ].join("\n");
+    })
+    .join("\n\n");
 
   return [
     "EVALUATIEVERSLAG",
     "",
     "ALGEMENE GEGEVENS",
     `Medewerker: ${formatEmployeeLine(formData)}`,
-    `Evaluator: ${formatEvaluatorLine(formData)}`,
+    `Evaluator: ${formData.evaluatorName || "-"}`,
+    `Rang evaluator: ${formData.evaluatorRank || "-"}`,
     `Type evaluatie: ${formData.evaluationType || "-"}`,
     `Datum evaluatie: ${formatDateForReport(formData.date)}`,
     "",
@@ -458,13 +463,15 @@ function buildReportText(formData, categoryResults, scoreSummary, autoFeedback) 
 }
 
 function buildPrintSheet(formData, categoryResults, scoreSummary, autoFeedback) {
-  const detailRows = categoryResults.map(item => `
-    <tr>
-      <td style="padding:8px;border:1px solid #ccc;">${escapeHtml(item.category)}</td>
-      <td style="padding:8px;border:1px solid #ccc;">${escapeHtml(item.score || "-")}</td>
-      <td style="padding:8px;border:1px solid #ccc;">${escapeHtml(item.comment || "-")}</td>
-    </tr>
-  `).join("");
+  const detailRows = categoryResults
+    .map(item => `
+      <tr>
+        <td style="padding:8px;border:1px solid #ccc;">${escapeHtml(item.category)}</td>
+        <td style="padding:8px;border:1px solid #ccc;">${escapeHtml(item.score || "-")}</td>
+        <td style="padding:8px;border:1px solid #ccc;">${escapeHtml(item.comment || "-")}</td>
+      </tr>
+    `)
+    .join("");
 
   const feedbackRows = autoFeedback.map(item => `<li>${escapeHtml(item)}</li>`).join("");
 
@@ -474,7 +481,8 @@ function buildPrintSheet(formData, categoryResults, scoreSummary, autoFeedback) 
 
       <h2>Algemene gegevens</h2>
       <p><strong>Medewerker:</strong> ${escapeHtml(formatEmployeeLine(formData))}</p>
-      <p><strong>Evaluator:</strong> ${escapeHtml(formatEvaluatorLine(formData))}</p>
+      <p><strong>Evaluator:</strong> ${escapeHtml(formData.evaluatorName || "-")}</p>
+      <p><strong>Rang evaluator:</strong> ${escapeHtml(formData.evaluatorRank || "-")}</p>
       <p><strong>Type evaluatie:</strong> ${escapeHtml(formData.evaluationType || "-")}</p>
       <p><strong>Datum evaluatie:</strong> ${escapeHtml(formatDateForReport(formData.date))}</p>
 
@@ -545,14 +553,22 @@ function resetForm() {
   qs("#output").value = "";
   qs("#printSheet").innerHTML = "";
 
-  setDefaultDate();
-  createEvaluationBlocks(config.categories || []);
-  fillEmployeeSelect(personnel);
-  fillEvaluatorSelect(personnel);
-  bindEventsAfterReset();
-
   clearEmployeeFields();
   clearEvaluatorFields();
+
+  setDefaultDate();
+  createEvaluationBlocks(config.categories || []);
+  bindCategoryScoreEvents();
+
+  if (staffRows.length) {
+    enableStaffSelects();
+    populateEmployeeSelect();
+  }
+
+  if (evaluatorRows.length) {
+    enableStaffSelects();
+    populateEvaluatorSelect();
+  }
 
   renderAverageScore({
     averageRounded: "-",
@@ -564,13 +580,17 @@ function resetForm() {
   clearStatus("#statusBox");
 }
 
-function bindEventsAfterReset() {
-  qs("#employeeSelect").addEventListener("change", handleEmployeeSelect);
-  qs("#evaluatorSelect").addEventListener("change", handleEvaluatorSelect);
+function clearEmployeeFields() {
+  qs("#employeeName").value = "";
+  qs("#callSign").value = "";
+  qs("#rank").value = "";
+  qs("#employeeSignatureName").value = "";
+}
 
-  qsa(".js-category-score").forEach(select => {
-    select.addEventListener("change", handleLiveScoreChange);
-  });
+function clearEvaluatorFields() {
+  qs("#evaluatorName").value = "";
+  qs("#evaluatorRank").value = "";
+  qs("#evaluatorSignatureName").value = "";
 }
 
 async function copyOutput() {
@@ -622,15 +642,6 @@ function formatEmployeeLine(formData) {
   return parts.length ? parts.join(" ") : "-";
 }
 
-function formatEvaluatorLine(formData) {
-  const parts = [];
-
-  if (formData.evaluatorName) parts.push(formData.evaluatorName);
-  if (formData.evaluatorRank) parts.push(`- ${formData.evaluatorRank}`);
-
-  return parts.length ? parts.join(" ") : "-";
-}
-
 function formatDateForReport(value) {
   if (!value) return "-";
 
@@ -638,6 +649,16 @@ function formatDateForReport(value) {
   if (Number.isNaN(date.getTime())) return value;
 
   return new Intl.DateTimeFormat("nl-BE").format(date);
+}
+
+function formatDateTimeValue(value) {
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+
+  return new Intl.DateTimeFormat("nl-BE", {
+    dateStyle: "short",
+    timeStyle: "short"
+  }).format(date);
 }
 
 function nl2br(value) {
