@@ -27,188 +27,226 @@
     </div>
 
     <section class="panel">
-      <h1 id="toolTitle">Evaluatieformulier</h1>
-      <p id="toolDescription" class="text-soft"></p>
-      <p id="staffLoadInfo" class="text-soft mt-1"></p>
-
-      <div class="progress-wrap mt-2">
-        <div class="progress-meta">
-          <strong id="progressLabel">Stap 1/5</strong>
-          <span id="progressText" class="text-soft">Start met medewerker en evaluator.</span>
+      <div class="tool-header-grid">
+        <div>
+          <h1 id="toolTitle">Evaluatieformulier</h1>
+          <p id="toolDescription" class="text-soft"></p>
+          <p class="tool-intro text-soft">
+            Gebruik dit formulier om een medewerker op een uniforme en gestructureerde manier te evalueren.
+            Selecteer eerst medewerker en evaluator, vul daarna de evaluatie in per onderdeel en bouw tenslotte
+            automatisch het evaluatieverslag op.
+          </p>
+          <p id="staffLoadInfo" class="text-soft mt-1"></p>
         </div>
-        <div class="progress-bar" aria-hidden="true">
-          <div id="progressFill" class="progress-bar__fill"></div>
-        </div>
-      </div>
 
-      <div class="accordion-toolbar mt-2">
-        <button type="button" class="btn btn-secondary" id="toggleAccordionBtn">
-          Alles openen
-        </button>
+        <div class="progress-panel">
+          <div class="progress-wrap">
+            <div class="progress-meta">
+              <strong id="progressLabel">Stap 1/5</strong>
+              <span id="progressText" class="text-soft">Start met medewerker en evaluator.</span>
+            </div>
+            <div class="progress-bar" aria-hidden="true">
+              <div id="progressFill" class="progress-bar__fill"></div>
+            </div>
+          </div>
+
+          <div class="accordion-toolbar mt-2">
+            <button type="button" class="btn btn-secondary" id="toggleAccordionBtn">
+              Alles openen
+            </button>
+          </div>
+        </div>
       </div>
     </section>
 
-    <section class="panel mt-2">
-      <form id="evaluationForm" novalidate>
-        <details class="accordion-section" id="section-staff" data-step="1" open>
-          <summary>👤 Medewerker en evaluator</summary>
-          <div class="accordion-content">
-            <div class="form-field">
-              <label for="employeeSelect">Medewerker selecteren</label>
-              <select class="form-select" id="employeeSelect" required></select>
+    <section class="workspace-grid mt-2">
+      <section class="panel">
+        <form id="evaluationForm" novalidate>
+          <details class="accordion-section" id="section-staff" data-step="1" open>
+            <summary>
+              <span class="accordion-summary__title">👤 Medewerker en evaluator</span>
+              <span class="accordion-summary__check" aria-hidden="true">✔</span>
+            </summary>
+            <div class="accordion-content">
+              <div class="form-field">
+                <label for="employeeSelect">Medewerker selecteren</label>
+                <select class="form-select" id="employeeSelect" required></select>
+              </div>
+
+              <div class="readonly-grid mt-2">
+                <div class="form-field">
+                  <label for="employeeName">Naam medewerker</label>
+                  <input class="form-input" id="employeeName" type="text" readonly />
+                </div>
+
+                <div class="form-field">
+                  <label for="callSign">Roepnummer</label>
+                  <input class="form-input" id="callSign" type="text" readonly />
+                </div>
+
+                <div class="form-field">
+                  <label for="rank">Rang / functie</label>
+                  <input class="form-input" id="rank" type="text" readonly />
+                </div>
+              </div>
+
+              <div class="form-grid mt-2">
+                <div class="form-field">
+                  <label for="evaluatorSelect">Evaluator</label>
+                  <select class="form-select" id="evaluatorSelect" required></select>
+                </div>
+
+                <div class="form-field">
+                  <label for="evaluatorName">Naam evaluator</label>
+                  <input class="form-input" id="evaluatorName" type="text" readonly />
+                </div>
+
+                <div class="form-field">
+                  <label for="evaluatorRank">Rang evaluator</label>
+                  <input class="form-input" id="evaluatorRank" type="text" readonly />
+                </div>
+              </div>
             </div>
+          </details>
 
-            <div class="readonly-grid mt-2">
-              <div class="form-field">
-                <label for="employeeName">Naam medewerker</label>
-                <input class="form-input" id="employeeName" type="text" readonly />
+          <details class="accordion-section" id="section-general" data-step="2">
+            <summary>
+              <span class="accordion-summary__title">📋 Algemene evaluatiegegevens</span>
+              <span class="accordion-summary__check" aria-hidden="true">✔</span>
+            </summary>
+            <div class="accordion-content">
+              <div class="form-grid">
+                <div class="form-field">
+                  <label for="evaluationType">Type evaluatie</label>
+                  <select class="form-select" id="evaluationType" required></select>
+                </div>
+
+                <div class="form-field">
+                  <label for="date">Datum evaluatie</label>
+                  <input class="form-input" id="date" type="date" required />
+                </div>
+
+                <div class="form-field">
+                  <label for="decision">Eindbesluit</label>
+                  <select class="form-select" id="decision" required></select>
+                </div>
               </div>
 
-              <div class="form-field">
-                <label for="callSign">Roepnummer</label>
-                <input class="form-input" id="callSign" type="text" readonly />
-              </div>
-
-              <div class="form-field">
-                <label for="rank">Rang / functie</label>
-                <input class="form-input" id="rank" type="text" readonly />
+              <div class="form-field mt-2">
+                <label for="context">Context / aanleiding</label>
+                <textarea
+                  class="form-textarea"
+                  id="context"
+                  placeholder="Bijvoorbeeld: periodieke evaluatie, proefperiode, opvolgingsgesprek, incident..."
+                  required
+                ></textarea>
               </div>
             </div>
+          </details>
 
-            <div class="form-grid mt-2">
-              <div class="form-field">
-                <label for="evaluatorSelect">Evaluator</label>
-                <select class="form-select" id="evaluatorSelect" required></select>
+          <details class="accordion-section" id="section-scores" data-step="3">
+            <summary>
+              <span class="accordion-summary__title">📊 Beoordeling per onderdeel</span>
+              <span class="accordion-summary__check" aria-hidden="true">✔</span>
+            </summary>
+            <div class="accordion-content">
+              <div id="evaluationBlocks" class="evaluation-list"></div>
+
+              <div class="summary-grid mt-2">
+                <div class="summary-card">
+                  <h3>Gemiddelde score</h3>
+                  <div class="summary-value" id="averageScoreDisplay">-</div>
+                  <p class="text-soft" id="averageScoreLabel">Nog geen beoordeling</p>
+                </div>
+
+                <div class="summary-card">
+                  <h3>Automatische feedback</h3>
+                  <ul id="autoFeedbackList" class="auto-feedback-list">
+                    <li class="text-soft">Feedback verschijnt na het opbouwen van het verslag.</li>
+                  </ul>
+                </div>
               </div>
 
-              <div class="form-field">
-                <label for="evaluatorName">Naam evaluator</label>
-                <input class="form-input" id="evaluatorName" type="text" readonly />
-              </div>
-
-              <div class="form-field">
-                <label for="evaluatorRank">Rang evaluator</label>
-                <input class="form-input" id="evaluatorRank" type="text" readonly />
+              <div class="form-field mt-2">
+                <label for="finalScore">Algemene beoordeling</label>
+                <select class="form-select" id="finalScore" required></select>
               </div>
             </div>
+          </details>
+
+          <details class="accordion-section" id="section-feedback" data-step="4">
+            <summary>
+              <span class="accordion-summary__title">💬 Sterktes en werkpunten</span>
+              <span class="accordion-summary__check" aria-hidden="true">✔</span>
+            </summary>
+            <div class="accordion-content">
+              <div class="form-field">
+                <label for="strengths">Sterktes</label>
+                <textarea class="form-textarea" id="strengths" required></textarea>
+              </div>
+
+              <div class="form-field mt-2">
+                <label for="improvements">Werkpunten / aandachtspunten</label>
+                <textarea class="form-textarea" id="improvements" required></textarea>
+              </div>
+            </div>
+          </details>
+
+          <details class="accordion-section" id="section-signoff" data-step="5">
+            <summary>
+              <span class="accordion-summary__title">✍️ Afspraken en ondertekening</span>
+              <span class="accordion-summary__check" aria-hidden="true">✔</span>
+            </summary>
+            <div class="accordion-content">
+              <div class="form-field">
+                <label for="agreements">Afspraken / opvolging</label>
+                <textarea class="form-textarea" id="agreements" required></textarea>
+              </div>
+
+              <div class="signature-grid mt-2">
+                <div class="signature-card">
+                  <h3>Handtekening evaluator</h3>
+                  <div class="signature-line"></div>
+                  <label for="evaluatorSignatureName">Naam</label>
+                  <input class="form-input" id="evaluatorSignatureName" type="text" readonly />
+                </div>
+
+                <div class="signature-card">
+                  <h3>Handtekening medewerker</h3>
+                  <div class="signature-line"></div>
+                  <label for="employeeSignatureName">Naam</label>
+                  <input class="form-input" id="employeeSignatureName" type="text" readonly />
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <div class="button-row mt-2">
+            <button type="submit" class="btn btn-primary">Verslag opbouwen</button>
+            <button type="button" class="btn btn-secondary" id="resetBtn">Leegmaken</button>
+            <button type="button" class="btn btn-secondary" id="copyBtn">Kopiëren</button>
+            <button type="button" class="btn btn-secondary" id="downloadBtn">Download .txt</button>
+            <button type="button" class="btn btn-secondary" id="printBtn">Printversie</button>
           </div>
-        </details>
 
-        <details class="accordion-section" id="section-general" data-step="2">
-          <summary>📋 Algemene evaluatiegegevens</summary>
-          <div class="accordion-content">
-            <div class="form-grid">
-              <div class="form-field">
-                <label for="evaluationType">Type evaluatie</label>
-                <select class="form-select" id="evaluationType" required></select>
-              </div>
-
-              <div class="form-field">
-                <label for="date">Datum evaluatie</label>
-                <input class="form-input" id="date" type="date" required />
-              </div>
-
-              <div class="form-field">
-                <label for="decision">Eindbesluit</label>
-                <select class="form-select" id="decision" required></select>
-              </div>
-            </div>
-
-            <div class="form-field mt-2">
-              <label for="context">Context / aanleiding</label>
-              <textarea
-                class="form-textarea"
-                id="context"
-                placeholder="Bijvoorbeeld: periodieke evaluatie, proefperiode, opvolgingsgesprek, incident..."
-                required
-              ></textarea>
-            </div>
+          <div id="statusBox" class="status-banner status-banner--neutral mt-2">
+            Klaar om te starten.
           </div>
-        </details>
+        </form>
+      </section>
 
-        <details class="accordion-section" id="section-scores" data-step="3">
-          <summary>📊 Beoordeling per onderdeel</summary>
-          <div class="accordion-content">
-            <div id="evaluationBlocks" class="evaluation-list"></div>
-
-            <div class="summary-grid mt-2">
-              <div class="summary-card">
-                <h3>Gemiddelde score</h3>
-                <div class="summary-value" id="averageScoreDisplay">-</div>
-                <p class="text-soft" id="averageScoreLabel">Nog geen beoordeling</p>
-              </div>
-
-              <div class="summary-card">
-                <h3>Automatische feedback</h3>
-                <ul id="autoFeedbackList" class="auto-feedback-list">
-                  <li class="text-soft">Feedback verschijnt na het opbouwen van het verslag.</li>
-                </ul>
-              </div>
-            </div>
-
-            <div class="form-field mt-2">
-              <label for="finalScore">Algemene beoordeling</label>
-              <select class="form-select" id="finalScore" required></select>
-            </div>
-          </div>
-        </details>
-
-        <details class="accordion-section" id="section-feedback" data-step="4">
-          <summary>💬 Sterktes en werkpunten</summary>
-          <div class="accordion-content">
-            <div class="form-field">
-              <label for="strengths">Sterktes</label>
-              <textarea class="form-textarea" id="strengths" required></textarea>
-            </div>
-
-            <div class="form-field mt-2">
-              <label for="improvements">Werkpunten / aandachtspunten</label>
-              <textarea class="form-textarea" id="improvements" required></textarea>
-            </div>
-          </div>
-        </details>
-
-        <details class="accordion-section" id="section-signoff" data-step="5">
-          <summary>✍️ Afspraken en ondertekening</summary>
-          <div class="accordion-content">
-            <div class="form-field">
-              <label for="agreements">Afspraken / opvolging</label>
-              <textarea class="form-textarea" id="agreements" required></textarea>
-            </div>
-
-            <div class="signature-grid mt-2">
-              <div class="signature-card">
-                <h3>Handtekening evaluator</h3>
-                <div class="signature-line"></div>
-                <label for="evaluatorSignatureName">Naam</label>
-                <input class="form-input" id="evaluatorSignatureName" type="text" readonly />
-              </div>
-
-              <div class="signature-card">
-                <h3>Handtekening medewerker</h3>
-                <div class="signature-line"></div>
-                <label for="employeeSignatureName">Naam</label>
-                <input class="form-input" id="employeeSignatureName" type="text" readonly />
-              </div>
-            </div>
-          </div>
-        </details>
-
-        <div class="button-row mt-2">
-          <button type="submit" class="btn btn-primary">Verslag opbouwen</button>
-          <button type="button" class="btn btn-secondary" id="resetBtn">Leegmaken</button>
-          <button type="button" class="btn btn-secondary" id="copyBtn">Kopiëren</button>
-          <button type="button" class="btn btn-secondary" id="downloadBtn">Download .txt</button>
-          <button type="button" class="btn btn-secondary" id="printBtn">Printversie</button>
+      <section class="panel output-panel">
+        <div class="output-panel__header">
+          <h2>Evaluatieverslag</h2>
+          <p class="text-soft">
+            Hier verschijnt live het evaluatieverslag zodra je het formulier opbouwt.
+          </p>
         </div>
-      </form>
 
-      <div id="statusBox" class="status-box hidden mt-2"></div>
-    </section>
-
-    <section class="output-card mt-2">
-      <h2>Evaluatieverslag</h2>
-      <textarea id="output" class="form-textarea" readonly></textarea>
+        <div class="output-canvas">
+          <textarea id="output" class="form-textarea output-canvas__textarea" readonly></textarea>
+        </div>
+      </section>
     </section>
 
     <section id="printSheet" class="print-sheet"></section>

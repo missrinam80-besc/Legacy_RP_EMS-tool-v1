@@ -1,8 +1,10 @@
 /**
- * EMS Evaluatieformulier V8
+ * EMS Evaluatieformulier V9
  * -------------------------
  * Extra functies:
- * - alles openen / sluiten
+ * - checkmarks per afgewerkte accordion-sectie
+ * - statusbalk onder de knoppen
+ * - 2-kolommenlayout met live outputcanvas
  * - accordion-status onthouden via localStorage
  * - automatisch openen bij validatiefouten
  * - progress bar bovenaan
@@ -32,10 +34,12 @@ async function init() {
     bindEvents();
     initAccordionState();
     updateProgress();
+    updateSectionCompletionState();
+    setStatusMessage("Klaar om te starten.", "neutral");
 
     await loadStaffData();
   } catch (error) {
-    showStatus("#statusBox", `Fout bij laden: ${error.message}`, "danger");
+    setStatusMessage(`Fout bij laden: ${error.message}`, "danger");
   }
 }
 
@@ -108,6 +112,7 @@ async function loadStaffData() {
   if (!apiUrl || apiUrl === "PLAK_HIER_JE_APPS_SCRIPT_WEBAPP_URL") {
     qs("#staffLoadInfo").textContent = "Personeelsbron is nog niet ingesteld in config.json.";
     disableStaffSelects();
+    setStatusMessage("Personeelsbron is nog niet ingesteld in config.json.", "warning");
     return;
   }
 
@@ -128,9 +133,12 @@ async function loadStaffData() {
   enableStaffSelects();
 
   const loadedAt = window.EmsStaffService.getLastLoadedAt();
-  qs("#staffLoadInfo").textContent = loadedAt
+  const infoText = loadedAt
     ? `Personeelslijst geladen op ${formatDateTimeValue(loadedAt)}.`
     : "Personeelslijst geladen.";
+
+  qs("#staffLoadInfo").textContent = infoText;
+  setStatusMessage(infoText, "info");
 }
 
 function populateEmployeeSelect() {
@@ -190,8 +198,8 @@ function bindCategoryScoreEvents() {
 
 function bindProgressInputs() {
   qsa("#evaluationForm input, #evaluationForm select, #evaluationForm textarea").forEach(el => {
-    el.addEventListener("input", updateProgress);
-    el.addEventListener("change", updateProgress);
+    el.addEventListener("input", handleFieldChange);
+    el.addEventListener("change", handleFieldChange);
   });
 }
 
@@ -203,6 +211,23 @@ function bindAccordionPersistence() {
       updateProgress();
     });
   });
+}
+
+function handleFieldChange() {
+  updateProgress();
+  updateSectionCompletionState();
+  clearValidationState();
+}
+
+// =========================
+// STATUS
+// =========================
+
+function setStatusMessage(message, tone = "neutral") {
+  const box = qs("#statusBox");
+  box.textContent = message;
+  box.className = "status-banner mt-2";
+  box.classList.add(`status-banner--${tone}`);
 }
 
 // =========================
@@ -266,7 +291,7 @@ function resetAccordionState() {
 
 function toggleAllAccordionSections() {
   const sections = getAccordionSections();
-  const allOpen = sections.every(section => section.open);
+  const allOpen = sections.length > 0 && sections.every(section => section.open);
 
   sections.forEach(section => {
     section.open = !allOpen;
@@ -285,7 +310,7 @@ function updateToggleAccordionButton() {
 }
 
 // =========================
-// PROGRESS
+// PROGRESS + COMPLETION
 // =========================
 
 function updateProgress() {
@@ -341,6 +366,22 @@ function getProgressText(completed) {
   return "Formulier volledig ingevuld.";
 }
 
+function updateSectionCompletionState() {
+  const sectionMap = [
+    { id: "#section-staff", complete: isStepComplete(0) },
+    { id: "#section-general", complete: isStepComplete(1) },
+    { id: "#section-scores", complete: isStepComplete(2) },
+    { id: "#section-feedback", complete: isStepComplete(3) },
+    { id: "#section-signoff", complete: isStepComplete(4) }
+  ];
+
+  sectionMap.forEach(item => {
+    const section = qs(item.id);
+    if (!section) return;
+    section.classList.toggle("is-complete", item.complete);
+  });
+}
+
 // =========================
 // VALIDATION
 // =========================
@@ -349,7 +390,6 @@ function validateForm() {
   clearValidationState();
 
   const errors = [];
-
   const requiredFields = qsa("#evaluationForm [required]");
 
   requiredFields.forEach(field => {
@@ -376,13 +416,14 @@ function validateForm() {
     saveAccordionState();
     updateToggleAccordionButton();
     updateProgress();
+    updateSectionCompletionState();
 
     const firstField = errors[0].field;
     if (firstField) {
       firstField.focus();
     }
 
-    showStatus("#statusBox", "Vul eerst alle verplichte velden in.", "warning");
+    setStatusMessage("Vul eerst alle verplichte velden in.", "warning");
     return false;
   }
 
@@ -403,6 +444,7 @@ function handleEmployeeSelect(event) {
   if (!option || !option.value) {
     clearEmployeeFields();
     updateProgress();
+    updateSectionCompletionState();
     return;
   }
 
@@ -413,6 +455,7 @@ function handleEmployeeSelect(event) {
 
   openAccordionSection(1);
   updateProgress();
+  updateSectionCompletionState();
 }
 
 function handleEvaluatorSelect(event) {
@@ -420,6 +463,7 @@ function handleEvaluatorSelect(event) {
   if (!option || !option.value) {
     clearEvaluatorFields();
     updateProgress();
+    updateSectionCompletionState();
     return;
   }
 
@@ -429,6 +473,7 @@ function handleEvaluatorSelect(event) {
 
   openAccordionSection(1);
   updateProgress();
+  updateSectionCompletionState();
 }
 
 function handleLiveScoreChange(event) {
@@ -436,6 +481,7 @@ function handleLiveScoreChange(event) {
   updateScoreSummaryPreview();
   openAccordionSection(2);
   updateProgress();
+  updateSectionCompletionState();
 }
 
 function handleSubmit(event) {
@@ -462,7 +508,8 @@ function handleSubmit(event) {
   openAccordionSection(4);
 
   updateProgress();
-  showStatus("#statusBox", "Evaluatieverslag succesvol opgebouwd.", "success");
+  updateSectionCompletionState();
+  setStatusMessage("Evaluatieverslag succesvol opgebouwd.", "success");
 }
 
 // =========================
@@ -810,8 +857,9 @@ function resetForm() {
   });
 
   renderAutoFeedback(["Feedback verschijnt na het opbouwen van het verslag."]);
-  clearStatus("#statusBox");
   updateProgress();
+  updateSectionCompletionState();
+  setStatusMessage("Formulier leeggemaakt.", "info");
 }
 
 function clearEmployeeFields() {
@@ -831,35 +879,36 @@ async function copyOutput() {
   const text = qs("#output").value.trim();
 
   if (!text) {
-    return showStatus("#statusBox", "Geen verslag om te kopiëren.", "warning");
+    return setStatusMessage("Geen verslag om te kopiëren.", "warning");
   }
 
   await copyTextToClipboard(text);
-  showStatus("#statusBox", "Verslag gekopieerd.", "success");
+  setStatusMessage("Verslag gekopieerd.", "success");
 }
 
 function downloadOutput() {
   const text = qs("#output").value.trim();
 
   if (!text) {
-    return showStatus("#statusBox", "Geen verslag om te downloaden.", "warning");
+    return setStatusMessage("Geen verslag om te downloaden.", "warning");
   }
 
   downloadTextFile("evaluatieverslag.txt", text);
-  showStatus("#statusBox", "Download gestart.", "success");
+  setStatusMessage("Download gestart.", "success");
 }
 
 function printOutput() {
   const printSheet = qs("#printSheet");
 
   if (!printSheet.innerHTML.trim()) {
-    return showStatus("#statusBox", "Bouw eerst een verslag op voor je print.", "warning");
+    return setStatusMessage("Bouw eerst een verslag op voor je print.", "warning");
   }
 
   const originalDisplay = printSheet.style.display;
   printSheet.style.display = "block";
   window.print();
   printSheet.style.display = originalDisplay || "none";
+  setStatusMessage("Printvenster geopend.", "info");
 }
 
 // =========================
