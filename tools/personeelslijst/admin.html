@@ -14,7 +14,19 @@
 </head>
 <body>
   <div class="app-shell">
+    <header class="site-header">
+      <img
+        src="../../assets/images/Banner.png"
+        alt="Pillbox Hill Medical Center"
+        class="site-banner"
+      />
+    </header>
+
     <main class="page-container">
+      <div class="tool-nav">
+        <a href="../../index.html">← Terug naar EMS Tools Hub</a>
+      </div>
+
       <section class="hero-card">
         <div class="hero-card__content">
           <h1>EMS Personeelsbeheer</h1>
@@ -57,7 +69,7 @@
           </div>
 
           <div class="personeel-toolbar__actions">
-            <button class="btn" id="loadBtn" type="button">Laden</button>
+            <button class="btn btn-secondary" id="loadBtn" type="button">Vernieuwen</button>
           </div>
         </div>
 
@@ -112,8 +124,8 @@
           </div>
         </div>
 
-        <div class="personeel-table-wrap">
-          <table class="personeel-table" id="staffTable">
+        <div class="personeel-table-wrap personeel-table-wrap--admin">
+          <table class="personeel-table personeel-table--admin" id="staffTable">
             <thead>
               <tr>
                 <th>Acties</th>
