@@ -367,7 +367,7 @@
 ========================= */
 
 .personeel-table--admin {
-  min-width: 1180px;
+  min-width: 1280px;
   table-layout: auto;
 }
 
@@ -403,23 +403,24 @@
 
 .personeel-table--admin th:nth-child(2),
 .personeel-table--admin td:nth-child(2) {
-  min-width: 95px;
-  width: 95px;
+  min-width: 70px;
+  width: 70px;
+  text-align: center;
 }
 
 .personeel-table--admin th:nth-child(3),
 .personeel-table--admin td:nth-child(3) {
-  min-width: 200px;
+  min-width: 240px;
 }
 
 .personeel-table--admin th:nth-child(4),
 .personeel-table--admin td:nth-child(4) {
-  min-width: 180px;
+  min-width: 200px;
 }
 
 .personeel-table--admin th:nth-child(5),
 .personeel-table--admin td:nth-child(5) {
-  min-width: 240px;
+  min-width: 280px;
 }
 
 .personeel-table--admin th:nth-child(6),
@@ -457,7 +458,7 @@
 
 /* Actiecel compacter */
 .personeel-table--admin .personeel-actions-cell {
-  min-width: 120px;
+  min-width: 110px;
 }
 
 .personeel-table--admin .personeel-row-actions {
