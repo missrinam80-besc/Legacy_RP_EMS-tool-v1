@@ -5,11 +5,12 @@
  * - laadt personeelsdata via GET
  * - laat rij-per-rij bewerken toe
  * - slaat wijzigingen op via GET action=saveRow
- * - toont debug-info op de pagina
+ * - toont debug-info in een toon/verberg debugpaneel
  *
  * Vereisten:
  * - admin.html bevat elementen met ids:
- *   staffTableBody, searchInput, actorInput, loadBtn, messageBox, resultCount
+ *   staffTableBody, searchInput, actorInput, loadBtn, messageBox,
+ *   resultCount, toggleDebugBtn, debugPanel, debugOutput, clearDebugBtn
  * - API_URL bestaat globaal in admin.html
  * - window.PersoneelShared bevat minstens:
  *   STATUS_OPTIONS, setMessage, sanitizeRow
@@ -18,6 +19,7 @@
 let staffRows = [];
 let filteredRows = [];
 let editStateByKey = {};
+let debugVisible = false;
 
 const tableBody = document.getElementById('staffTableBody');
 const searchInput = document.getElementById('searchInput');
@@ -26,6 +28,11 @@ const loadBtn = document.getElementById('loadBtn');
 const messageBox = document.getElementById('messageBox');
 const resultCount = document.getElementById('resultCount');
 
+const toggleDebugBtn = document.getElementById('toggleDebugBtn');
+const clearDebugBtn = document.getElementById('clearDebugBtn');
+const debugPanel = document.getElementById('debugPanel');
+const debugOutput = document.getElementById('debugOutput');
+
 const {
   STATUS_OPTIONS,
   setMessage,
@@ -33,53 +40,72 @@ const {
 } = window.PersoneelShared;
 
 // =========================
-// DEBUG
+// INIT
 // =========================
 
-let debugBox = null;
-
 document.addEventListener('DOMContentLoaded', () => {
-  createDebugBox();
+  bindEvents();
   debugLog('DEBUG admin.js geladen');
   debugLog('API_URL = ' + API_URL);
-
-  bindEvents();
   loadRows();
 });
 
-function createDebugBox() {
-  debugBox = document.createElement('div');
-  debugBox.id = 'debugBox';
-  debugBox.style.marginTop = '16px';
-  debugBox.style.padding = '12px';
-  debugBox.style.border = '1px solid #666';
-  debugBox.style.borderRadius = '8px';
-  debugBox.style.background = '#111';
-  debugBox.style.color = '#eee';
-  debugBox.style.fontFamily = 'monospace';
-  debugBox.style.fontSize = '12px';
-  debugBox.style.whiteSpace = 'pre-wrap';
-  debugBox.style.maxHeight = '260px';
-  debugBox.style.overflow = 'auto';
-  debugBox.textContent = 'Debug gestart...\n';
+// =========================
+// DEBUG
+// =========================
 
-  const panels = document.querySelectorAll('.panel.mt-2');
-  const targetPanel = panels.length ? panels[panels.length - 1] : null;
+function bindDebugEvents() {
+  if (toggleDebugBtn) {
+    toggleDebugBtn.addEventListener('click', toggleDebugPanel);
+  }
 
-  if (targetPanel) {
-    targetPanel.appendChild(debugBox);
-  } else {
-    document.body.appendChild(debugBox);
+  if (clearDebugBtn) {
+    clearDebugBtn.addEventListener('click', clearDebugLog);
   }
 }
 
-function debugLog(text) {
-  const line = `[${new Date().toLocaleTimeString()}] ${text}`;
+function toggleDebugPanel() {
+  debugVisible = !debugVisible;
+
+  if (debugPanel) {
+    debugPanel.hidden = !debugVisible;
+  }
+
+  if (toggleDebugBtn) {
+    toggleDebugBtn.textContent = debugVisible ? 'Verberg debug' : 'Toon debug';
+    toggleDebugBtn.classList.toggle('is-active', debugVisible);
+  }
+}
+
+function clearDebugLog() {
+  if (debugOutput) {
+    debugOutput.textContent = 'Debug gewist...';
+  }
+
+  debugLog('Debuglog gewist');
+}
+
+function debugLog(text, data = null) {
+  const time = new Date().toLocaleTimeString();
+  let line = `[${time}] ${text}`;
+
+  if (data !== null) {
+    if (typeof data === 'string') {
+      line += `\n${data}`;
+    } else {
+      try {
+        line += `\n${JSON.stringify(data, null, 2)}`;
+      } catch (error) {
+        line += `\n[Kon data niet serialiseren]`;
+      }
+    }
+  }
+
   console.log(line);
 
-  if (debugBox) {
-    debugBox.textContent += line + '\n';
-    debugBox.scrollTop = debugBox.scrollHeight;
+  if (debugOutput) {
+    debugOutput.textContent += `\n${line}\n`;
+    debugOutput.scrollTop = debugOutput.scrollHeight;
   }
 }
 
@@ -88,8 +114,10 @@ function debugLog(text) {
 // =========================
 
 function bindEvents() {
+  bindDebugEvents();
+
   loadBtn.addEventListener('click', () => {
-    debugLog('Klik op Laden');
+    debugLog('Klik op Vernieuwen');
     loadRows();
   });
 
@@ -108,14 +136,17 @@ async function loadRows() {
 
   try {
     const response = await fetch(`${API_URL}?action=list`);
-    debugLog('GET list response ontvangen');
+    debugLog('GET list response ontvangen', {
+      ok: response.ok,
+      status: response.status
+    });
 
     if (!response.ok) {
       throw new Error(`HTTP-fout: ${response.status}`);
     }
 
     const data = await response.json();
-    debugLog('GET list JSON parsed, success=' + data.success);
+    debugLog('GET list JSON parsed', data);
 
     if (!data.success) {
       throw new Error(data.message || 'Laden mislukt.');
@@ -132,7 +163,9 @@ async function loadRows() {
     debugLog('Rows geladen: ' + staffRows.length);
   } catch (error) {
     setMessage(messageBox, error.message || 'Fout bij laden.', 'error');
-    debugLog('FOUT loadRows: ' + (error.message || error));
+    debugLog('FOUT loadRows', {
+      message: error.message || String(error)
+    });
   } finally {
     loadBtn.disabled = false;
     setRowButtonsDisabled(false);
@@ -186,25 +219,32 @@ function renderTable() {
 
     return `
       <tr class="${isEditing ? 'personeel-row--editing' : ''}">
-        <td>
-          ${
-            isEditing
-              ? `
-                <button type="button" data-action="save" data-key="${escapeAttr(key)}">Opslaan</button>
-                <button type="button" data-action="cancel" data-key="${escapeAttr(key)}">Annuleren</button>
-              `
-              : `
-                <button type="button" data-action="edit" data-key="${escapeAttr(key)}">Bewerken</button>
-              `
-          }
-        </td>
-
-        <td>
-          <input value="${escapeAttr(original.roepnummer)}" disabled>
+        <td class="personeel-actions-cell">
+          <div class="personeel-row-actions">
+            ${
+              isEditing
+                ? `
+                  <button class="btn btn-primary btn-sm" type="button" data-action="save" data-key="${escapeAttr(key)}">Opslaan</button>
+                  <button class="btn btn-secondary btn-sm" type="button" data-action="cancel" data-key="${escapeAttr(key)}">Annuleren</button>
+                `
+                : `
+                  <button class="btn btn-secondary btn-sm" type="button" data-action="edit" data-key="${escapeAttr(key)}">Bewerken</button>
+                `
+            }
+          </div>
         </td>
 
         <td>
           <input
+            class="personeel-input personeel-input--readonly"
+            value="${escapeAttr(original.roepnummer)}"
+            readonly
+          >
+        </td>
+
+        <td>
+          <input
+            class="personeel-input"
             value="${escapeAttr(draft.naam)}"
             data-field="naam"
             data-key="${escapeAttr(key)}"
@@ -213,11 +253,16 @@ function renderTable() {
         </td>
 
         <td>
-          <input value="${escapeAttr(original.rang)}" disabled>
+          <input
+            class="personeel-input personeel-input--readonly"
+            value="${escapeAttr(original.rang)}"
+            readonly
+          >
         </td>
 
         <td>
           <input
+            class="personeel-input"
             value="${escapeAttr(draft.afdeling)}"
             data-field="afdeling"
             data-key="${escapeAttr(key)}"
@@ -227,6 +272,7 @@ function renderTable() {
 
         <td>
           <select
+            class="personeel-select ${getStatusClass(draft.status)}"
             data-field="status"
             data-key="${escapeAttr(key)}"
             ${isEditing ? '' : 'disabled'}
@@ -239,14 +285,16 @@ function renderTable() {
           </select>
         </td>
 
-        <td>
-          <input
-            type="checkbox"
-            ${draft.is_active ? 'checked' : ''}
-            data-field="is_active"
-            data-key="${escapeAttr(key)}"
-            ${isEditing ? '' : 'disabled'}
-          >
+        <td class="personeel-checkbox-cell">
+          <label class="personeel-checkbox-label">
+            <input
+              type="checkbox"
+              ${draft.is_active ? 'checked' : ''}
+              data-field="is_active"
+              data-key="${escapeAttr(key)}"
+              ${isEditing ? '' : 'disabled'}
+            >
+          </label>
         </td>
       </tr>
     `;
@@ -345,7 +393,7 @@ async function saveRow(key) {
   const draft = sanitizeRow(state.draft);
   const validationError = validateSingleRow(draft);
 
-  debugLog('draft=' + JSON.stringify(draft));
+  debugLog('draft gevalideerd', draft);
 
   if (validationError) {
     setMessage(messageBox, validationError, 'error');
@@ -370,10 +418,10 @@ async function saveRow(key) {
       }
     };
 
-    debugLog('payload=' + JSON.stringify(payload));
+    debugLog('payload opgebouwd', payload);
 
     const result = await getSaveRow(payload);
-    debugLog('GET save response=' + JSON.stringify(result));
+    debugLog('GET save response', result);
 
     delete editStateByKey[key];
 
@@ -384,7 +432,9 @@ async function saveRow(key) {
     setMessage(messageBox, `Rij ${draft.roepnummer} is opgeslagen.`, 'success');
   } catch (error) {
     setMessage(messageBox, error.message || 'Fout bij opslaan.', 'error');
-    debugLog('FOUT saveRow: ' + (error.message || error));
+    debugLog('FOUT saveRow', {
+      message: error.message || String(error)
+    });
   } finally {
     loadBtn.disabled = false;
     setRowButtonsDisabled(false);
@@ -403,9 +453,13 @@ async function getSaveRow(payload) {
   });
 
   const url = `${API_URL}?${params.toString()}`;
-  debugLog('GET save URL=' + url);
+  debugLog('GET save URL', url);
 
   const response = await fetch(url);
+  debugLog('GET save HTTP response', {
+    ok: response.ok,
+    status: response.status
+  });
 
   if (!response.ok) {
     throw new Error(`HTTP-fout bij opslaan: ${response.status}`);
@@ -456,6 +510,21 @@ function setRowButtonsDisabled(disabled) {
 
 function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function getStatusClass(status) {
+  switch (String(status || '').toLowerCase()) {
+    case 'actief':
+      return 'personeel-badge--actief';
+    case 'non-actief':
+      return 'personeel-badge--non-actief';
+    case 'verlof':
+      return 'personeel-badge--verlof';
+    case 'ziekte':
+      return 'personeel-badge--ziekte';
+    default:
+      return 'personeel-badge--default';
+  }
 }
 
 function escapeAttr(value) {

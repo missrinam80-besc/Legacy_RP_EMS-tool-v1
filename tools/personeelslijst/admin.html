@@ -70,6 +70,7 @@
 
           <div class="personeel-toolbar__actions">
             <button class="btn btn-secondary" id="loadBtn" type="button">Vernieuwen</button>
+            <button class="btn btn-secondary" id="toggleDebugBtn" type="button">Toon debug</button>
           </div>
         </div>
 
@@ -140,6 +141,22 @@
             <tbody id="staffTableBody"></tbody>
           </table>
         </div>
+      </section>
+
+      <section class="panel mt-2 personeel-debug-panel" id="debugPanel" hidden>
+        <div class="section-heading">
+          <div>
+            <h2>Debug informatie</h2>
+            <p class="text-soft">
+              Technische logging voor foutopsporing.
+            </p>
+          </div>
+          <div class="personeel-debug-actions">
+            <button class="btn btn-secondary btn-sm" id="clearDebugBtn" type="button">Wissen</button>
+          </div>
+        </div>
+
+        <pre id="debugOutput" class="personeel-debug-box">Debug gestart...</pre>
       </section>
     </main>
   </div>

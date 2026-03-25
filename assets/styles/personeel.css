@@ -503,3 +503,38 @@
     min-width: 980px;
   }
 }
+
+/* =========================
+   Debug paneel
+========================= */
+
+.personeel-debug-panel {
+  border-style: dashed;
+}
+
+.personeel-debug-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.personeel-debug-box {
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow: auto;
+  max-height: 340px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+#toggleDebugBtn.is-active {
+  background: #dbeafe;
+  color: #1e3a8a;
+}
