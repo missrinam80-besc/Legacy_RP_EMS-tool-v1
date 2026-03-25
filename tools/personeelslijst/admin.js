@@ -1,6 +1,6 @@
 /**
  * Personeelslijst admin
- * Rij-per-rij bewerken en opslaan via saveRow.
+ * Rij-per-rij bewerken en opslaan via saveRow (CORS-safe).
  */
 
 let staffRows = [];
@@ -39,18 +39,11 @@ async function loadRows() {
 
   try {
     const response = await fetch(`${API_URL}?action=list`);
-
-    if (!response.ok) {
-      throw new Error(`HTTP-fout: ${response.status}`);
-    }
-
     const data = await response.json();
 
-    if (!data.success) {
-      throw new Error(data.message || 'Laden mislukt.');
-    }
+    if (!data.success) throw new Error(data.message || 'Laden mislukt.');
 
-    staffRows = Array.isArray(data.rows) ? data.rows.map(sanitizeRow) : [];
+    staffRows = data.rows.map(sanitizeRow);
     editStateByKey = {};
     applyFilter();
 
@@ -65,32 +58,26 @@ async function loadRows() {
 function applyFilter() {
   const query = searchInput.value.trim().toLowerCase();
 
-  if (!query) {
-    filteredRows = [...staffRows];
-  } else {
-    filteredRows = staffRows.filter(row => {
-      return [
-        row.roepnummer,
-        row.naam,
-        row.rang,
-        row.afdeling,
-        row.status,
-        row.is_active ? 'zichtbaar' : 'verborgen'
-      ].some(value => String(value || '').toLowerCase().includes(query));
-    });
-  }
+  filteredRows = !query
+    ? [...staffRows]
+    : staffRows.filter(row =>
+        [
+          row.roepnummer,
+          row.naam,
+          row.rang,
+          row.afdeling,
+          row.status,
+          row.is_active ? 'zichtbaar' : 'verborgen'
+        ].some(v => String(v || '').toLowerCase().includes(query))
+      );
 
-  resultCount.textContent = String(filteredRows.length);
+  resultCount.textContent = filteredRows.length;
   renderTable();
 }
 
 function renderTable() {
   if (!filteredRows.length) {
-    tableBody.innerHTML = `
-      <tr>
-        <td colspan="7" class="personeel-empty-state">Geen resultaten gevonden.</td>
-      </tr>
-    `;
+    tableBody.innerHTML = `<tr><td colspan="7" class="personeel-empty-state">Geen resultaten gevonden.</td></tr>`;
     return;
   }
 
@@ -102,84 +89,31 @@ function renderTable() {
     const original = isEditing ? editStateByKey[key].original : row;
 
     return `
-      <tr class="${isEditing ? 'personeel-row--editing' : ''}" data-row-key="${escapeHtml(key)}">
-        <td class="personeel-actions-cell">
+      <tr class="${isEditing ? 'personeel-row--editing' : ''}">
+        <td>
           ${isEditing ? `
-            <div class="personeel-row-actions">
-              <button class="btn btn-primary btn-sm" type="button" data-action="save-row" data-key="${escapeHtml(key)}">Opslaan</button>
-              <button class="btn btn-sm" type="button" data-action="cancel-row" data-key="${escapeHtml(key)}">Annuleren</button>
-            </div>
+            <button data-action="save" data-key="${key}">Opslaan</button>
+            <button data-action="cancel" data-key="${key}">Annuleren</button>
           ` : `
-            <div class="personeel-row-actions">
-              <button class="btn btn-sm" type="button" data-action="edit-row" data-key="${escapeHtml(key)}">Bewerken</button>
-            </div>
+            <button data-action="edit" data-key="${key}">Bewerken</button>
           `}
         </td>
 
-        <td>
-          <input
-            class="form-input personeel-input personeel-input--readonly"
-            type="text"
-            value="${escapeHtml(original.roepnummer)}"
-            readonly
-            disabled
-          />
-        </td>
+        <td><input value="${original.roepnummer}" disabled></td>
+        <td><input value="${draft.naam}" data-field="naam" data-key="${key}" ${isEditing ? '' : 'disabled'}></td>
+        <td><input value="${original.rang}" disabled></td>
+        <td><input value="${draft.afdeling}" data-field="afdeling" data-key="${key}" ${isEditing ? '' : 'disabled'}></td>
 
         <td>
-          <input
-            class="form-input personeel-input"
-            type="text"
-            value="${escapeHtml(draft.naam)}"
-            data-key="${escapeHtml(key)}"
-            data-field="naam"
-            ${isEditing ? '' : 'readonly disabled'}
-          />
-        </td>
-
-        <td>
-          <input
-            class="form-input personeel-input personeel-input--readonly"
-            type="text"
-            value="${escapeHtml(original.rang)}"
-            readonly
-            disabled
-          />
-        </td>
-
-        <td>
-          <input
-            class="form-input personeel-input"
-            type="text"
-            value="${escapeHtml(draft.afdeling)}"
-            data-key="${escapeHtml(key)}"
-            data-field="afdeling"
-            ${isEditing ? '' : 'readonly disabled'}
-          />
-        </td>
-
-        <td>
-          <select
-            class="form-input personeel-select ${getStatusClass(draft.status)}"
-            data-key="${escapeHtml(key)}"
-            data-field="status"
-            ${isEditing ? '' : 'disabled'}
-          >
-            ${renderStatusOptions(draft.status)}
+          <select data-field="status" data-key="${key}" ${isEditing ? '' : 'disabled'}>
+            ${STATUS_OPTIONS.map(s =>
+              `<option ${s === draft.status ? 'selected' : ''}>${s}</option>`
+            ).join('')}
           </select>
         </td>
 
-        <td class="personeel-checkbox-cell">
-          <label class="personeel-checkbox-label">
-            <input
-              type="checkbox"
-              ${draft.is_active ? 'checked' : ''}
-              data-key="${escapeHtml(key)}"
-              data-field="is_active"
-              ${isEditing ? '' : 'disabled'}
-            />
-            <span>Zichtbaar</span>
-          </label>
+        <td>
+          <input type="checkbox" ${draft.is_active ? 'checked' : ''} data-field="is_active" data-key="${key}" ${isEditing ? '' : 'disabled'}>
         </td>
       </tr>
     `;
@@ -188,211 +122,87 @@ function renderTable() {
   bindTableInputs();
 }
 
-function renderStatusOptions(currentStatus) {
-  const normalized = normalizeStatus(currentStatus);
-
-  return STATUS_OPTIONS.map(status => `
-    <option value="${status}" ${status === normalized ? 'selected' : ''}>${status}</option>
-  `).join('');
-}
-
 function bindTableInputs() {
-  document.querySelectorAll('#staffTableBody [data-action]').forEach(button => {
-    button.addEventListener('click', handleRowAction);
+  document.querySelectorAll('[data-action]').forEach(btn => {
+    btn.onclick = handleAction;
   });
 
-  document.querySelectorAll('#staffTableBody input[data-field], #staffTableBody select[data-field]').forEach(input => {
-    if (input.type === 'checkbox') {
-      input.addEventListener('change', handleFieldChange);
-    } else {
-      input.addEventListener('input', handleFieldChange);
-      input.addEventListener('change', handleFieldChange);
-      input.addEventListener('blur', handleTrimOnBlur);
-    }
+  document.querySelectorAll('[data-field]').forEach(el => {
+    el.oninput = updateDraft;
+    el.onchange = updateDraft;
   });
 }
 
-function handleFieldChange(event) {
-  const element = event.target;
-  const key = element.dataset.key;
-  const field = element.dataset.field;
+function handleAction(e) {
+  const key = e.target.dataset.key;
+  const action = e.target.dataset.action;
 
-  if (!key || !field || !editStateByKey[key]) return;
-
-  if (element.type === 'checkbox') {
-    editStateByKey[key].draft[field] = element.checked;
-    return;
-  }
-
-  if (field === 'status') {
-    editStateByKey[key].draft[field] = normalizeStatus(element.value);
+  if (action === 'edit') {
+    const row = staffRows.find(r => getRowKey(r) === key);
+    editStateByKey[key] = { original: { ...row }, draft: { ...row } };
     renderTable();
-    return;
   }
 
-  editStateByKey[key].draft[field] = element.value;
-}
-
-function handleTrimOnBlur(event) {
-  const element = event.target;
-  const key = element.dataset.key;
-  const field = element.dataset.field;
-
-  if (!key || !field || !editStateByKey[key]) return;
-  if (element.type === 'checkbox' || field === 'status') return;
-
-  const trimmedValue = String(element.value || '').trim();
-  element.value = trimmedValue;
-  editStateByKey[key].draft[field] = trimmedValue;
-}
-
-async function handleRowAction(event) {
-  const action = event.currentTarget.dataset.action;
-  const key = event.currentTarget.dataset.key;
-
-  if (!key) return;
-
-  if (action === 'edit-row') {
-    startRowEdit(key);
-    return;
+  if (action === 'cancel') {
+    delete editStateByKey[key];
+    renderTable();
   }
 
-  if (action === 'cancel-row') {
-    cancelRowEdit(key);
-    return;
-  }
-
-  if (action === 'save-row') {
-    await saveRow(key);
+  if (action === 'save') {
+    saveRow(key);
   }
 }
 
-function startRowEdit(key) {
-  const row = staffRows.find(item => getRowKey(item) === key);
-  if (!row) return;
+function updateDraft(e) {
+  const key = e.target.dataset.key;
+  const field = e.target.dataset.field;
 
-  editStateByKey[key] = {
-    original: { ...row },
-    draft: { ...row }
-  };
+  if (!editStateByKey[key]) return;
 
-  renderTable();
-}
-
-function cancelRowEdit(key) {
-  delete editStateByKey[key];
-  renderTable();
-  setMessage(messageBox, 'Wijzigingen aan de rij zijn geannuleerd.', 'info');
+  editStateByKey[key].draft[field] =
+    e.target.type === 'checkbox'
+      ? e.target.checked
+      : e.target.value;
 }
 
 async function saveRow(key) {
   const actor = actorInput.value.trim();
-
   if (!actor) {
-    setMessage(messageBox, 'Vul eerst jouw naam in voor logging.', 'error');
+    setMessage(messageBox, 'Vul eerst je naam in.', 'error');
     return;
   }
 
-  const state = editStateByKey[key];
-  if (!state) return;
+  const draft = sanitizeRow(editStateByKey[key].draft);
 
-  const draft = sanitizeRow(state.draft);
-  const validationError = validateSingleRow(draft);
-
-  if (validationError) {
-    setMessage(messageBox, validationError, 'error');
-    return;
-  }
-
-  loadBtn.disabled = true;
-  setRowButtonsDisabled(true);
-  setMessage(messageBox, `Rij ${draft.roepnummer} wordt opgeslagen...`, 'info');
+  setMessage(messageBox, 'Opslaan...', 'info');
 
   try {
     const response = await fetch(API_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'text/plain;charset=utf-8'
-      },
       body: JSON.stringify({
         action: 'saveRow',
         actor,
-        row: {
-          roepnummer: draft.roepnummer,
-          naam: draft.naam,
-          afdeling: draft.afdeling,
-          status: draft.status,
-          is_active: draft.is_active
-        }
+        row: draft
       })
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP-fout: ${response.status}`);
-    }
-
     const data = await response.json();
 
-    if (!data.success) {
-      throw new Error(data.message || 'Opslaan mislukt.');
-    }
+    if (!data.success) throw new Error(data.message);
 
-    const savedRow = sanitizeSavedRowResponse(data.row, state.original, actor);
-
-    staffRows = staffRows.map(row => {
-      return getRowKey(row) === key ? savedRow : row;
-    });
+    staffRows = staffRows.map(r =>
+      getRowKey(r) === key ? sanitizeRow(data.row) : r
+    );
 
     delete editStateByKey[key];
     applyFilter();
 
-    setMessage(messageBox, `Rij ${draft.roepnummer} is opgeslagen.`, 'success');
-  } catch (error) {
-    setMessage(messageBox, error.message || 'Fout bij opslaan.', 'error');
-  } finally {
-    loadBtn.disabled = false;
-    setRowButtonsDisabled(false);
+    setMessage(messageBox, 'Opgeslagen!', 'success');
+  } catch (err) {
+    setMessage(messageBox, err.message || 'Fout bij opslaan', 'error');
   }
-}
-
-function sanitizeSavedRowResponse(savedRow, originalRow, actor) {
-  const cleanSaved = sanitizeRow(savedRow || {});
-  const cleanOriginal = sanitizeRow(originalRow || {});
-
-  return {
-    roepnummer: cleanOriginal.roepnummer,
-    naam: cleanSaved.naam || cleanOriginal.naam,
-    rang: cleanSaved.rang || cleanOriginal.rang,
-    afdeling: cleanSaved.afdeling,
-    status: normalizeStatus(cleanSaved.status),
-    is_active: !!cleanSaved.is_active,
-    updated_at: savedRow && savedRow.updated_at ? savedRow.updated_at : cleanOriginal.updated_at || '',
-    updated_by: savedRow && savedRow.updated_by ? savedRow.updated_by : actor || cleanOriginal.updated_by || ''
-  };
-}
-
-function validateSingleRow(row) {
-  if (!row.roepnummer) {
-    return 'Roepnummer ontbreekt.';
-  }
-
-  if (!row.naam) {
-    return `Naam ontbreekt voor roepnummer ${row.roepnummer}.`;
-  }
-
-  if (!STATUS_OPTIONS.includes(row.status)) {
-    return `Ongeldige status voor roepnummer ${row.roepnummer}.`;
-  }
-
-  return null;
 }
 
 function getRowKey(row) {
   return String(row.roepnummer || '').trim();
-}
-
-function setRowButtonsDisabled(disabled) {
-  document.querySelectorAll('#staffTableBody button').forEach(button => {
-    button.disabled = disabled;
-  });
 }
