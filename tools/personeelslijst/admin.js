@@ -253,7 +253,7 @@ function submitPayloadViaHiddenForm(payload) {
       let done = false;
 
       const cleanup = () => {
-        if (form && form.parentNode) {
+        if (form.parentNode) {
           form.parentNode.removeChild(form);
         }
       };
@@ -267,7 +267,6 @@ function submitPayloadViaHiddenForm(payload) {
 
       form.submit();
 
-      // fallback indien onload niet betrouwbaar triggert
       setTimeout(() => {
         if (done) return;
         done = true;
