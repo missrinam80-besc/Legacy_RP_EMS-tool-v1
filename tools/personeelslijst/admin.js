@@ -1,6 +1,6 @@
 /**
  * Personeelslijst admin
- * Rij-per-rij bewerken en opslaan.
+ * Rij-per-rij bewerken en opslaan via saveRow.
  */
 
 let staffRows = [];
@@ -304,16 +304,6 @@ async function saveRow(key) {
     return;
   }
 
-  const updatedRows = staffRows.map(row => {
-    return getRowKey(row) === key ? draft : row;
-  });
-
-  const duplicateError = validateDuplicateRoepnummers(updatedRows);
-  if (duplicateError) {
-    setMessage(messageBox, duplicateError, 'error');
-    return;
-  }
-
   loadBtn.disabled = true;
   setRowButtonsDisabled(true);
   setMessage(messageBox, `Rij ${draft.roepnummer} wordt opgeslagen...`, 'info');
@@ -323,9 +313,15 @@ async function saveRow(key) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        action: 'saveAll',
+        action: 'saveRow',
         actor,
-        rows: updatedRows.map(sanitizeRow)
+        row: {
+          roepnummer: draft.roepnummer,
+          naam: draft.naam,
+          afdeling: draft.afdeling,
+          status: draft.status,
+          is_active: draft.is_active
+        }
       })
     });
 
@@ -339,7 +335,12 @@ async function saveRow(key) {
       throw new Error(data.message || 'Opslaan mislukt.');
     }
 
-    staffRows = updatedRows;
+    const savedRow = sanitizeSavedRowResponse(data.row, state.original, actor);
+
+    staffRows = staffRows.map(row => {
+      return getRowKey(row) === key ? savedRow : row;
+    });
+
     delete editStateByKey[key];
     applyFilter();
 
@@ -350,6 +351,22 @@ async function saveRow(key) {
     loadBtn.disabled = false;
     setRowButtonsDisabled(false);
   }
+}
+
+function sanitizeSavedRowResponse(savedRow, originalRow, actor) {
+  const cleanSaved = sanitizeRow(savedRow || {});
+  const cleanOriginal = sanitizeRow(originalRow || {});
+
+  return {
+    roepnummer: cleanOriginal.roepnummer,
+    naam: cleanSaved.naam || cleanOriginal.naam,
+    rang: cleanSaved.rang || cleanOriginal.rang,
+    afdeling: cleanSaved.afdeling,
+    status: normalizeStatus(cleanSaved.status),
+    is_active: !!cleanSaved.is_active,
+    updated_at: savedRow && savedRow.updated_at ? savedRow.updated_at : cleanOriginal.updated_at || '',
+    updated_by: savedRow && savedRow.updated_by ? savedRow.updated_by : actor || cleanOriginal.updated_by || ''
+  };
 }
 
 function validateSingleRow(row) {
@@ -363,22 +380,6 @@ function validateSingleRow(row) {
 
   if (!STATUS_OPTIONS.includes(row.status)) {
     return `Ongeldige status voor roepnummer ${row.roepnummer}.`;
-  }
-
-  return null;
-}
-
-function validateDuplicateRoepnummers(rows) {
-  const seen = new Set();
-
-  for (const row of rows) {
-    const roepnummer = String(row.roepnummer || '').trim();
-
-    if (seen.has(roepnummer)) {
-      return `Dubbel roepnummer gevonden: ${roepnummer}`;
-    }
-
-    seen.add(roepnummer);
   }
 
   return null;

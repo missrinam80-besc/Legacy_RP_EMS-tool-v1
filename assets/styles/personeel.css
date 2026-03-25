@@ -5,9 +5,12 @@
 
 .personeel-toolbar {
   display: grid;
-  grid-template-columns: 280px minmax(320px, 1fr) auto;
   gap: 16px;
   align-items: end;
+}
+
+.personeel-toolbar--admin {
+  grid-template-columns: 280px minmax(320px, 1fr) auto;
 }
 
 .personeel-toolbar__search {
@@ -100,10 +103,9 @@
   text-align: center;
 }
 
-.personeel-checkbox-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+.personeel-checkbox-label input[type="checkbox"] {
+  transform: scale(1.2);
+  cursor: pointer;
 }
 
 .personeel-badge {
@@ -116,19 +118,20 @@
   white-space: nowrap;
 }
 
-.personeel-badge--actief {
-  background: rgba(34, 197, 94, 0.12);
-  color: #166534;
+.personeel-select.personeel-badge--actief {
+  border-color: #166534;
 }
 
-.personeel-badge--non-actief {
-  background: rgba(239, 68, 68, 0.12);
-  color: #b42318;
+.personeel-select.personeel-badge--non-actief {
+  border-color: #b42318;
 }
 
-.personeel-badge--verlof {
-  background: rgba(245, 158, 11, 0.14);
-  color: #9a6700;
+.personeel-select.personeel-badge--verlof {
+  border-color: #9a6700;
+}
+
+.personeel-select.personeel-badge--ziekte {
+  border-color: #6d28d9;
 }
 
 .personeel-badge--default {
@@ -185,8 +188,8 @@
   min-width: 150px;
 }
 
-.personeel-row--editing {
-  background: rgba(139, 10, 10, 0.04);
+.personeel-row--editing .btn-primary {
+  box-shadow: 0 0 0 1px rgba(139, 10, 10, 0.2);
 }
 
 .personeel-input--readonly {
@@ -199,4 +202,8 @@
   padding: 8px 12px;
   min-height: auto;
   font-size: 13px;
+}
+
+.personeel-table tbody tr:hover {
+  background: rgba(148, 163, 184, 0.06);
 }
