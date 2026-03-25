@@ -1,7 +1,6 @@
 /**
- * Personeelslijst admin
- * Rij-per-rij bewerken en opslaan via form-urlencoded POST.
- * Deze versie gebruikt fetch met no-cors voor schrijven naar Apps Script.
+ * Personeelslijst admin - DEBUGVERSIE
+ * Deze versie toont zichtbaar wat er gebeurt bij opslaan.
  */
 
 let staffRows = [];
@@ -21,13 +20,55 @@ const {
   sanitizeRow
 } = window.PersoneelShared;
 
+// ===== DEBUG BOX =====
+let debugBox = null;
+
 document.addEventListener('DOMContentLoaded', () => {
+  createDebugBox();
+  debugLog('DEBUG admin.js geladen');
+  debugLog('API_URL = ' + API_URL);
+
   bindEvents();
   loadRows();
 });
 
+function createDebugBox() {
+  debugBox = document.createElement('div');
+  debugBox.id = 'debugBox';
+  debugBox.style.marginTop = '16px';
+  debugBox.style.padding = '12px';
+  debugBox.style.border = '1px solid #666';
+  debugBox.style.borderRadius = '8px';
+  debugBox.style.background = '#111';
+  debugBox.style.color = '#eee';
+  debugBox.style.fontFamily = 'monospace';
+  debugBox.style.fontSize = '12px';
+  debugBox.style.whiteSpace = 'pre-wrap';
+  debugBox.textContent = 'Debug gestart...\n';
+
+  const panel = document.querySelector('.panel.mt-2');
+  if (panel) {
+    panel.appendChild(debugBox);
+  } else {
+    document.body.appendChild(debugBox);
+  }
+}
+
+function debugLog(text) {
+  const line = `[${new Date().toLocaleTimeString()}] ${text}`;
+  console.log(line);
+  if (debugBox) {
+    debugBox.textContent += line + '\n';
+    debugBox.scrollTop = debugBox.scrollHeight;
+  }
+}
+
 function bindEvents() {
-  loadBtn.addEventListener('click', loadRows);
+  loadBtn.addEventListener('click', () => {
+    debugLog('Klik op Laden');
+    loadRows();
+  });
+
   searchInput.addEventListener('input', applyFilter);
 }
 
@@ -35,10 +76,14 @@ async function loadRows() {
   loadBtn.disabled = true;
   setRowButtonsDisabled(true);
   setMessage(messageBox, 'Personeelslijst wordt geladen...', 'info');
+  debugLog('loadRows() gestart');
 
   try {
     const response = await fetch(`${API_URL}?action=list`);
+    debugLog('GET list response ontvangen');
+
     const data = await response.json();
+    debugLog('GET list JSON parsed, success=' + data.success);
 
     if (!data.success) {
       throw new Error(data.message || 'Laden mislukt.');
@@ -49,8 +94,10 @@ async function loadRows() {
     applyFilter();
 
     setMessage(messageBox, 'Personeelslijst is geladen.', 'success');
+    debugLog('Rows geladen: ' + staffRows.length);
   } catch (error) {
     setMessage(messageBox, error.message || 'Fout bij laden.', 'error');
+    debugLog('FOUT loadRows: ' + (error.message || error));
   } finally {
     loadBtn.disabled = false;
     setRowButtonsDisabled(false);
@@ -139,9 +186,14 @@ function handleAction(e) {
   const key = e.target.dataset.key;
   const action = e.target.dataset.action;
 
+  debugLog(`handleAction: ${action} voor key=${key}`);
+
   if (action === 'edit') {
     const row = staffRows.find(r => getRowKey(r) === key);
-    if (!row) return;
+    if (!row) {
+      debugLog('Geen rij gevonden voor edit');
+      return;
+    }
 
     editStateByKey[key] = {
       original: { ...row },
@@ -177,21 +229,31 @@ function updateDraft(e) {
 }
 
 async function saveRow(key) {
+  debugLog('saveRow() gestart voor key=' + key);
+
   const actor = actorInput.value.trim();
+  debugLog('actor=' + actor);
 
   if (!actor) {
     setMessage(messageBox, 'Vul eerst je naam in.', 'error');
+    debugLog('saveRow gestopt: actor ontbreekt');
     return;
   }
 
   const state = editStateByKey[key];
-  if (!state) return;
+  if (!state) {
+    debugLog('saveRow gestopt: geen state gevonden');
+    return;
+  }
 
   const draft = sanitizeRow(state.draft);
   const validationError = validateSingleRow(draft);
 
+  debugLog('draft=' + JSON.stringify(draft));
+
   if (validationError) {
     setMessage(messageBox, validationError, 'error');
+    debugLog('saveRow validatiefout: ' + validationError);
     return;
   }
 
@@ -199,27 +261,34 @@ async function saveRow(key) {
   setRowButtonsDisabled(true);
   setMessage(messageBox, `Rij ${draft.roepnummer} wordt opgeslagen...`, 'info');
 
+  const payload = {
+    action: 'saveRow',
+    actor,
+    row: {
+      roepnummer: draft.roepnummer,
+      naam: draft.naam,
+      afdeling: draft.afdeling,
+      status: draft.status,
+      is_active: draft.is_active
+    }
+  };
+
+  debugLog('payload=' + JSON.stringify(payload));
+
   try {
-    await postSaveRow({
-      action: 'saveRow',
-      actor,
-      row: {
-        roepnummer: draft.roepnummer,
-        naam: draft.naam,
-        afdeling: draft.afdeling,
-        status: draft.status,
-        is_active: draft.is_active
-      }
-    });
+    await postSaveRow(payload);
+    debugLog('POST verzonden');
 
     delete editStateByKey[key];
 
-    await wait(1200);
+    await wait(1500);
+    debugLog('Lijst wordt herladen na save');
     await loadRows();
 
     setMessage(messageBox, `Rij ${draft.roepnummer} is opgeslagen.`, 'success');
   } catch (error) {
     setMessage(messageBox, error.message || 'Fout bij opslaan.', 'error');
+    debugLog('FOUT saveRow: ' + (error.message || error));
   } finally {
     loadBtn.disabled = false;
     setRowButtonsDisabled(false);
@@ -229,6 +298,8 @@ async function saveRow(key) {
 async function postSaveRow(payload) {
   const body = new URLSearchParams();
   body.append('payload', JSON.stringify(payload));
+
+  debugLog('POST body=' + body.toString());
 
   await fetch(API_URL, {
     method: 'POST',
