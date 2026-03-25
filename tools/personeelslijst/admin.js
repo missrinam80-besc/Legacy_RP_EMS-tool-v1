@@ -32,56 +32,6 @@ const {
   sanitizeRow
 } = window.PersoneelShared;
 
-// =========================
-// DEBUG
-// =========================
-
-let debugBox = null;
-
-document.addEventListener('DOMContentLoaded', () => {
-  createDebugBox();
-  debugLog('DEBUG admin.js geladen');
-  debugLog('API_URL = ' + API_URL);
-
-  bindEvents();
-  loadRows();
-});
-
-function createDebugBox() {
-  debugBox = document.createElement('div');
-  debugBox.id = 'debugBox';
-  debugBox.style.marginTop = '16px';
-  debugBox.style.padding = '12px';
-  debugBox.style.border = '1px solid #666';
-  debugBox.style.borderRadius = '8px';
-  debugBox.style.background = '#111';
-  debugBox.style.color = '#eee';
-  debugBox.style.fontFamily = 'monospace';
-  debugBox.style.fontSize = '12px';
-  debugBox.style.whiteSpace = 'pre-wrap';
-  debugBox.style.maxHeight = '260px';
-  debugBox.style.overflow = 'auto';
-  debugBox.textContent = 'Debug gestart...\n';
-
-  const panels = document.querySelectorAll('.panel.mt-2');
-  const targetPanel = panels.length ? panels[panels.length - 1] : null;
-
-  if (targetPanel) {
-    targetPanel.appendChild(debugBox);
-  } else {
-    document.body.appendChild(debugBox);
-  }
-}
-
-function debugLog(text) {
-  const line = `[${new Date().toLocaleTimeString()}] ${text}`;
-  console.log(line);
-
-  if (debugBox) {
-    debugBox.textContent += line + '\n';
-    debugBox.scrollTop = debugBox.scrollHeight;
-  }
-}
 
 // =========================
 // EVENTS
