@@ -324,7 +324,7 @@
 }
 
 /* =========================
-   Header / navigatie afwerking
+   Header / navigatie
 ========================= */
 
 .site-header {
@@ -363,8 +363,24 @@
 }
 
 /* =========================
-   Admin meer laten lijken op view
+   Admin tabel: fix overlap
 ========================= */
+
+.personeel-table--admin {
+  min-width: 1180px;
+  table-layout: auto;
+}
+
+.personeel-table--admin th,
+.personeel-table--admin td {
+  white-space: nowrap;
+}
+
+.personeel-table--admin td:nth-child(3),
+.personeel-table--admin td:nth-child(4),
+.personeel-table--admin td:nth-child(5) {
+  white-space: normal;
+}
 
 .personeel-table--admin tbody tr {
   background: #ffffff;
@@ -378,44 +394,60 @@
   background: rgba(248, 250, 252, 1);
 }
 
-/* Statuskolom smaller maken */
-.personeel-table--admin th:nth-child(6),
-.personeel-table--admin td:nth-child(6) {
-  width: 140px;
-  min-width: 140px;
+/* Kolommen */
+.personeel-table--admin th:nth-child(1),
+.personeel-table--admin td:nth-child(1) {
+  min-width: 130px;
+  width: 130px;
 }
 
-/* Laatste kolom compact houden */
+.personeel-table--admin th:nth-child(2),
+.personeel-table--admin td:nth-child(2) {
+  min-width: 95px;
+  width: 95px;
+}
+
+.personeel-table--admin th:nth-child(3),
+.personeel-table--admin td:nth-child(3) {
+  min-width: 200px;
+}
+
+.personeel-table--admin th:nth-child(4),
+.personeel-table--admin td:nth-child(4) {
+  min-width: 180px;
+}
+
+.personeel-table--admin th:nth-child(5),
+.personeel-table--admin td:nth-child(5) {
+  min-width: 240px;
+}
+
+.personeel-table--admin th:nth-child(6),
+.personeel-table--admin td:nth-child(6) {
+  min-width: 130px;
+  width: 130px;
+}
+
 .personeel-table--admin th:nth-child(7),
 .personeel-table--admin td:nth-child(7) {
-  width: 90px;
   min-width: 90px;
+  width: 90px;
   text-align: center;
 }
 
-/* Actieknoppen compacter */
-.personeel-table--admin .personeel-actions-cell {
-  min-width: 132px;
-}
-
-.personeel-table--admin .personeel-row-actions {
-  gap: 6px;
-}
-
-.personeel-table--admin .btn-sm {
-  padding: 7px 10px;
-  font-size: 12px;
-}
-
-/* Inputs compacter binnen admin tabel */
+/* Inputs/selects in admin */
 .personeel-table--admin .personeel-input,
 .personeel-table--admin .personeel-select {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   padding: 8px 10px;
   font-size: 13px;
   border-radius: 9px;
 }
 
-/* Readonly velden visueel mooier zoals in view */
+/* Readonly velden mooier */
 .personeel-table--admin .personeel-input--readonly,
 .personeel-table--admin .personeel-input[readonly] {
   background: #f8fafc;
@@ -423,39 +455,32 @@
   border-color: rgba(148, 163, 184, 0.16);
 }
 
-/* Admin tabel mag breder zijn dan view, maar gecontroleerd */
-.personeel-table--admin {
-  min-width: 1120px;
-  table-layout: fixed;
+/* Actiecel compacter */
+.personeel-table--admin .personeel-actions-cell {
+  min-width: 120px;
 }
 
-/* Vaste kolombreedtes voor betere balans */
-.personeel-table--admin th:nth-child(1),
-.personeel-table--admin td:nth-child(1) {
-  width: 132px;
+.personeel-table--admin .personeel-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
-.personeel-table--admin th:nth-child(2),
-.personeel-table--admin td:nth-child(2) {
-  width: 90px;
+.personeel-table--admin .btn-sm {
+  padding: 7px 10px;
+  font-size: 12px;
+  line-height: 1.2;
 }
 
-.personeel-table--admin th:nth-child(3),
-.personeel-table--admin td:nth-child(3) {
-  width: 200px;
+/* Status iets compacter */
+.personeel-table--admin .personeel-select.personeel-badge--actief,
+.personeel-table--admin .personeel-select.personeel-badge--non-actief,
+.personeel-table--admin .personeel-select.personeel-badge--verlof,
+.personeel-table--admin .personeel-select.personeel-badge--ziekte {
+  min-width: 0;
 }
 
-.personeel-table--admin th:nth-child(4),
-.personeel-table--admin td:nth-child(4) {
-  width: 180px;
-}
-
-.personeel-table--admin th:nth-child(5),
-.personeel-table--admin td:nth-child(5) {
-  width: 220px;
-}
-
-/* View mag iets luchtiger blijven */
+/* View mag luchtiger blijven */
 .personeel-table--view th:nth-child(1),
 .personeel-table--view td:nth-child(1) {
   width: 110px;
@@ -466,7 +491,6 @@
   width: 140px;
 }
 
-/* Op smallere schermen wat minder brede toolbar */
 @media (max-width: 1200px) {
   .personeel-toolbar--admin {
     grid-template-columns: 220px minmax(260px, 1fr) auto;
