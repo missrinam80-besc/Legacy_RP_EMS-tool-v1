@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", init);
  * - kopiëren
  * - resetten
  * - verzenden naar Discord via Apps Script proxy
+ * - Discord embeds via gedeelde discord-webhook.js
  * - compatibiliteit met oude en nieuwe ids
  * =========================================================
  */
@@ -373,6 +374,8 @@ async function handleSendToDiscord() {
     return;
   }
 
+  const data = getFormData();
+
   try {
     showStatusSafe("Bericht wordt verzonden...", "info");
 
@@ -382,7 +385,14 @@ async function handleSendToDiscord() {
       content: text,
       username: config.discordUsername || "EMS Afwezigheidstool",
       extraData: {
-        tool: "absence"
+        tool: "absence",
+        name: data.name,
+        callSign: data.callSign,
+        rank: data.role,
+        startDate: data.startDate,
+        endDate: data.endDate,
+        reason: data.reason,
+        note: data.details
       }
     });
 
