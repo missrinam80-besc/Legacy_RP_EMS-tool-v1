@@ -199,8 +199,7 @@ function addInjuryItem(part, initialData = {}) {
   injuryState[part].push({
     id,
     type: initialData.type || "",
-    severity: initialData.severity || "",
-    note: initialData.note || ""
+    severity: initialData.severity || ""
   });
 
   renderInjuryList(part);
@@ -246,14 +245,6 @@ function renderInjuryList(part) {
             ${severityOptions}
           </select>
         </div>
-      </div>
-
-      <div class="field">
-        <label>Toelichting</label>
-        <textarea rows="3" placeholder="Extra detail over deze verwonding..."
-          data-part="${escapeAttr(part)}"
-          data-id="${escapeAttr(item.id)}"
-          data-field="note">${escapeHtml(item.note)}</textarea>
       </div>
 
       <button type="button" class="btn btn-secondary btn-compact remove-btn"
@@ -404,7 +395,7 @@ function getStructuredInjuries() {
 
   Object.keys(injuryState).forEach(part => {
     const validItems = (injuryState[part] || []).filter(item =>
-      item.type || item.severity || item.note
+      item.type || item.severity
     );
     result[part] = validItems;
   });
@@ -625,7 +616,7 @@ function buildInjuryMarkdown(injuries) {
 
     items.forEach((item, index) => {
       lines.push(
-        `  ${index + 1}. **Type:** ${orDash(item.type)} | **Ernst:** ${orDash(item.severity)} | **Toelichting:** ${orDash(item.note)}`
+        `${index + 1}. **Type:** ${orDash(item.type)} | **Ernst:** ${orDash(item.severity)}`
       );
     });
 
