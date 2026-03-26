@@ -1,19 +1,55 @@
 {
-  "toolTitle": "Trauma Rapport",
-  "toolDescription": "Genereer een gestructureerd trauma-rapport voor interventie en opvolging.",
+  "discordWebhookProxyUrl": "",
+  "pulseOptions": [
+    "Traag",
+    "Normaal",
+    "Snel"
+  ],
+  "temperatureOptions": [
+    "Normaal",
+    "Verhoging"
+  ],
+  "severityOptions": [
+    "Licht",
+    "Matig",
+    "Ernstig"
+  ],
+  "bloodLossOptions": [
+    "Weinig",
+    "Matig",
+    "Veel",
+    "Ernstig"
+  ],
+  "painOptions": [
+    "Weinig",
+    "Matig",
+    "Veel",
+    "Ernstig"
+  ],
   "injuryTypes": [
     "Schotwonde",
     "Steekwonde",
+    "Snijwonde",
     "Brandwonde",
     "Breuk",
+    "Open breuk",
     "Kneuzing",
+    "Verstuiking",
+    "Ontwrichting",
     "Amputatie",
-    "Hoofdtrauma"
+    "Zwelling",
+    "Schaafwonde",
+    "Blunt trauma",
+    "Hoofdtrauma",
+    "Interne verwonding",
+    "Andere"
   ],
-  "severityLevels": [
-    "Licht",
-    "Matig",
-    "Ernstig",
-    "Kritiek"
+  "bodyParts": [
+    "Hoofd",
+    "Rompgedeelte",
+    "Linkerarm",
+    "Rechterarm",
+    "Linkerbeen",
+    "Rechterbeen"
   ]
 }
