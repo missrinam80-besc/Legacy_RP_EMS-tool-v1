@@ -151,50 +151,6 @@
   color: #ffb3ba;
 }
 
-/* STATUS BANNER */
-.status-banner {
-  border-radius: 12px;
-  padding: 12px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.04);
-  color: inherit;
-  min-height: 48px;
-  display: flex;
-  align-items: center;
-  font-weight: 600;
-  line-height: 1.4;
-}
-
-.status-banner--neutral {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.status-banner--success {
-  background: rgba(40, 167, 69, 0.18);
-  border-color: rgba(40, 167, 69, 0.45);
-  color: #b9f6ca;
-}
-
-.status-banner--warning {
-  background: rgba(255, 193, 7, 0.18);
-  border-color: rgba(255, 193, 7, 0.45);
-  color: #ffe082;
-}
-
-.status-banner--danger {
-  background: rgba(220, 53, 69, 0.2);
-  border-color: rgba(220, 53, 69, 0.5);
-  color: #ffb3b3;
-}
-
-.status-banner--info {
-  background: rgba(0, 123, 255, 0.18);
-  border-color: rgba(0, 123, 255, 0.45);
-  color: #b8d9ff;
-}
-
 /* EXISTING */
 .evaluation-list {
   display: grid;
@@ -314,21 +270,6 @@
 
 .readonly-grid--2 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.form-input[readonly],
-.form-textarea[readonly] {
-  background: rgba(167, 163, 163, 0.445);
-  border-color: rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.92);
-  cursor: not-allowed;
-}
-
-.form-input[readonly]:focus,
-.form-textarea[readonly]:focus {
-  outline: none;
-  box-shadow: none;
-  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .print-sheet {

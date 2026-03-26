@@ -87,31 +87,47 @@
   background: #d1d5db;
 }
 
-.status-box {
+/* =========================
+   Status system (GLOBAL)
+========================= */
+
+.status {
   margin-top: 1rem;
   padding: 0.85rem 1rem;
   border-radius: 12px;
   font-weight: 600;
+  border: 1px solid transparent;
 }
 
-.status-info {
-  background: #dbeafe;
-  color: #1e3a8a;
+/* Types */
+.status--neutral {
+  background: var(--color-surface-soft);
+  color: var(--color-text);
+  border-color: var(--color-border);
 }
 
-.status-success {
+.status--success {
   background: #dcfce7;
-  color: #166534;
+  color: var(--color-success);
+  border-color: #bbf7d0;
 }
 
-.status-warning {
+.status--warning {
   background: #fef3c7;
-  color: #92400e;
+  color: var(--color-warning);
+  border-color: #fde68a;
 }
 
-.status-danger {
+.status--danger {
   background: #fee2e2;
-  color: #991b1b;
+  color: var(--color-danger);
+  border-color: #fecaca;
+}
+
+.status--info {
+  background: #dbeafe;
+  color: var(--color-info);
+  border-color: #bfdbfe;
 }
 
 .section-heading {
@@ -345,17 +361,22 @@
   height: 18px;
 }
 
-/* Read-only styling */
-.form-input.readonly {
-  background: #f3f4f6;
-  color: #6b7280;
+/* =========================
+   Read-only fields (GLOBAL)
+========================= */
+
+.form-input[readonly],
+.form-textarea[readonly] {
+  background: #e5e7eb;
+  color: #374151;
+  border-color: var(--color-border);
   cursor: not-allowed;
 }
 
-.form-input.readonly {
-  background: #f3f4f6;
-  color: #6b7280;
-  cursor: not-allowed;
+.form-input[readonly]:focus,
+.form-textarea[readonly]:focus {
+  outline: none;
+  box-shadow: none;
 }
 
 .tool-nav a {

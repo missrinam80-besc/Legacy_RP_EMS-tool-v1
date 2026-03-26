@@ -226,8 +226,8 @@ function handleFieldChange() {
 function setStatusMessage(message, tone = "neutral") {
   const box = qs("#statusBox");
   box.textContent = message;
-  box.className = "status-banner mt-2";
-  box.classList.add(`status-banner--${tone}`);
+  box.className = "status mt-2";
+  box.classList.add(`status--${tone}`);
 }
 
 // =========================
