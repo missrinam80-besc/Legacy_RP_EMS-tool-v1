@@ -1,7 +1,7 @@
 .tool-header-grid {
   display: grid;
   gap: 20px;
-  grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.9fr);
+  grid-template-columns: 1fr;
   align-items: start;
 }
 
@@ -50,11 +50,22 @@
 
 /* ACCORDION */
 .accordion-section {
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(139, 10, 10, 0.12);
   border-radius: 12px;
   margin-top: 16px;
   background: rgba(255,255,255,0.03);
   overflow: hidden;
+  transition: box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.accordion-section:hover {
+  border-color: rgba(139, 10, 10, 0.28);
+  box-shadow: var(--shadow-sm);
+}
+
+.accordion-section[open] {
+  border-color: rgba(139, 10, 10, 0.3);
+  box-shadow: var(--shadow-sm);
 }
 
 .accordion-section summary {
@@ -110,25 +121,6 @@
   padding: 16px;
 }
 
-.accordion-section {
-  border: 1px solid rgba(139, 10, 10, 0.12);
-  border-radius: 12px;
-  margin-top: 16px;
-  background: rgba(255,255,255,0.03);
-  overflow: hidden;
-  transition: box-shadow 0.18s ease, border-color 0.18s ease;
-}
-
-.accordion-section:hover {
-  border-color: rgba(139, 10, 10, 0.28);
-  box-shadow: var(--shadow-sm);
-}
-
-.accordion-section[open] {
-  border-color: rgba(139, 10, 10, 0.3);
-  box-shadow: var(--shadow-sm);
-}
-
 /* ACCORDION TOOLBAR */
 .accordion-toolbar {
   display: flex;
@@ -176,6 +168,13 @@
 
 .accordion-section.has-error summary {
   color: #ffb3ba;
+}
+
+/* BUTTON ROW RIGHT */
+.button-row--right {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 /* EXISTING */
@@ -326,7 +325,6 @@
 }
 
 @media (max-width: 1180px) {
-  .tool-header-grid,
   .workspace-grid {
     grid-template-columns: 1fr;
   }
@@ -341,6 +339,10 @@
 
   .output-canvas__textarea {
     min-height: 420px;
+  }
+
+  .button-row--right {
+    justify-content: flex-start;
   }
 }
 

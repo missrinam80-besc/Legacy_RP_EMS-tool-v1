@@ -37,9 +37,14 @@
             De scores geven een algemeen beeld van het functioneren van de medewerker. De extra toelichtingen helpen het command om gefundeerde beslissingen te nemen over promoties, opleidingen of specialisaties.
             Dit formulier is een ondersteunend evaluatie-instrument en maakt deel uit van het interne opvolgings- en ontwikkelingsproces binnen EMS.
           </p>
+          <p id="staffLoadInfo" class="text-soft mt-1"></p>
         </div>
+      </div>
+    </section>
 
-        <div class="progress-panel">
+    <section class="workspace-grid mt-2">
+      <section class="panel">
+        <div class="progress-panel mb-2">
           <div class="progress-wrap">
             <div class="progress-meta">
               <strong id="progressLabel">Stap 1/5</strong>
@@ -56,11 +61,7 @@
             </button>
           </div>
         </div>
-      </div>
-    </section>
 
-    <section class="workspace-grid mt-2">
-      <section class="panel">
         <form id="evaluationForm" novalidate>
           <details class="accordion-section" id="section-staff" data-step="1" open>
             <summary>
@@ -221,14 +222,6 @@
             </div>
           </details>
 
-          <div class="button-row mt-2">
-            <button type="submit" class="btn btn-primary">Verslag opbouwen</button>
-            <button type="button" class="btn btn-secondary" id="resetBtn">Leegmaken</button>
-            <button type="button" class="btn btn-secondary" id="copyBtn">Kopiëren</button>
-            <button type="button" class="btn btn-secondary" id="downloadBtn">Download .txt</button>
-            <button type="button" class="btn btn-secondary" id="printBtn">Printversie</button>
-          </div>
-
           <div id="statusBox" class="status status--neutral mt-2">
             Klaar om te starten.
           </div>
@@ -236,6 +229,14 @@
       </section>
 
       <section class="panel output-panel">
+        <div class="button-row mb-2 button-row--right">
+          <button type="submit" form="evaluationForm" class="btn btn-primary">Verslag opbouwen</button>
+          <button type="button" class="btn btn-secondary" id="resetBtn">Leegmaken</button>
+          <button type="button" class="btn btn-secondary" id="copyBtn">Kopiëren</button>
+          <button type="button" class="btn btn-secondary" id="downloadBtn">Download .txt</button>
+          <button type="button" class="btn btn-secondary" id="printBtn">Printversie</button>
+        </div>
+
         <div class="output-panel__header">
           <h2>Evaluatieverslag</h2>
           <p class="text-soft">
