@@ -6,6 +6,7 @@
   "discordWebhookProxyUrl": "https://script.google.com/macros/s/AKfycbxh-7nXpT8A7D4KCQJsvA3rS_fWbFZUPsxC6zjbiLuN5Cp2y8AZ35NrrtgwGhgX8KffRA/exec",
   "discordUsername": "EMS Trauma Tool",
   "discordUseEmbeds": true,
+  "discordSendPlainContent": false,
 
   "storageKey": "ems-trauma-report-v2",
 

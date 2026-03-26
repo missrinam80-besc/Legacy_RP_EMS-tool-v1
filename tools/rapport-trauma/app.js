@@ -741,7 +741,8 @@ async function handleCopy() {
         content: report,
         username: CONFIG.discordUsername || "EMS Trauma Tool",
         extraData: buildTraumaDiscordMeta(),
-        useEmbeds: CONFIG.discordUseEmbeds !== false
+        useEmbeds: CONFIG.discordUseEmbeds !== false,
+        sendPlainContent: CONFIG.discordSendPlainContent !== false
       });
 
       discordOk = true;
