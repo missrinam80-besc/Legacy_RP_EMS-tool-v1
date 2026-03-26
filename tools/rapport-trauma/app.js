@@ -1,21 +1,11 @@
 /**
  * EMS Trauma Rapport v2
  * ---------------------
- * Functies:
- * - Patiëntgegevens bovenaan
- * - 2-koloms layout
- * - Uitklapbare secties
- * - Verwondingen per ledemaat (meerdere mogelijk)
- * - Kostentool import
- * - Medische log import
- * - Rapport opbouwen
- * - Rapport kopiëren
- * - Optioneel Discord log via proxy/webhook-endpoint
- * - Koppeling met EMS personeelslijst via EmsStaffService
- *
- * Belangrijk:
- * Zet NOOIT een ruwe Discord webhook rechtstreeks in frontend code.
- * Gebruik bij voorkeur een veilige tussenlaag.
+ * Gebruikt centrale services:
+ * - storage.js
+ * - export.js
+ * - discord-webhook.js
+ * - ems-staff-service.js
  */
 
 let CONFIG = {};
@@ -34,8 +24,10 @@ async function init() {
     presetDateTime();
 
     await initStaffFields();
+    restoreDraft();
 
     buildReport();
+    showStatus("Klaar. Je kunt gegevens invoeren, het rapport opbouwen of kopiëren.", "neutral");
   } catch (error) {
     showStatus(`Fout bij laden: ${error.message}`, "danger");
   }
@@ -50,21 +42,32 @@ async function loadConfig() {
 }
 
 function bindEvents() {
-  $("#buildBtn")?.addEventListener("click", buildReport);
+  $("#buildBtn")?.addEventListener("click", () => {
+    buildReport();
+    saveDraft();
+    showStatus("Rapport opgebouwd.", "success");
+  });
+
   $("#copyBtn")?.addEventListener("click", handleCopy);
   $("#resetBtn")?.addEventListener("click", handleReset);
   $("#parseLogBtn")?.addEventListener("click", parseMedicalLog);
 
   document.querySelectorAll("input, textarea, select").forEach(el => {
-    el.addEventListener("input", debounce(buildReport, 150));
-    el.addEventListener("change", buildReport);
+    el.addEventListener("input", debounce(handleAutoChange, 200));
+    el.addEventListener("change", handleAutoChange);
   });
+}
+
+function handleAutoChange() {
+  buildReport();
+  saveDraft();
+  showStatus("Wijzigingen automatisch opgeslagen in lokale opslag.", "neutral");
 }
 
 function presetDateTime() {
   const now = new Date();
-  if ($("#incidentDate")) $("#incidentDate").value = toDateInputValue(now);
-  if ($("#incidentTime")) $("#incidentTime").value = toTimeInputValue(now);
+  if ($("#incidentDate") && !$("#incidentDate").value) $("#incidentDate").value = toDateInputValue(now);
+  if ($("#incidentTime") && !$("#incidentTime").value) $("#incidentTime").value = toTimeInputValue(now);
 }
 
 function fillBasicSelects() {
@@ -114,9 +117,6 @@ function populateStaffSelects() {
 
   if (!leadDoctorSelect || !assistantsSelect) return;
 
-  // We laten de service de labels genereren.
-  // Daarna zetten we de option.value bewust gelijk aan het zichtbare label,
-  // zodat naam + roepnummer samen gebruikt worden.
   window.EmsStaffService.populateSelect(leadDoctorSelect, STAFF_ROWS, {
     includeEmpty: true,
     emptyLabel: "Kies een behandelaar",
@@ -192,10 +192,8 @@ function buildInjurySections() {
 }
 
 function addInjuryItem(part, initialData = {}) {
-  const list = $(`#injury-list-${slugify(part)}`);
-  if (!list) return;
-
   const id = cryptoRandomId();
+
   injuryState[part].push({
     id,
     type: initialData.type || "",
@@ -204,6 +202,8 @@ function addInjuryItem(part, initialData = {}) {
 
   renderInjuryList(part);
   buildReport();
+  saveDraft();
+  showStatus(`Verwonding toegevoegd bij ${part}.`, "success");
 }
 
 function renderInjuryList(part) {
@@ -231,7 +231,7 @@ function renderInjuryList(part) {
     wrapper.innerHTML = `
       <div class="injury-item-grid">
         <div class="field">
-          <label>Type verwonding</label>
+          <label>Type</label>
           <select data-part="${escapeAttr(part)}" data-id="${escapeAttr(item.id)}" data-field="type">
             <option value="">Kies een optie</option>
             ${typeOptions}
@@ -257,7 +257,7 @@ function renderInjuryList(part) {
     list.appendChild(wrapper);
   });
 
-  list.querySelectorAll("select, textarea").forEach(el => {
+  list.querySelectorAll("select").forEach(el => {
     el.addEventListener("input", handleInjuryFieldChange);
     el.addEventListener("change", handleInjuryFieldChange);
   });
@@ -278,12 +278,16 @@ function handleInjuryFieldChange(event) {
 
   item[field] = value;
   buildReport();
+  saveDraft();
+  showStatus("Verwonding bijgewerkt.", "neutral");
 }
 
 function removeInjuryItem(part, id) {
   injuryState[part] = (injuryState[part] || []).filter(item => item.id !== id);
   renderInjuryList(part);
   buildReport();
+  saveDraft();
+  showStatus(`Verwonding verwijderd bij ${part}.`, "warning");
 }
 
 /* =========================
@@ -327,6 +331,7 @@ function parseMedicalLog() {
   }
 
   buildReport();
+  saveDraft();
   showStatus("Tekstlog werd ingelezen. Herkende info is waar mogelijk ingevuld.", "success");
 }
 
@@ -467,6 +472,51 @@ function composeReport(data) {
   ].join("\n");
 }
 
+function buildInjuryMarkdown(injuries) {
+  const lines = [];
+  let hasAny = false;
+
+  Object.keys(injuries).forEach(part => {
+    const items = injuries[part] || [];
+
+    if (!items.length) {
+      lines.push(`- **${part}:** geen geregistreerde verwondingen.`);
+      return;
+    }
+
+    hasAny = true;
+    lines.push(`- **${part}:**`);
+
+    items.forEach((item, index) => {
+      lines.push(
+        `  ${index + 1}. **Type:** ${orDash(item.type)} | **Ernst:** ${orDash(item.severity)}`
+      );
+    });
+
+    lines.push("");
+  });
+
+  return hasAny ? lines.join("\n") : "-";
+}
+
+function buildCostMarkdown(data) {
+  const lines = [
+    `- **Totaalbedrag:** ${data.costTotal ? `€ ${data.costTotal}` : "-"}`,
+    `- **Opmerking:** ${orDash(data.costNotes)}`,
+    `- **Export kostentool:**`
+  ];
+
+  if (data.costImport) {
+    data.costImport.split("\n").forEach(line => {
+      lines.push(`  - ${line.trim() || "-"}`);
+    });
+  } else {
+    lines.push("  - -");
+  }
+
+  return lines.join("\n");
+}
+
 function renderMarkdownPreview(markdown) {
   const preview = $("#reportPreview");
   if (!preview) return;
@@ -536,7 +586,6 @@ function renderMarkdownPreview(markdown) {
       return;
     }
 
-    // Bullet list
     if (/^- /.test(trimmed)) {
       closeParagraph();
       if (inOl) {
@@ -553,7 +602,6 @@ function renderMarkdownPreview(markdown) {
       return;
     }
 
-    // Numbered list
     if (/^\d+\.\s/.test(trimmed)) {
       closeParagraph();
       if (inUl) {
@@ -570,19 +618,6 @@ function renderMarkdownPreview(markdown) {
       return;
     }
 
-    // Indented bullet
-    if (/^-\s/.test(trimmed)) {
-      closeParagraph();
-      if (!inUl) {
-        html.push("<ul>");
-        inUl = true;
-      }
-      const content = trimmed.replace(/^-\s/, "");
-      html.push(`<li>${formatInlineMarkdown(content)}</li>`);
-      return;
-    }
-
-    // Gewone tekstregel
     openParagraph();
     html.push(`${formatInlineMarkdown(trimmed)}<br>`);
   });
@@ -599,49 +634,70 @@ function formatInlineMarkdown(text) {
     .replace(/__(.+?)__/g, "<u>$1</u>");
 }
 
-function buildInjuryMarkdown(injuries) {
-  const lines = [];
-  let hasAny = false;
+/* =========================
+   OPSLAG
+========================= */
 
-  Object.keys(injuries).forEach(part => {
-    const items = injuries[part] || [];
-
-    if (!items.length) {
-      lines.push(`- **${part}:** geen geregistreerde verwondingen.`);
-      return;
-    }
-
-    hasAny = true;
-    lines.push(`- **${part}:**`);
-
-    items.forEach((item, index) => {
-      lines.push(
-        `${index + 1}. **Type:** ${orDash(item.type)} | **Ernst:** ${orDash(item.severity)}`
-      );
-    });
-
-    lines.push("");
-  });
-
-  return hasAny ? lines.join("\n") : "-";
+function getStorageKey() {
+  return String(CONFIG.storageKey || "ems-trauma-report-v2");
 }
 
-function buildCostMarkdown(data) {
-  const lines = [
-    `- **Totaalbedrag:** ${data.costTotal ? `€ ${data.costTotal}` : "-"}`,
-    `- **Opmerking:** ${orDash(data.costNotes)}`,
-    `- **Export kostentool:**`
-  ];
+function saveDraft() {
+  if (typeof saveToLocal !== "function") return;
 
-  if (data.costImport) {
-    data.costImport.split("\n").forEach(line => {
-      lines.push(`  - ${line.trim() || "-"}`);
-    });
-  } else {
-    lines.push("  - -");
-  }
+  const payload = {
+    fields: collectFormData(),
+    injuries: injuryState
+  };
 
-  return lines.join("\n");
+  saveToLocal(getStorageKey(), payload);
+}
+
+function restoreDraft() {
+  if (typeof loadFromLocal !== "function") return;
+
+  const saved = loadFromLocal(getStorageKey(), null);
+  if (!saved || !saved.fields) return;
+
+  const fields = saved.fields;
+
+  setValue("#patientName", fields.patientName);
+  setValue("#patientDob", fields.patientDob);
+  setValue("#location", fields.location);
+  setValue("#incidentDate", fields.incidentDate);
+  setValue("#incidentTime", fields.incidentTime);
+  setValue("#leadDoctor", fields.leadDoctor);
+  setValue("#bpSys", fields.bpSys);
+  setValue("#bpDia", fields.bpDia);
+  setValue("#heartRate", fields.heartRate);
+  setValue("#pulseType", fields.pulseType);
+  setValue("#temperatureState", fields.temperatureState);
+  setValue("#bloodLoss", fields.bloodLoss);
+  setValue("#painLevel", fields.painLevel);
+  setValue("#costImport", fields.costImport);
+  setValue("#costTotal", fields.costTotal);
+  setValue("#costNotes", fields.costNotes);
+  setValue("#medicalLog", fields.medicalLog);
+  setValue("#summaryNotes", fields.summaryNotes);
+
+  restoreMultiSelect("#assistants", fields.assistants || []);
+
+  Object.keys(injuryState).forEach(part => {
+    injuryState[part] = [];
+  });
+
+  const savedInjuries = saved.injuries || {};
+  Object.keys(savedInjuries).forEach(part => {
+    injuryState[part] = Array.isArray(savedInjuries[part]) ? savedInjuries[part] : [];
+    renderInjuryList(part);
+  });
+
+  showStatus("Opgeslagen concept hersteld uit lokale opslag.", "success");
+}
+
+function clearDraft() {
+  if (typeof removeFromLocal !== "function") return;
+  removeFromLocal(getStorageKey());
 }
 
 /* =========================
@@ -659,9 +715,13 @@ async function handleCopy() {
   let copyOk = false;
   let discordOk = false;
   let discordAttempted = false;
+  let discordError = "";
 
   try {
-    await navigator.clipboard.writeText(report);
+    if (typeof copyTextToClipboard !== "function") {
+      throw new Error("Centrale exportservice is niet geladen.");
+    }
+    await copyTextToClipboard(report);
     copyOk = true;
   } catch (error) {
     copyOk = false;
@@ -669,11 +729,25 @@ async function handleCopy() {
 
   if (CONFIG.discordWebhookProxyUrl && CONFIG.discordWebhookProxyUrl.trim()) {
     discordAttempted = true;
+
     try {
-      await sendToDiscord(report);
+      if (!window.DiscordWebhookService) {
+        throw new Error("DiscordWebhookService is niet geladen.");
+      }
+
+      await window.DiscordWebhookService.sendFormMessage({
+        endpointUrl: CONFIG.discordWebhookProxyUrl,
+        formType: "trauma",
+        content: report,
+        username: CONFIG.discordUsername || "EMS Trauma Tool",
+        extraData: buildTraumaDiscordMeta(),
+        useEmbeds: CONFIG.discordUseEmbeds !== false
+      });
+
       discordOk = true;
     } catch (error) {
       discordOk = false;
+      discordError = error.message || "Onbekende Discord-fout";
     }
   }
 
@@ -688,7 +762,7 @@ async function handleCopy() {
   }
 
   if (copyOk && discordAttempted && !discordOk) {
-    showStatus("Rapport gekopieerd, maar Discord-log mislukte.", "warning");
+    showStatus(`Rapport gekopieerd, maar Discord-log mislukte: ${discordError}`, "warning");
     return;
   }
 
@@ -700,22 +774,20 @@ async function handleCopy() {
   showStatus("Kopiëren is mislukt.", "danger");
 }
 
-async function sendToDiscord(reportText) {
-  const payload = {
-    content: truncate(reportText, 1800)
+function buildTraumaDiscordMeta() {
+  const data = collectFormData();
+
+  return {
+    patientName: data.patientName,
+    patientDob: data.patientDob,
+    location: data.location,
+    incidentDate: data.incidentDate,
+    incidentTime: data.incidentTime,
+    leadDoctor: data.leadDoctor,
+    assistants: data.assistants.join(", "),
+    painLevel: data.painLevel,
+    bloodLoss: data.bloodLoss
   };
-
-  const response = await fetch(CONFIG.discordWebhookProxyUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(payload)
-  });
-
-  if (!response.ok) {
-    throw new Error(`Discord fout: ${response.status}`);
-  }
 }
 
 function handleReset() {
@@ -738,35 +810,32 @@ function handleReset() {
     renderInjuryList(part);
   });
 
-  if ($("#reportOutput")) {
-    $("#reportOutput").value = "";
-  }
+  if ($("#reportOutput")) $("#reportOutput").value = "";
+  if ($("#reportPreview")) $("#reportPreview").innerHTML = "";
 
-  const preview = $("#reportPreview");
-  if (preview) preview.innerHTML = "";
-
-  clearStatus();
+  clearDraft();
   buildReport();
+  showStatus("Formulier gereset en lokale opslag gewist.", "warning");
 }
 
 /* =========================
    STATUS
 ========================= */
 
-function showStatus(message, type = "success") {
+function showStatus(message, type = "neutral") {
   const box = $("#statusBox");
   if (!box) return;
+
+  const classMap = {
+    neutral: "status status--neutral",
+    success: "status status--success",
+    warning: "status status--warning",
+    danger: "status status--danger",
+    info: "status status--info"
+  };
 
   box.textContent = message;
-  box.className = `status-box status-${type}`;
-}
-
-function clearStatus() {
-  const box = $("#statusBox");
-  if (!box) return;
-
-  box.textContent = "";
-  box.className = "status-box hidden";
+  box.className = classMap[type] || classMap.neutral;
 }
 
 /* =========================
@@ -775,6 +844,21 @@ function clearStatus() {
 
 function $(selector) {
   return document.querySelector(selector);
+}
+
+function setValue(selector, value) {
+  const el = $(selector);
+  if (!el) return;
+  el.value = value || "";
+}
+
+function restoreMultiSelect(selector, values) {
+  const el = $(selector);
+  if (!el || !Array.isArray(values)) return;
+
+  Array.from(el.options).forEach(option => {
+    option.selected = values.includes(option.value);
+  });
 }
 
 function sanitizeText(value) {
@@ -815,11 +899,6 @@ function toTimeInputValue(date) {
 
 function pad(value) {
   return String(value).padStart(2, "0");
-}
-
-function truncate(text, maxLength) {
-  if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength - 3) + "...";
 }
 
 function buildOptionsHtml(options, selectedValue) {

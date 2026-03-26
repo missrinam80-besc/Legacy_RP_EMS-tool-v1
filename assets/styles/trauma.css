@@ -270,32 +270,6 @@
 
 .status-box {
   margin-top: 0.85rem;
-  padding: 0.75rem 0.9rem;
-  border-radius: 12px;
-  font-weight: 600;
-  border: 1px solid transparent;
-}
-
-.status-box.hidden {
-  display: none;
-}
-
-.status-success {
-  background: #dcfce7;
-  color: var(--color-success);
-  border-color: #bbf7d0;
-}
-
-.status-warning {
-  background: #fef3c7;
-  color: var(--color-warning);
-  border-color: #fde68a;
-}
-
-.status-danger {
-  background: #fee2e2;
-  color: var(--color-danger);
-  border-color: #fecaca;
 }
 
 .muted-line {

@@ -23,8 +23,7 @@
       <section class="intro panel">
         <h1>EMS Trauma Rapport v2</h1>
         <p>
-          Vul de trauma-informatie in en bouw een gestructureerd rapport op.
-          Gegevens blijven lokaal in de browser, behalve wanneer een Discord-log actief is ingesteld.
+          Vul de velden in en bouw een gestructureerd rapport op.
         </p>
       </section>
 
@@ -35,7 +34,6 @@
       <section class="panel patient-panel">
         <div class="panel-header">
           <h2>Patiëntgegevens</h2>
-          <p>Basisgegevens die steeds bovenaan in het rapport komen.</p>
         </div>
 
         <div class="panel-body">
@@ -56,11 +54,6 @@
       <section class="workspace-grid">
         <div class="tool-form-column">
           <div class="panel input-panel">
-            <div class="panel-header">
-              <h2>Invoer</h2>
-              <p>Werk met uitklapbare secties en bouw daarna het rapport op.</p>
-            </div>
-
             <div class="panel-body">
               <details class="accordion-section" open>
                 <summary>Situatiegegevens</summary>
@@ -229,13 +222,13 @@
               <button type="button" class="btn btn-secondary btn-compact" id="resetBtn">Reset</button>
             </div>
 
-            <div id="statusBox" class="status-box"></div>
+            <div id="statusBox" class="status-box status--neutral">
           </div>
 
           <div class="panel output-panel">
             <div class="output-panel__header">
               <h2>Gegenereerd rapport</h2>
-              <p>Hier verschijnt het trauma rapport in leesbare vorm.</p>
+              <p>Hier verschijnt het trauma rapport in leesbare vorm. Kopieer dit en plak het in de ems tablet.</p>
             </div>
 
             <div class="output-canvas">
@@ -248,7 +241,10 @@
     </div>
   </div>
 
-  <script src="../../assets/scripts/ems-staff-service.js"></script>
+  <script src="../../assets/js/storage.js"></script>
+  <script src="../../assets/js/export.js"></script>
+  <script src="../../assets/js/discord-webhook.js"></script>
+  <script src="../../assets/js/ems-staff-service.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
