@@ -1,18 +1,48 @@
 {
-  "toolTitle": "Opname Rapport",
-  "toolDescription": "Verslag voor opname, observatie en verdere opvolging.",
-  "reasons": [
-    "Observatie",
-    "Trauma",
-    "Chirurgische opvolging",
-    "Infectie / ziektebeeld",
-    "Psychologische observatie",
-    "Andere"
-  ],
-  "urgencyLevels": [
-    "Laag",
+  "staffApiUrl": "https://script.google.com/macros/s/AKfycbxh-7nXpT8A7D4KCQJsvA3rS_fWbFZUPsxC6zjbiLuN5Cp2y8AZ35NrrtgwGhgX8KffRA/exec",
+  "staffLabelFormat": "naam-roepnummer-rang",
+  "staffValueMode": "label",
+
+  "discordWebhookProxyUrl": "https://script.google.com/macros/s/AKfycbxh-7nXpT8A7D4KCQJsvA3rS_fWbFZUPsxC6zjbiLuN5Cp2y8AZ35NrrtgwGhgX8KffRA/exec",
+  "discordUsername": "EMS Opname Tool",
+  "discordUseEmbeds": true,
+  "discordSendPlainContent": false,
+
+  "storageKey": "ems-admission-report-v1",
+
+  "pulseOptions": [
+    "Traag",
     "Normaal",
-    "Hoog",
-    "Dringend"
+    "Snel"
+  ],
+  "temperatureOptions": [
+    "Normaal",
+    "Verhoging"
+  ],
+  "painOptions": [
+    "Weinig",
+    "Matig",
+    "Veel",
+    "Ernstig"
+  ],
+  "consciousnessOptions": [
+    "Alert",
+    "Suf",
+    "Verward",
+    "Bewusteloos"
+  ],
+  "stabilityOptions": [
+    "Stabiel",
+    "Matig stabiel",
+    "Onstabiel",
+    "Kritiek"
+  ],
+  "admissionTypeOptions": [
+    "Observatie",
+    "Spoedopname",
+    "Geplande opname",
+    "Pre-operatief",
+    "Post-operatief",
+    "Overplaatsing"
   ]
 }
