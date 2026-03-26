@@ -15,6 +15,8 @@ let staffRows = [];
 let evaluatorRows = [];
 
 const ACCORDION_STORAGE_KEY = "ems-evaluation-accordion-state";
+const FORM_DRAFT_STORAGE_KEY = "ems-evaluation-form-draft";
+const OUTPUT_STORAGE_KEY = "ems-evaluation-output-draft";
 
 document.addEventListener("DOMContentLoaded", init);
 
@@ -38,6 +40,7 @@ async function init() {
     setStatusMessage("Klaar om te starten.", "neutral");
 
     await loadStaffData();
+    restoreDraftFromLocal();
   } catch (error) {
     setStatusMessage(`Fout bij laden: ${error.message}`, "danger");
   }
@@ -190,7 +193,7 @@ function bindEvents() {
   const form = qs("#evaluationForm");
   const resetBtn = qs("#resetBtn");
   const copyBtn = qs("#copyBtn");
-  const printBtn = qs("#printBtn");
+  const discordBtn = qs("#discordBtn");
   const employeeSelect = qs("#employeeSelect");
   const evaluatorSelect = qs("#evaluatorSelect");
   const toggleAccordionBtn = qs("#toggleAccordionBtn");
@@ -198,7 +201,7 @@ function bindEvents() {
   if (form) form.addEventListener("submit", handleSubmit);
   if (resetBtn) resetBtn.addEventListener("click", resetForm);
   if (copyBtn) copyBtn.addEventListener("click", copyOutput);
-  if (printBtn) printBtn.addEventListener("click", printOutput);
+    if (discordBtn) discordBtn.addEventListener("click", sendOutputToDiscord);
   if (employeeSelect) employeeSelect.addEventListener("change", handleEmployeeSelect);
   if (evaluatorSelect) evaluatorSelect.addEventListener("change", handleEvaluatorSelect);
   if (toggleAccordionBtn) toggleAccordionBtn.addEventListener("click", toggleAllAccordionSections);
@@ -235,6 +238,7 @@ function handleFieldChange() {
   updateProgress();
   updateSectionCompletionState();
   clearValidationState();
+  saveDraftToLocal();
 }
 
 // =========================
@@ -529,6 +533,8 @@ function handleSubmit(event) {
 
   updateProgress();
   updateSectionCompletionState();
+  saveDraftToLocal();
+  saveOutputToLocal();
   setStatusMessage("Evaluatieverslag succesvol opgebouwd.", "success");
 }
 
@@ -877,9 +883,162 @@ function resetForm() {
   });
 
   renderAutoFeedback(["Feedback verschijnt na het opbouwen van het verslag."]);
+  clearDraftFromLocal();
   updateProgress();
   updateSectionCompletionState();
   setStatusMessage("Formulier leeggemaakt.", "info");
+}
+
+function saveDraftToLocal() {
+  if (typeof saveToLocal !== "function") return;
+
+  const draft = {
+    employeeSelect: qs("#employeeSelect").value,
+    evaluatorSelect: qs("#evaluatorSelect").value,
+    evaluationType: qs("#evaluationType").value,
+    date: qs("#date").value,
+    context: qs("#context").value,
+    finalScore: qs("#finalScore").value,
+    decision: qs("#decision").value,
+    strengths: qs("#strengths").value,
+    improvements: qs("#improvements").value,
+    agreements: qs("#agreements").value,
+    employeeName: qs("#employeeName").value,
+    callSign: qs("#callSign").value,
+    rank: qs("#rank").value,
+    evaluatorName: qs("#evaluatorName").value,
+    evaluatorRank: qs("#evaluatorRank").value,
+    evaluatorSignatureName: qs("#evaluatorSignatureName").value,
+    employeeSignatureName: qs("#employeeSignatureName").value,
+    categoryResults: getCategoryResults()
+  };
+
+  saveToLocal(FORM_DRAFT_STORAGE_KEY, draft);
+}
+
+function saveOutputToLocal() {
+  if (typeof saveToLocal !== "function") return;
+
+  saveToLocal(OUTPUT_STORAGE_KEY, {
+    output: qs("#output").value,
+    savedAt: new Date().toISOString()
+  });
+}
+
+function restoreDraftFromLocal() {
+  if (typeof loadFromLocal !== "function") return;
+
+  const draft = loadFromLocal(FORM_DRAFT_STORAGE_KEY, null);
+  const outputDraft = loadFromLocal(OUTPUT_STORAGE_KEY, null);
+
+  if (!draft) {
+    if (outputDraft?.output) {
+      qs("#output").value = outputDraft.output;
+    }
+    return;
+  }
+
+  setSelectValueIfExists("#employeeSelect", draft.employeeSelect);
+  setSelectValueIfExists("#evaluatorSelect", draft.evaluatorSelect);
+  setInputValue("#evaluationType", draft.evaluationType);
+  setInputValue("#date", draft.date);
+  setInputValue("#context", draft.context);
+  setInputValue("#finalScore", draft.finalScore);
+  setInputValue("#decision", draft.decision);
+  setInputValue("#strengths", draft.strengths);
+  setInputValue("#improvements", draft.improvements);
+  setInputValue("#agreements", draft.agreements);
+
+  setInputValue("#employeeName", draft.employeeName);
+  setInputValue("#callSign", draft.callSign);
+  setInputValue("#rank", draft.rank);
+  setInputValue("#evaluatorName", draft.evaluatorName);
+  setInputValue("#evaluatorRank", draft.evaluatorRank);
+  setInputValue("#evaluatorSignatureName", draft.evaluatorSignatureName);
+  setInputValue("#employeeSignatureName", draft.employeeSignatureName);
+
+  if (Array.isArray(draft.categoryResults)) {
+    const blocks = qsa(".evaluation-block");
+    draft.categoryResults.forEach((item, index) => {
+      const block = blocks[index];
+      if (!block) return;
+
+      const scoreField = block.querySelector(".js-category-score");
+      const commentField = block.querySelector(".js-category-comment");
+
+      if (scoreField) scoreField.value = item.score || "";
+      if (commentField) commentField.value = item.comment || "";
+      if (scoreField) updateScoreBadge(scoreField);
+    });
+  }
+
+  if (outputDraft?.output) {
+    qs("#output").value = outputDraft.output;
+  }
+
+  updateScoreSummaryPreview();
+  updateProgress();
+  updateSectionCompletionState();
+  setStatusMessage("Lokaal concept hersteld.", "info");
+}
+
+function clearDraftFromLocal() {
+  if (typeof removeFromLocal !== "function") return;
+
+  removeFromLocal(FORM_DRAFT_STORAGE_KEY);
+  removeFromLocal(OUTPUT_STORAGE_KEY);
+}
+
+function setInputValue(selector, value) {
+  const field = qs(selector);
+  if (field) {
+    field.value = value || "";
+  }
+}
+
+function setSelectValueIfExists(selector, value) {
+  const field = qs(selector);
+  if (!field) return;
+
+  const exists = Array.from(field.options).some(option => option.value === value);
+  field.value = exists ? value : "";
+}
+
+async function sendOutputToDiscord() {
+  const text = qs("#output").value.trim();
+
+  if (!text) {
+    return setStatusMessage("Bouw eerst een verslag op voor je het naar Discord verstuurt.", "warning");
+  }
+
+  if (!window.DiscordWebhookService) {
+    return setStatusMessage("discord-webhook.js is niet geladen.", "danger");
+  }
+
+  const endpointUrl = String(config.discordWebhookProxyUrl || "").trim();
+  if (!endpointUrl || endpointUrl === "PLAK_HIER_JE_APPS_SCRIPT_PROXY_URL") {
+    return setStatusMessage("Discord proxy-URL ontbreekt in config.json.", "warning");
+  }
+
+  try {
+    await window.DiscordWebhookService.sendFormMessage({
+      endpointUrl,
+      formType: "evaluation",
+      content: text,
+      username: config.discordWebhookUsername || "EMS Evaluatieformulier",
+      extraData: {
+        employeeName: qs("#employeeName").value || "",
+        callSign: qs("#callSign").value || "",
+        evaluatorName: qs("#evaluatorName").value || "",
+        evaluationType: qs("#evaluationType").value || "",
+        date: qs("#date").value || ""
+      }
+    });
+
+    setStatusMessage("Evaluatieverslag succesvol naar Discord verstuurd.", "success");
+  } catch (error) {
+    setStatusMessage(`Versturen naar Discord mislukt: ${error.message}`, "danger");
+  }
 }
 
 function clearEmployeeFields() {
