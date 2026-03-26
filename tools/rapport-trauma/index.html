@@ -92,12 +92,15 @@
                   <div class="form-row form-row--2">
                     <div class="field">
                       <label for="leadDoctor">Naam behandelaar</label>
-                      <input id="leadDoctor" type="text" placeholder="Naam behandelaar" />
+                      <select id="leadDoctor">
+                        <option value="">Kies een behandelaar</option>
+                      </select>
                     </div>
 
                     <div class="field">
                       <label for="assistants">Assistenten</label>
-                      <input id="assistants" type="text" placeholder="Naam 1, naam 2..." />
+                      <select id="assistants" multiple size="6"></select>
+                      <small class="field-help">Gebruik Ctrl of Cmd om meerdere assistenten te selecteren.</small>
                     </div>
                   </div>
                 </div>
@@ -215,26 +218,29 @@
                 </div>
               </details>
 
-              <div class="button-row">
-                <button type="button" class="btn btn-primary" id="buildBtn">Bouw rapport</button>
-                <button type="button" class="btn btn-secondary" id="copyBtn">Kopieer</button>
-                <button type="button" class="btn btn-secondary" id="resetBtn">Reset</button>
-              </div>
 
-              <div id="statusBox" class="status-box hidden"></div>
             </div>
           </div>
         </div>
 
         <div class="tool-output-column">
           <div class="panel output-panel">
+            <div class="button-row">
+              <button type="button" class="btn btn-primary" id="buildBtn">Bouw rapport</button>
+              <button type="button" class="btn btn-secondary" id="copyBtn">Kopieer</button>
+              <button type="button" class="btn btn-secondary" id="resetBtn">Reset</button>
+            </div>
+
+            <div id="statusBox" class="status-box hidden"></div>
+
             <div class="output-panel__header">
               <h2>Gegenereerd rapport</h2>
               <p>Hier verschijnt het trauma rapport in leesbare vorm.</p>
             </div>
 
             <div class="output-canvas">
-              <textarea id="reportOutput" class="output-canvas__textarea" readonly></textarea>
+              <div id="reportPreview" class="report-preview" aria-live="polite"></div>
+              <textarea id="reportOutput" class="output-canvas__textarea is-hidden" readonly></textarea>
             </div>
           </div>
         </div>

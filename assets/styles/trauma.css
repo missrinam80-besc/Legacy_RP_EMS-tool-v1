@@ -5,7 +5,7 @@
 .workspace-grid {
   display: grid;
   gap: 20px;
-  grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.9fr);
+  grid-template-columns: minmax(0, 1.1fr) minmax(380px, 0.95fr);
   align-items: start;
 }
 
@@ -16,9 +16,18 @@
   gap: 1rem;
 }
 
-.output-panel {
+.tool-output-column {
   position: sticky;
   top: 20px;
+  align-self: start;
+}
+
+.output-actions-panel {
+  padding: 1rem 1.1rem;
+}
+
+.output-panel {
+  position: static;
 }
 
 .output-panel__header {
@@ -37,14 +46,59 @@
   width: 100%;
   min-height: 680px;
   resize: vertical;
-  background: transparent;
-  border: 0;
+  background: rgba(229, 231, 235, 0.7);
+  border: 1px solid #d1d5db;
   box-shadow: none;
-  color: inherit;
+  color: #374151;
   font: inherit;
   line-height: 1.5;
   white-space: pre-wrap;
   box-sizing: border-box;
+}
+
+.output-canvas__textarea.is-hidden {
+  display: none;
+}
+
+.report-preview {
+  min-height: 680px;
+  border-radius: 12px;
+  background: rgba(229, 231, 235, 0.7);
+  border: 1px solid #d1d5db;
+  padding: 16px;
+  box-sizing: border-box;
+  color: #1f2937;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.report-preview hr {
+  border: 0;
+  border-top: 1px solid #c7ced8;
+  margin: 1rem 0;
+}
+
+.report-preview p {
+  margin: 0 0 0.55rem;
+}
+
+.report-preview .report-title {
+  text-align: center;
+  font-weight: 800;
+  text-transform: uppercase;
+  margin: 0.2rem 0;
+  letter-spacing: 0.04em;
+}
+
+.report-preview .report-section-title {
+  margin: 0.2rem 0 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  text-decoration: underline;
+}
+
+.report-preview strong {
+  font-weight: 700;
 }
 
 .accordion-section {
@@ -117,6 +171,11 @@
   font-weight: 600;
 }
 
+.field-help {
+  font-size: 0.8rem;
+  color: var(--color-text-soft);
+}
+
 .field input,
 .field select,
 .field textarea {
@@ -128,6 +187,20 @@
   color: var(--color-text);
   font: inherit;
   box-sizing: border-box;
+}
+
+.field input[readonly],
+.field textarea[readonly],
+.field select[readonly] {
+  background: rgba(229, 231, 235, 0.7);
+  color: #374151;
+  border-color: #d1d5db;
+  cursor: not-allowed;
+}
+
+.field select[multiple] {
+  min-height: 140px;
+  padding: 0.45rem;
 }
 
 .injury-block {
@@ -173,9 +246,21 @@
   align-self: flex-start;
 }
 
+.button-row--compact {
+  gap: 0.5rem;
+  margin-top: 0;
+}
+
+.btn-compact {
+  padding: 0.58rem 0.82rem;
+  font-size: 0.88rem;
+  border-radius: 10px;
+  line-height: 1.2;
+}
+
 .status-box {
-  margin-top: 1rem;
-  padding: 0.85rem 1rem;
+  margin-top: 0.85rem;
+  padding: 0.75rem 0.9rem;
   border-radius: 12px;
   font-weight: 600;
   border: 1px solid transparent;
@@ -213,15 +298,17 @@
     grid-template-columns: 1fr;
   }
 
-  .output-panel {
+  .tool-output-column {
     position: static;
   }
 
-  .output-canvas {
+  .output-canvas,
+  .report-preview {
     min-height: 460px;
   }
 
-  .output-canvas__textarea {
+  .output-canvas__textarea,
+  .report-preview {
     min-height: 420px;
   }
 }

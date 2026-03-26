@@ -18,6 +18,7 @@
  */
 
 let CONFIG = {};
+let PERSONNEL = [];
 const injuryState = {};
 
 document.addEventListener("DOMContentLoaded", init);
@@ -27,6 +28,7 @@ async function init() {
     CONFIG = await loadConfig();
     fillBasicSelects();
     buildInjurySections();
+    await loadPersonnel();
     bindEvents();
     presetDateTime();
     buildReport();
@@ -280,7 +282,70 @@ function buildReport() {
   const data = collectFormData();
   const report = composeReport(data);
   $("#reportOutput").value = report;
+  renderMarkdownPreview(report);
   return report;
+}
+
+function renderMarkdownPreview(markdown) {
+  const preview = $("#reportPreview");
+  if (!preview) return;
+
+  const lines = String(markdown || "").split("\n");
+  const html = [];
+  let inParagraph = false;
+
+  function closeParagraph() {
+    if (inParagraph) {
+      html.push("</p>");
+      inParagraph = false;
+    }
+  }
+
+  lines.forEach(line => {
+    const trimmed = line.trim();
+
+    if (trimmed === "---") {
+      closeParagraph();
+      html.push("<hr>");
+      return;
+    }
+
+    if (!trimmed) {
+      closeParagraph();
+      return;
+    }
+
+    if (trimmed === "__**TRAUMA RAPPORT**__") {
+      closeParagraph();
+      html.push(`<div class="report-title">TRAUMA RAPPORT</div>`);
+      return;
+    }
+
+    if (/^__\*\*(.+)\*\*__$/.test(trimmed)) {
+      closeParagraph();
+      const text = trimmed.replace(/^__\*\*(.+)\*\*__$/, "$1");
+      html.push(`<div class="report-section-title">${escapeHtml(text)}</div>`);
+      return;
+    }
+
+    const formatted = formatInlineMarkdown(trimmed);
+
+    if (!inParagraph) {
+      html.push("<p>");
+      inParagraph = true;
+    }
+
+    html.push(formatted);
+  });
+
+  closeParagraph();
+  preview.innerHTML = html.join("");
+}
+
+function formatInlineMarkdown(text) {
+  return escapeHtml(text)
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/__(.+?)__/g, "<u>$1</u>");
 }
 
 function collectFormData() {
@@ -291,7 +356,7 @@ function collectFormData() {
     incidentDate: sanitizeText($("#incidentDate").value),
     incidentTime: sanitizeText($("#incidentTime").value),
     leadDoctor: sanitizeText($("#leadDoctor").value),
-    assistants: sanitizeText($("#assistants").value),
+    assistants: getSelectedAssistants(),
     bpSys: sanitizeText($("#bpSys").value),
     bpDia: sanitizeText($("#bpDia").value),
     heartRate: sanitizeText($("#heartRate").value),
@@ -322,51 +387,66 @@ function getStructuredInjuries() {
 }
 
 function composeReport(data) {
-  const injuryText = buildInjuryText(data.injuries);
-  const costText = buildCostText(data);
+  const injuryText = buildInjuryMarkdown(data.injuries);
+  const costText = buildCostMarkdown(data);
   const logText = data.medicalLog
-    ? [
-        "MEDISCH SYSTEEMLOG",
-        data.medicalLog
-      ].join("\n")
-    : "MEDISCH SYSTEEMLOG\n-";
+    ? `__**MEDISCH SYSTEEMLOG**__\n\n${escapeMarkdownText(data.medicalLog)}`
+    : `__**MEDISCH SYSTEEMLOG**__\n\n-`;
 
   return [
-    "TRAUMA RAPPORT",
+    "---",
+    "__**TRAUMA RAPPORT**__",
+    "---",
     "",
-    "PATIËNTGEGEVENS",
-    `Naam patiënt: ${orDash(data.patientName)}`,
-    `Geboortedatum: ${formatDateDisplay(data.patientDob)}`,
+    "__**PATIËNTGEGEVENS**__",
+    `**Naam patiënt:** ${orDash(data.patientName)}`,
+    `**Geboortedatum:** ${formatDateDisplay(data.patientDob)}`,
     "",
-    "SITUATIEGEGEVENS",
-    `Locatie: ${orDash(data.location)}`,
-    `Datum: ${formatDateDisplay(data.incidentDate)}`,
-    `Uur: ${orDash(data.incidentTime)}`,
+    "---",
     "",
-    "ARTS & TEAM",
-    `Naam behandelaar: ${orDash(data.leadDoctor)}`,
-    `Assistenten: ${orDash(data.assistants)}`,
+    "__**SITUATIEGEGEVENS**__",
+    `**Locatie:** ${orDash(data.location)}`,
+    `**Datum:** ${formatDateDisplay(data.incidentDate)}`,
+    `**Uur:** ${orDash(data.incidentTime)}`,
     "",
-    "TRAUMA VITALS",
-    `Bloeddruk: ${formatBloodPressure(data.bpSys, data.bpDia)}`,
-    `Hartslag: ${orDash(data.heartRate)}`,
-    `Pols: ${orDash(data.pulseType)}`,
-    `Temperatuur: ${orDash(data.temperatureState)}`,
-    `Bloedverlies: ${orDash(data.bloodLoss)}`,
-    `Pijn: ${orDash(data.painLevel)}`,
+    "---",
     "",
-    "VERWONDINGEN PER LEDEMAAT",
+    "__**ARTS & TEAM**__",
+    `**Naam behandelaar:** ${orDash(data.leadDoctor)}`,
+    `**Assistenten:** ${data.assistants.length ? data.assistants.join(", ") : "-"}`,
+    "",
+    "---",
+    "",
+    "__**TRAUMA VITALS**__",
+    `**Bloeddruk:** ${formatBloodPressure(data.bpSys, data.bpDia)}`,
+    `**Hartslag:** ${orDash(data.heartRate)}`,
+    `**Pols:** ${orDash(data.pulseType)}`,
+    `**Temperatuur:** ${orDash(data.temperatureState)}`,
+    `**Bloedverlies:** ${orDash(data.bloodLoss)}`,
+    `**Pijn:** ${orDash(data.painLevel)}`,
+    "",
+    "---",
+    "",
+    "__**VERWONDINGEN PER LEDEMAAT**__",
     injuryText,
     "",
-    "KOSTENINFORMATIE",
+    "---",
+    "",
+    "__**KOSTENINFORMATIE**__",
     costText,
     "",
-    "SAMENVATTING / EXTRA NOTITIES",
-    orDash(data.summaryNotes),
+    "---",
+    "",
+    "__**SAMENVATTING / EXTRA NOTITIES**__",
+    `${orDash(data.summaryNotes)}`,
+    "",
+    "---",
     "",
     logText,
     "",
-    `Rapport opgebouwd op: ${formatDateTimeNow()}`
+    "---",
+    "",
+    `**Rapport opgebouwd op:** ${formatDateTimeNow()}`
   ].join("\n");
 }
 
@@ -402,6 +482,55 @@ function buildCostText(data) {
   ];
 
   return parts.join("\n");
+}
+
+async function loadPersonnel() {
+  const sourceUrl = (CONFIG.personnelSourceUrl || "").trim();
+  if (!sourceUrl) return;
+
+  const response = await fetch(sourceUrl);
+  if (!response.ok) {
+    throw new Error("Personeelslijst kon niet geladen worden.");
+  }
+
+  const data = await response.json();
+  PERSONNEL = Array.isArray(data) ? data : (data.items || []);
+
+  populatePersonnelFields();
+}
+
+function populatePersonnelFields() {
+  const doctorSelect = $("#leadDoctor");
+  const assistantsSelect = $("#assistants");
+
+  if (!doctorSelect || !assistantsSelect) return;
+
+  doctorSelect.innerHTML = `<option value="">Kies een behandelaar</option>`;
+  assistantsSelect.innerHTML = "";
+
+  PERSONNEL.forEach(person => {
+    const name = typeof person === "string"
+      ? person
+      : (person.name || person.naam || person.displayName || "");
+
+    if (!name) return;
+
+    const doctorOption = document.createElement("option");
+    doctorOption.value = name;
+    doctorOption.textContent = name;
+    doctorSelect.appendChild(doctorOption);
+
+    const assistantOption = document.createElement("option");
+    assistantOption.value = name;
+    assistantOption.textContent = name;
+    assistantsSelect.appendChild(assistantOption);
+  });
+}
+
+function getSelectedAssistants() {
+  const select = $("#assistants");
+  if (!select) return [];
+  return Array.from(select.selectedOptions).map(option => option.value).filter(Boolean);
 }
 
 async function handleCopy() {
@@ -476,7 +605,9 @@ async function sendToDiscord(reportText) {
 
 function handleReset() {
   document.querySelectorAll("input, textarea, select").forEach(el => {
-    if (el.tagName === "SELECT") {
+    if (el.tagName === "SELECT" && el.multiple) {
+      Array.from(el.options).forEach(option => option.selected = false);
+    } else if (el.tagName === "SELECT") {
       el.selectedIndex = 0;
     } else {
       el.value = "";
@@ -491,6 +622,8 @@ function handleReset() {
   });
 
   $("#reportOutput").value = "";
+  const preview = $("#reportPreview");
+  if (preview) preview.innerHTML = "";
   clearStatus();
   buildReport();
 }
@@ -603,4 +736,41 @@ function debounce(fn, delay = 200) {
 function matchGroup(text, regex) {
   const match = text.match(regex);
   return match && match[1] ? match[1].trim() : "";
+}
+
+function buildInjuryMarkdown(injuries) {
+  const lines = [];
+  let hasAny = false;
+
+  Object.keys(injuries).forEach(part => {
+    const items = injuries[part] || [];
+    if (!items.length) {
+      lines.push(`**${part}:** geen geregistreerde verwondingen.`);
+      return;
+    }
+
+    hasAny = true;
+    lines.push(`**${part}:**`);
+    items.forEach((item, index) => {
+      lines.push(
+        `${index + 1}. **Type:** ${orDash(item.type)} | **Ernst:** ${orDash(item.severity)} | **Toelichting:** ${orDash(item.note)}`
+      );
+    });
+    lines.push("");
+  });
+
+  return hasAny ? lines.join("\n") : "-";
+}
+
+function buildCostMarkdown(data) {
+  return [
+    `**Totaalbedrag:** ${data.costTotal ? `€ ${data.costTotal}` : "-"}`,
+    `**Opmerking:** ${orDash(data.costNotes)}`,
+    `**Export kostentool:**`,
+    `${data.costImport || "-"}`
+  ].join("\n");
+}
+
+function escapeMarkdownText(text) {
+  return String(text || "").trim();
 }

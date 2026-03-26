@@ -1,5 +1,7 @@
 {
+  "personnelSourceUrl": "../../data/personnel.json",
   "discordWebhookProxyUrl": "",
+
   "pulseOptions": [
     "Traag",
     "Normaal",
