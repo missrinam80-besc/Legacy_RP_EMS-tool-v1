@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EMS Operatie Rapport v1</title>
+  <title>EMS Forensisch Rapport v1</title>
 
   <link rel="stylesheet" href="../../assets/styles/theme.css" />
   <link rel="stylesheet" href="../../assets/styles/base.css" />
   <link rel="stylesheet" href="../../assets/styles/layout.css" />
   <link rel="stylesheet" href="../../assets/styles/components.css" />
   <link rel="stylesheet" href="../../assets/styles/utilities.css" />
-  <link rel="stylesheet" href="../../assets/styles/operatie.css" />
+  <link rel="stylesheet" href="../../assets/styles/forensisch.css" />
 </head>
 
 <body>
@@ -21,9 +21,9 @@
 
     <div class="page-container">
       <section class="intro panel">
-        <h1>EMS Operatie Rapport v1</h1>
+        <h1>EMS Forensisch Rapport v1</h1>
         <p>
-          Vul de velden in en bouw een gestructureerd operatierapport op.
+          Vul de velden in en bouw een gestructureerd forensisch rapport op.
         </p>
       </section>
 
@@ -33,13 +33,13 @@
 
       <section class="panel patient-panel">
         <div class="panel-header">
-          <h2>Patiëntgegevens</h2>
+          <h2>Patiënt / betrokkene</h2>
         </div>
 
         <div class="panel-body">
           <div class="form-row form-row--2">
             <div class="field">
-              <label for="patientName">Naam patiënt</label>
+              <label for="patientName">Naam betrokkene</label>
               <input id="patientName" type="text" placeholder="Voornaam Achternaam" />
             </div>
 
@@ -56,55 +56,55 @@
           <div class="panel input-panel">
             <div class="panel-body">
               <details class="accordion-section" open>
-                <summary>Operatiegegevens</summary>
+                <summary>Algemene forensische gegevens</summary>
                 <div class="accordion-content">
                   <div class="form-row form-row--1">
                     <div class="field">
                       <label for="location">Locatie</label>
-                      <input id="location" type="text" placeholder="Operatiezaal, ziekenhuis..." />
+                      <input id="location" type="text" placeholder="Plaats delict, ziekenhuis, woning..." />
                     </div>
                   </div>
 
                   <div class="form-row form-row--2">
                     <div class="field">
-                      <label for="operationDate">Datum operatie</label>
-                      <input id="operationDate" type="date" />
+                      <label for="reportDate">Datum onderzoek</label>
+                      <input id="reportDate" type="date" />
                     </div>
 
                     <div class="field">
-                      <label for="operationTime">Uur operatie</label>
-                      <input id="operationTime" type="time" />
+                      <label for="reportTime">Uur onderzoek</label>
+                      <input id="reportTime" type="time" />
                     </div>
                   </div>
 
                   <div class="form-row form-row--2">
                     <div class="field">
-                      <label for="operatingRoom">Operatiezaal</label>
-                      <input id="operatingRoom" type="text" placeholder="OK1, operatiezaal 2..." />
+                      <label for="reportType">Type onderzoek</label>
+                      <select id="reportType"></select>
                     </div>
 
                     <div class="field">
-                      <label for="operationType">Type ingreep</label>
-                      <select id="operationType"></select>
+                      <label for="caseReference">Referentie / dossiernummer</label>
+                      <input id="caseReference" type="text" placeholder="Zaaknummer of intern referentienummer" />
                     </div>
                   </div>
 
                   <div class="form-row form-row--1">
                     <div class="field">
-                      <label for="operationReason">Indicatie / reden voor operatie</label>
-                      <textarea id="operationReason" rows="4" placeholder="Waarom werd de operatie uitgevoerd?"></textarea>
+                      <label for="reasonForExam">Aanleiding onderzoek</label>
+                      <textarea id="reasonForExam" rows="4" placeholder="Waarom werd dit forensisch onderzoek uitgevoerd?"></textarea>
                     </div>
                   </div>
                 </div>
               </details>
 
               <details class="accordion-section">
-                <summary>Operatieteam</summary>
+                <summary>Onderzoeksteam</summary>
                 <div class="accordion-content">
                   <div class="form-row form-row--2">
                     <div class="field">
-                      <label for="leadSurgeon">Hoofdchirurg</label>
-                      <select id="leadSurgeon">
+                      <label for="leadDoctor">Behandelaar / onderzoeker</label>
+                      <select id="leadDoctor">
                         <option value="">Kies een behandelaar</option>
                       </select>
                     </div>
@@ -118,21 +118,33 @@
 
                   <div class="form-row form-row--2">
                     <div class="field">
-                      <label for="anesthetist">Anesthesie / sedatie door</label>
-                      <input id="anesthetist" type="text" placeholder="Naam behandelaar" />
+                      <label for="requestedBy">Aangevraagd door</label>
+                      <input id="requestedBy" type="text" placeholder="LSPD, arts, command..." />
                     </div>
 
                     <div class="field">
-                      <label for="supportStaff">Overig operatieteam</label>
-                      <input id="supportStaff" type="text" placeholder="Verpleegkundige, assistent..." />
+                      <label for="presenceOthers">Aanwezigen bij onderzoek</label>
+                      <input id="presenceOthers" type="text" placeholder="Politie, arts, getuige..." />
                     </div>
                   </div>
                 </div>
               </details>
 
               <details class="accordion-section">
-                <summary>Pre-operatieve toestand</summary>
+                <summary>Toestand van betrokkene</summary>
                 <div class="accordion-content">
+                  <div class="form-row form-row--2">
+                    <div class="field">
+                      <label for="consciousness">Bewustzijn</label>
+                      <select id="consciousness"></select>
+                    </div>
+
+                    <div class="field">
+                      <label for="stability">Algemene toestand</label>
+                      <select id="stability"></select>
+                    </div>
+                  </div>
+
                   <div class="form-row form-row--2">
                     <div class="field">
                       <label for="bpSys">Bloeddruk boven</label>
@@ -152,75 +164,27 @@
                     </div>
 
                     <div class="field">
-                      <label for="pulseType">Pols</label>
-                      <select id="pulseType"></select>
-                    </div>
-                  </div>
-
-                  <div class="form-row form-row--2">
-                    <div class="field">
                       <label for="temperatureState">Temperatuur</label>
                       <select id="temperatureState"></select>
                     </div>
-
-                    <div class="field">
-                      <label for="stability">Toestand</label>
-                      <select id="stability"></select>
-                    </div>
                   </div>
 
                   <div class="form-row form-row--1">
                     <div class="field">
-                      <label for="preOpNotes">Pre-operatieve notities</label>
-                      <textarea id="preOpNotes" rows="4" placeholder="Relevante toestand, aandachtspunten, risico's..."></textarea>
+                      <label for="generalConditionNotes">Toestand / klinische notities</label>
+                      <textarea id="generalConditionNotes" rows="4" placeholder="Algemene toestand, bijzonderheden, reacties..."></textarea>
                     </div>
                   </div>
                 </div>
               </details>
 
               <details class="accordion-section">
-                <summary>Anesthesie & voorbereiding</summary>
-                <div class="accordion-content">
-                  <div class="form-row form-row--2">
-                    <div class="field">
-                      <label for="anesthesiaType">Type anesthesie</label>
-                      <select id="anesthesiaType"></select>
-                    </div>
-
-                    <div class="field">
-                      <label for="patientPosition">Patiëntpositie</label>
-                      <input id="patientPosition" type="text" placeholder="Ruglig, zijlig..." />
-                    </div>
-                  </div>
-
-                  <div class="form-row form-row--1">
-                    <div class="field">
-                      <label for="preparation">Voorbereiding</label>
-                      <textarea id="preparation" rows="4" placeholder="Ontsmetting, afdekking, voorbereiding OK..."></textarea>
-                    </div>
-                  </div>
-                </div>
-              </details>
-
-              <details class="accordion-section">
-                <summary>Uitgevoerde ingreep</summary>
+                <summary>Letsels en uiterlijke vaststellingen</summary>
                 <div class="accordion-content">
                   <div class="form-row form-row--1">
                     <div class="field">
-                      <label for="procedureSummary">Beschrijving van de ingreep</label>
-                      <textarea id="procedureSummary" rows="6" placeholder="Stap voor stap of samenvattend verloop van de operatie..."></textarea>
-                    </div>
-                  </div>
-
-                  <div class="form-row form-row--2">
-                    <div class="field">
-                      <label for="findings">Peroperatieve bevindingen</label>
-                      <textarea id="findings" rows="5" placeholder="Wat werd vastgesteld tijdens de ingreep?"></textarea>
-                    </div>
-
-                    <div class="field">
-                      <label for="complications">Complicaties</label>
-                      <textarea id="complications" rows="5" placeholder="Geen complicaties of beschrijving van complicaties..."></textarea>
+                      <label for="injuryOverview">Overzicht letsels</label>
+                      <textarea id="injuryOverview" rows="5" placeholder="Beschrijf zichtbare letsels en hun locatie..."></textarea>
                     </div>
                   </div>
 
@@ -231,27 +195,82 @@
                     </div>
 
                     <div class="field">
-                      <label for="specimens">Stalen / materiaal afgenomen</label>
-                      <input id="specimens" type="text" placeholder="Geen / biopsie / labo..." />
+                      <label for="violenceIndicators">Indicaties van geweld</label>
+                      <select id="violenceIndicators"></select>
+                    </div>
+                  </div>
+
+                  <div class="form-row form-row--1">
+                    <div class="field">
+                      <label for="externalObservations">Uiterlijke vaststellingen</label>
+                      <textarea id="externalObservations" rows="5" placeholder="Kleding, bloedsporen, verontreiniging, opvallende uiterlijke kenmerken..."></textarea>
                     </div>
                   </div>
                 </div>
               </details>
 
               <details class="accordion-section">
-                <summary>Post-operatief plan</summary>
+                <summary>Forensische bevindingen</summary>
                 <div class="accordion-content">
                   <div class="form-row form-row--1">
                     <div class="field">
-                      <label for="postOpStatus">Post-operatieve toestand</label>
-                      <textarea id="postOpStatus" rows="4" placeholder="Toestand van de patiënt na de ingreep..."></textarea>
+                      <label for="forensicFindings">Forensische bevindingen</label>
+                      <textarea id="forensicFindings" rows="6" placeholder="Beschrijf de medische en forensische bevindingen..."></textarea>
+                    </div>
+                  </div>
+
+                  <div class="form-row form-row--2">
+                    <div class="field">
+                      <label for="suspectedCause">Vermoedelijke oorzaak</label>
+                      <input id="suspectedCause" type="text" placeholder="Trauma, steekwonde, schotwonde, intoxicatie..." />
+                    </div>
+
+                    <div class="field">
+                      <label for="timeEstimate">Schatting tijdsverloop</label>
+                      <input id="timeEstimate" type="text" placeholder="Recent, enkele uren, onbekend..." />
+                    </div>
+                  </div>
+                </div>
+              </details>
+
+              <details class="accordion-section">
+                <summary>Stalen en bewijsstukken</summary>
+                <div class="accordion-content">
+                  <div class="form-row form-row--1">
+                    <div class="field">
+                      <label for="samplesTaken">Afgenomen stalen</label>
+                      <textarea id="samplesTaken" rows="4" placeholder="Bloed, DNA, tox, kleding, projectiel, geen..."></textarea>
                     </div>
                   </div>
 
                   <div class="form-row form-row--1">
                     <div class="field">
-                      <label for="postOpPlan">Nazorg / verder beleid</label>
-                      <textarea id="postOpPlan" rows="5" placeholder="Observatie, medicatie, opname, controle, revalidatie..."></textarea>
+                      <label for="evidenceHandled">Veiliggestelde elementen / bewijsstukken</label>
+                      <textarea id="evidenceHandled" rows="4" placeholder="Welke stukken of elementen werden veiliggesteld of vermeld?"></textarea>
+                    </div>
+                  </div>
+                </div>
+              </details>
+
+              <details class="accordion-section">
+                <summary>Besluit en overdracht</summary>
+                <div class="accordion-content">
+                  <div class="form-row form-row--1">
+                    <div class="field">
+                      <label for="conclusion">Medisch-forensisch besluit</label>
+                      <textarea id="conclusion" rows="5" placeholder="Samenvatting van het besluit..."></textarea>
+                    </div>
+                  </div>
+
+                  <div class="form-row form-row--2">
+                    <div class="field">
+                      <label for="transferTo">Overgedragen aan</label>
+                      <input id="transferTo" type="text" placeholder="LSPD, mortuarium, afdeling..." />
+                    </div>
+
+                    <div class="field">
+                      <label for="followUp">Vervolgactie</label>
+                      <input id="followUp" type="text" placeholder="Verder onderzoek, labo, autopsie, observatie..." />
                     </div>
                   </div>
                 </div>
@@ -270,7 +289,7 @@
                   <div class="form-row form-row--2">
                     <div class="field">
                       <label for="costTotal">Totaalbedrag (€)</label>
-                      <input id="costTotal" type="number" min="0" step="1" placeholder="Bijv. 2500" />
+                      <input id="costTotal" type="number" min="0" step="1" placeholder="Bijv. 1500" />
                     </div>
 
                     <div class="field">
@@ -304,8 +323,8 @@
                 <div class="accordion-content">
                   <div class="form-row form-row--1">
                     <div class="field">
-                      <label for="summaryNotes">Samenvatting / extra medische notities</label>
-                      <textarea id="summaryNotes" rows="6" placeholder="Vrije notities, conclusies, bijzonderheden..."></textarea>
+                      <label for="summaryNotes">Extra notities</label>
+                      <textarea id="summaryNotes" rows="6" placeholder="Vrije notities, bemerkingen, aanvullingen..."></textarea>
                     </div>
                   </div>
                 </div>
@@ -328,7 +347,7 @@
           <div class="panel output-panel">
             <div class="output-panel__header">
               <h2>Gegenereerd rapport</h2>
-              <p>Hier verschijnt het operatierapport in leesbare vorm. Kopieer dit en plak het in de EMS tablet.</p>
+              <p>Hier verschijnt het forensisch rapport in leesbare vorm. Kopieer dit en plak het in de EMS tablet.</p>
             </div>
 
             <div class="output-canvas">

@@ -1,6 +1,6 @@
 /**
- * EMS Operatie Rapport v1
- * ----------------------
+ * EMS Coma Rapport v1
+ * ------------------
  * Gebruikt centrale services:
  * - storage.js
  * - export.js
@@ -64,17 +64,23 @@ function handleAutoChange() {
 
 function presetDateTime() {
   const now = new Date();
-  if ($("#operationDate") && !$("#operationDate").value) $("#operationDate").value = toDateInputValue(now);
-  if ($("#operationTime") && !$("#operationTime").value) $("#operationTime").value = toTimeInputValue(now);
+  if ($("#reportDate") && !$("#reportDate").value) $("#reportDate").value = toDateInputValue(now);
+  if ($("#reportTime") && !$("#reportTime").value) $("#reportTime").value = toTimeInputValue(now);
 }
 
 function fillBasicSelects() {
+  fillSelect("#gcsEyes", CONFIG.gcsEyesOptions || []);
+  fillSelect("#gcsVerbal", CONFIG.gcsVerbalOptions || []);
+  fillSelect("#gcsMotor", CONFIG.gcsMotorOptions || []);
+  fillSelect("#consciousness", CONFIG.consciousnessOptions || []);
+  fillSelect("#responsiveness", CONFIG.responsivenessOptions || []);
+  fillSelect("#pupilReaction", CONFIG.pupilReactionOptions || []);
+  fillSelect("#neurologicalStatus", CONFIG.neurologicalStatusOptions || []);
   fillSelect("#pulseType", CONFIG.pulseOptions || []);
   fillSelect("#temperatureState", CONFIG.temperatureOptions || []);
+  fillSelect("#respiration", CONFIG.respirationOptions || []);
+  fillSelect("#oxygenation", CONFIG.oxygenationOptions || []);
   fillSelect("#stability", CONFIG.stabilityOptions || []);
-  fillSelect("#operationType", CONFIG.operationTypeOptions || []);
-  fillSelect("#anesthesiaType", CONFIG.anesthesiaTypeOptions || []);
-  fillSelect("#bloodLoss", CONFIG.bloodLossOptions || []);
 }
 
 function fillSelect(selector, options) {
@@ -112,12 +118,12 @@ async function initStaffFields() {
 }
 
 function populateStaffSelects() {
-  const leadSurgeonSelect = $("#leadSurgeon");
+  const leadDoctorSelect = $("#leadDoctor");
   const assistantsSelect = $("#assistants");
 
-  if (!leadSurgeonSelect || !assistantsSelect) return;
+  if (!leadDoctorSelect || !assistantsSelect) return;
 
-  window.EmsStaffService.populateSelect(leadSurgeonSelect, STAFF_ROWS, {
+  window.EmsStaffService.populateSelect(leadDoctorSelect, STAFF_ROWS, {
     includeEmpty: true,
     emptyLabel: "Kies een behandelaar",
     labelFormat: CONFIG.staffLabelFormat || "naam-roepnummer-rang",
@@ -131,7 +137,7 @@ function populateStaffSelects() {
   });
 
   if ((CONFIG.staffValueMode || "label") === "label") {
-    setSelectOptionValuesToLabels(leadSurgeonSelect, true);
+    setSelectOptionValuesToLabels(leadDoctorSelect, true);
     setSelectOptionValuesToLabels(assistantsSelect, false);
   }
 }
@@ -235,42 +241,72 @@ function buildReport() {
 }
 
 function collectFormData() {
+  const gcsEyes = sanitizeText($("#gcsEyes")?.value);
+  const gcsVerbal = sanitizeText($("#gcsVerbal")?.value);
+  const gcsMotor = sanitizeText($("#gcsMotor")?.value);
+
   return {
     patientName: sanitizeText($("#patientName")?.value),
     patientDob: sanitizeText($("#patientDob")?.value),
     location: sanitizeText($("#location")?.value),
-    operationDate: sanitizeText($("#operationDate")?.value),
-    operationTime: sanitizeText($("#operationTime")?.value),
-    operatingRoom: sanitizeText($("#operatingRoom")?.value),
-    operationType: sanitizeText($("#operationType")?.value),
-    operationReason: sanitizeText($("#operationReason")?.value),
-    leadSurgeon: sanitizeText($("#leadSurgeon")?.value),
+    reportDate: sanitizeText($("#reportDate")?.value),
+    reportTime: sanitizeText($("#reportTime")?.value),
+    department: sanitizeText($("#department")?.value),
+    room: sanitizeText($("#room")?.value),
+    admissionReason: sanitizeText($("#admissionReason")?.value),
+    leadDoctor: sanitizeText($("#leadDoctor")?.value),
     assistants: getSelectedAssistants(),
-    anesthetist: sanitizeText($("#anesthetist")?.value),
-    supportStaff: sanitizeText($("#supportStaff")?.value),
+    specialists: sanitizeText($("#specialists")?.value),
+    gcsEyes,
+    gcsVerbal,
+    gcsMotor,
+    gcsTotal: calculateGcsTotal(gcsEyes, gcsVerbal, gcsMotor),
+    consciousness: sanitizeText($("#consciousness")?.value),
+    responsiveness: sanitizeText($("#responsiveness")?.value),
+    pupilReaction: sanitizeText($("#pupilReaction")?.value),
+    neurologicalStatus: sanitizeText($("#neurologicalStatus")?.value),
+    neurologicalNotes: sanitizeText($("#neurologicalNotes")?.value),
     bpSys: sanitizeText($("#bpSys")?.value),
     bpDia: sanitizeText($("#bpDia")?.value),
     heartRate: sanitizeText($("#heartRate")?.value),
     pulseType: sanitizeText($("#pulseType")?.value),
     temperatureState: sanitizeText($("#temperatureState")?.value),
+    respiration: sanitizeText($("#respiration")?.value),
+    oxygenation: sanitizeText($("#oxygenation")?.value),
     stability: sanitizeText($("#stability")?.value),
-    preOpNotes: sanitizeText($("#preOpNotes")?.value),
-    anesthesiaType: sanitizeText($("#anesthesiaType")?.value),
-    patientPosition: sanitizeText($("#patientPosition")?.value),
-    preparation: sanitizeText($("#preparation")?.value),
-    procedureSummary: sanitizeText($("#procedureSummary")?.value),
-    findings: sanitizeText($("#findings")?.value),
-    complications: sanitizeText($("#complications")?.value),
-    bloodLoss: sanitizeText($("#bloodLoss")?.value),
-    specimens: sanitizeText($("#specimens")?.value),
-    postOpStatus: sanitizeText($("#postOpStatus")?.value),
-    postOpPlan: sanitizeText($("#postOpPlan")?.value),
+    suspectedCause: sanitizeText($("#suspectedCause")?.value),
+    onsetEstimate: sanitizeText($("#onsetEstimate")?.value),
+    injuryOverview: sanitizeText($("#injuryOverview")?.value),
+    examinations: sanitizeText($("#examinations")?.value),
+    treatmentsStarted: sanitizeText($("#treatmentsStarted")?.value),
+    medicationGiven: sanitizeText($("#medicationGiven")?.value),
+    evolution: sanitizeText($("#evolution")?.value),
+    currentStatus: sanitizeText($("#currentStatus")?.value),
+    prognosis: sanitizeText($("#prognosis")?.value),
+    carePlan: sanitizeText($("#carePlan")?.value),
+    transferTo: sanitizeText($("#transferTo")?.value),
+    familyInfo: sanitizeText($("#familyInfo")?.value),
     costImport: sanitizeText($("#costImport")?.value),
     costTotal: sanitizeText($("#costTotal")?.value),
     costNotes: sanitizeText($("#costNotes")?.value),
     medicalLog: sanitizeText($("#medicalLog")?.value),
     summaryNotes: sanitizeText($("#summaryNotes")?.value)
   };
+}
+
+function calculateGcsTotal(eyes, verbal, motor) {
+  const e = extractLeadingNumber(eyes);
+  const v = extractLeadingNumber(verbal);
+  const m = extractLeadingNumber(motor);
+
+  if (e === null && v === null && m === null) return "-";
+
+  return (e || 0) + (v || 0) + (m || 0);
+}
+
+function extractLeadingNumber(value) {
+  const match = String(value || "").match(/^(\d+)/);
+  return match ? Number(match[1]) : null;
 }
 
 function composeReport(data) {
@@ -281,7 +317,7 @@ function composeReport(data) {
 
   return [
     "---",
-    "__**OPERATIE RAPPORT**__",
+    "__**COMA RAPPORT**__",
     "---",
     "",
     "__**PATIËNTGEGEVENS**__",
@@ -290,53 +326,72 @@ function composeReport(data) {
     "",
     "---",
     "",
-    "__**OPERATIEGEGEVENS**__",
+    "__**ALGEMENE OPNAMEGEGEVENS**__",
     `- **Locatie:** ${orDash(data.location)}`,
-    `- **Datum operatie:** ${formatDateDisplay(data.operationDate)}`,
-    `- **Uur operatie:** ${orDash(data.operationTime)}`,
-    `- **Operatiezaal:** ${orDash(data.operatingRoom)}`,
-    `- **Type ingreep:** ${orDash(data.operationType)}`,
-    `- **Indicatie / reden:** ${orDash(data.operationReason)}`,
+    `- **Datum opname / observatie:** ${formatDateDisplay(data.reportDate)}`,
+    `- **Uur opname / observatie:** ${orDash(data.reportTime)}`,
+    `- **Afdeling:** ${orDash(data.department)}`,
+    `- **Kamer / ruimte:** ${orDash(data.room)}`,
+    `- **Reden van opname:** ${orDash(data.admissionReason)}`,
     "",
     "---",
     "",
-    "__**OPERATIETEAM**__",
-    `- **Hoofdchirurg:** ${orDash(data.leadSurgeon)}`,
+    "__**ARTS & TEAM**__",
+    `- **Naam behandelaar:** ${orDash(data.leadDoctor)}`,
     `- **Assistenten:** ${data.assistants.length ? data.assistants.join(", ") : "-"}`,
-    `- **Anesthesie / sedatie door:** ${orDash(data.anesthetist)}`,
-    `- **Overig operatieteam:** ${orDash(data.supportStaff)}`,
+    `- **Betrokken specialisten:** ${orDash(data.specialists)}`,
     "",
     "---",
     "",
-    "__**PRE-OPERATIEVE TOESTAND**__",
+    "__**NEUROLOGISCHE TOESTAND**__",
+    `- **GCS ogen:** ${orDash(data.gcsEyes)}`,
+    `- **GCS verbaal:** ${orDash(data.gcsVerbal)}`,
+    `- **GCS motorisch:** ${orDash(data.gcsMotor)}`,
+    `- **GCS totaal:** ${orDash(data.gcsTotal)}`,
+    `- **Bewustzijnstoestand:** ${orDash(data.consciousness)}`,
+    `- **Reactie op prikkels:** ${orDash(data.responsiveness)}`,
+    `- **Pupilreacties:** ${orDash(data.pupilReaction)}`,
+    `- **Neurologische indruk:** ${orDash(data.neurologicalStatus)}`,
+    `- **Neurologische notities:** ${orDash(data.neurologicalNotes)}`,
+    "",
+    "---",
+    "",
+    "__**VITALE FUNCTIES**__",
     `- **Bloeddruk:** ${formatBloodPressure(data.bpSys, data.bpDia)}`,
     `- **Hartslag:** ${orDash(data.heartRate)}`,
     `- **Pols:** ${orDash(data.pulseType)}`,
     `- **Temperatuur:** ${orDash(data.temperatureState)}`,
-    `- **Toestand:** ${orDash(data.stability)}`,
-    `- **Notities:** ${orDash(data.preOpNotes)}`,
+    `- **Ademhaling:** ${orDash(data.respiration)}`,
+    `- **Zuurstofstatus:** ${orDash(data.oxygenation)}`,
+    `- **Algemene toestand:** ${orDash(data.stability)}`,
     "",
     "---",
     "",
-    "__**ANESTHESIE & VOORBEREIDING**__",
-    `- **Type anesthesie:** ${orDash(data.anesthesiaType)}`,
-    `- **Patiëntpositie:** ${orDash(data.patientPosition)}`,
-    `- **Voorbereiding:** ${orDash(data.preparation)}`,
+    "__**OORZAAK EN LETSELS**__",
+    `- **Vermoedelijke oorzaak coma:** ${orDash(data.suspectedCause)}`,
+    `- **Tijdsverloop / ontstaan:** ${orDash(data.onsetEstimate)}`,
+    `- **Vastgestelde letsels of bevindingen:** ${orDash(data.injuryOverview)}`,
     "",
     "---",
     "",
-    "__**UITGEVOERDE INGREEP**__",
-    `- **Beschrijving ingreep:** ${orDash(data.procedureSummary)}`,
-    `- **Peroperatieve bevindingen:** ${orDash(data.findings)}`,
-    `- **Complicaties:** ${orDash(data.complications)}`,
-    `- **Bloedverlies:** ${orDash(data.bloodLoss)}`,
-    `- **Stalen / materiaal:** ${orDash(data.specimens)}`,
+    "__**ONDERZOEKEN EN BEHANDELING**__",
+    `- **Uitgevoerde onderzoeken:** ${orDash(data.examinations)}`,
+    `- **Opgestarte behandelingen:** ${orDash(data.treatmentsStarted)}`,
+    `- **Medicatie:** ${orDash(data.medicationGiven)}`,
     "",
     "---",
     "",
-    "__**POST-OPERATIEF PLAN**__",
-    `- **Post-operatieve toestand:** ${orDash(data.postOpStatus)}`,
-    `- **Nazorg / verder beleid:** ${orDash(data.postOpPlan)}`,
+    "__**OBSERVATIEVERLOOP**__",
+    `- **Evolutie tijdens observatie:** ${orDash(data.evolution)}`,
+    `- **Huidige status:** ${orDash(data.currentStatus)}`,
+    `- **Prognose:** ${orDash(data.prognosis)}`,
+    "",
+    "---",
+    "",
+    "__**VERVOLGBELEID**__",
+    `- **Verder zorgplan:** ${orDash(data.carePlan)}`,
+    `- **Overgedragen aan:** ${orDash(data.transferTo)}`,
+    `- **Familie / contactinfo:** ${orDash(data.familyInfo)}`,
     "",
     "---",
     "",
@@ -430,10 +485,10 @@ function renderMarkdownPreview(markdown) {
       return;
     }
 
-    if (trimmed === "__**OPERATIE RAPPORT**__") {
+    if (trimmed === "__**COMA RAPPORT**__") {
       closeParagraph();
       closeLists();
-      html.push(`<div class="report-title">OPERATIE RAPPORT</div>`);
+      html.push(`<div class="report-title">COMA RAPPORT</div>`);
       return;
     }
 
@@ -498,7 +553,7 @@ function formatInlineMarkdown(text) {
 ========================= */
 
 function getStorageKey() {
-  return String(CONFIG.storageKey || "ems-operation-report-v1");
+  return String(CONFIG.storageKey || "ems-coma-report-v1");
 }
 
 function saveDraft() {
@@ -522,31 +577,41 @@ function restoreDraft() {
   setValue("#patientName", fields.patientName);
   setValue("#patientDob", fields.patientDob);
   setValue("#location", fields.location);
-  setValue("#operationDate", fields.operationDate);
-  setValue("#operationTime", fields.operationTime);
-  setValue("#operatingRoom", fields.operatingRoom);
-  setValue("#operationType", fields.operationType);
-  setValue("#operationReason", fields.operationReason);
-  setValue("#leadSurgeon", fields.leadSurgeon);
-  setValue("#anesthetist", fields.anesthetist);
-  setValue("#supportStaff", fields.supportStaff);
+  setValue("#reportDate", fields.reportDate);
+  setValue("#reportTime", fields.reportTime);
+  setValue("#department", fields.department);
+  setValue("#room", fields.room);
+  setValue("#admissionReason", fields.admissionReason);
+  setValue("#leadDoctor", fields.leadDoctor);
+  setValue("#specialists", fields.specialists);
+  setValue("#gcsEyes", fields.gcsEyes);
+  setValue("#gcsVerbal", fields.gcsVerbal);
+  setValue("#gcsMotor", fields.gcsMotor);
+  setValue("#consciousness", fields.consciousness);
+  setValue("#responsiveness", fields.responsiveness);
+  setValue("#pupilReaction", fields.pupilReaction);
+  setValue("#neurologicalStatus", fields.neurologicalStatus);
+  setValue("#neurologicalNotes", fields.neurologicalNotes);
   setValue("#bpSys", fields.bpSys);
   setValue("#bpDia", fields.bpDia);
   setValue("#heartRate", fields.heartRate);
   setValue("#pulseType", fields.pulseType);
   setValue("#temperatureState", fields.temperatureState);
+  setValue("#respiration", fields.respiration);
+  setValue("#oxygenation", fields.oxygenation);
   setValue("#stability", fields.stability);
-  setValue("#preOpNotes", fields.preOpNotes);
-  setValue("#anesthesiaType", fields.anesthesiaType);
-  setValue("#patientPosition", fields.patientPosition);
-  setValue("#preparation", fields.preparation);
-  setValue("#procedureSummary", fields.procedureSummary);
-  setValue("#findings", fields.findings);
-  setValue("#complications", fields.complications);
-  setValue("#bloodLoss", fields.bloodLoss);
-  setValue("#specimens", fields.specimens);
-  setValue("#postOpStatus", fields.postOpStatus);
-  setValue("#postOpPlan", fields.postOpPlan);
+  setValue("#suspectedCause", fields.suspectedCause);
+  setValue("#onsetEstimate", fields.onsetEstimate);
+  setValue("#injuryOverview", fields.injuryOverview);
+  setValue("#examinations", fields.examinations);
+  setValue("#treatmentsStarted", fields.treatmentsStarted);
+  setValue("#medicationGiven", fields.medicationGiven);
+  setValue("#evolution", fields.evolution);
+  setValue("#currentStatus", fields.currentStatus);
+  setValue("#prognosis", fields.prognosis);
+  setValue("#carePlan", fields.carePlan);
+  setValue("#transferTo", fields.transferTo);
+  setValue("#familyInfo", fields.familyInfo);
   setValue("#costImport", fields.costImport);
   setValue("#costTotal", fields.costTotal);
   setValue("#costNotes", fields.costNotes);
@@ -600,10 +665,10 @@ async function handleCopy() {
 
       await window.DiscordWebhookService.sendFormMessage({
         endpointUrl: CONFIG.discordWebhookProxyUrl,
-        formType: "operatie",
+        formType: "coma",
         content: report,
-        username: CONFIG.discordUsername || "EMS Operatie Tool",
-        extraData: buildOperationDiscordMeta(),
+        username: CONFIG.discordUsername || "EMS Coma Tool",
+        extraData: buildComaDiscordMeta(),
         useEmbeds: CONFIG.discordUseEmbeds !== false,
         sendPlainContent: CONFIG.discordSendPlainContent !== false
       });
@@ -638,18 +703,19 @@ async function handleCopy() {
   showStatus("Kopiëren is mislukt.", "danger");
 }
 
-function buildOperationDiscordMeta() {
+function buildComaDiscordMeta() {
   const data = collectFormData();
 
   return {
     patientName: data.patientName,
     patientDob: data.patientDob,
     location: data.location,
-    operationDate: data.operationDate,
-    operationTime: data.operationTime,
-    operationType: data.operationType,
-    leadSurgeon: data.leadSurgeon,
-    operatingRoom: data.operatingRoom
+    reportDate: data.reportDate,
+    reportTime: data.reportTime,
+    leadDoctor: data.leadDoctor,
+    department: data.department,
+    gcsTotal: data.gcsTotal,
+    currentStatus: data.currentStatus
   };
 }
 

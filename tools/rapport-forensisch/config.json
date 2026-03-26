@@ -1,0 +1,54 @@
+{
+  "staffApiUrl": "https://script.google.com/macros/s/AKfycbxh-7nXpT8A7D4KCQJsvA3rS_fWbFZUPsxC6zjbiLuN5Cp2y8AZ35NrrtgwGhgX8KffRA/exec",
+  "staffLabelFormat": "naam-roepnummer-rang",
+  "staffValueMode": "label",
+
+  "discordWebhookProxyUrl": "https://script.google.com/macros/s/AKfycbxh-7nXpT8A7D4KCQJsvA3rS_fWbFZUPsxC6zjbiLuN5Cp2y8AZ35NrrtgwGhgX8KffRA/exec",
+  "discordUsername": "EMS Forensisch Tool",
+  "discordUseEmbeds": true,
+  "discordSendPlainContent": false,
+
+  "storageKey": "ems-forensic-report-v1",
+
+  "reportTypeOptions": [
+    "Forensisch onderzoek",
+    "Letselonderzoek",
+    "Onderzoek na geweldsincident",
+    "Onderzoek na verdacht overlijden",
+    "Identificatieonderzoek",
+    "Aanvullend forensisch onderzoek"
+  ],
+  "consciousnessOptions": [
+    "Alert",
+    "Suf",
+    "Verward",
+    "Bewusteloos",
+    "Niet van toepassing"
+  ],
+  "stabilityOptions": [
+    "Stabiel",
+    "Matig stabiel",
+    "Onstabiel",
+    "Kritiek",
+    "Niet van toepassing"
+  ],
+  "temperatureOptions": [
+    "Normaal",
+    "Verhoging",
+    "Afgekoeld",
+    "Niet van toepassing"
+  ],
+  "bloodLossOptions": [
+    "Geen",
+    "Weinig",
+    "Matig",
+    "Veel",
+    "Ernstig"
+  ],
+  "violenceIndicatorOptions": [
+    "Geen duidelijke indicaties",
+    "Mogelijke indicaties",
+    "Duidelijke indicaties van geweld",
+    "Niet te bepalen"
+  ]
+}

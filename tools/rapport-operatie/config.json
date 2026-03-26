@@ -1,18 +1,50 @@
 {
-  "toolTitle": "Operatie Rapport",
-  "toolDescription": "Samenvatting van ingreep, verloop en postoperatieve zorg.",
-  "procedureTypes": [
-    "Hechting",
-    "Breukstabilisatie",
-    "Amputatiebehandeling",
-    "Verwijderen projectiel",
-    "Wonddebridement",
-    "Andere ingreep"
+  "staffApiUrl": "https://script.google.com/macros/s/AKfycbxh-7nXpT8A7D4KCQJsvA3rS_fWbFZUPsxC6zjbiLuN5Cp2y8AZ35NrrtgwGhgX8KffRA/exec",
+  "staffLabelFormat": "naam-roepnummer-rang",
+  "staffValueMode": "label",
+
+  "discordWebhookProxyUrl": "https://script.google.com/macros/s/AKfycbxh-7nXpT8A7D4KCQJsvA3rS_fWbFZUPsxC6zjbiLuN5Cp2y8AZ35NrrtgwGhgX8KffRA/exec",
+  "discordUsername": "EMS Operatie Tool",
+  "discordUseEmbeds": true,
+  "discordSendPlainContent": false,
+
+  "storageKey": "ems-operation-report-v1",
+
+  "pulseOptions": [
+    "Traag",
+    "Normaal",
+    "Snel"
   ],
-  "outcomes": [
-    "Stabiel afgerond",
-    "Complicaties tijdens ingreep",
-    "Nazorg vereist",
-    "Doorverwijzing nodig"
+  "temperatureOptions": [
+    "Normaal",
+    "Verhoging"
+  ],
+  "stabilityOptions": [
+    "Stabiel",
+    "Matig stabiel",
+    "Onstabiel",
+    "Kritiek"
+  ],
+  "operationTypeOptions": [
+    "Chirurgische ingreep",
+    "Spoedoperatie",
+    "Trauma-operatie",
+    "Orthopedische ingreep",
+    "Exploratieve ingreep",
+    "Hechting / wondherstel",
+    "Andere"
+  ],
+  "anesthesiaTypeOptions": [
+    "Lokale verdoving",
+    "Sedatie",
+    "Algemene anesthesie",
+    "Regionale anesthesie",
+    "Geen"
+  ],
+  "bloodLossOptions": [
+    "Weinig",
+    "Matig",
+    "Veel",
+    "Ernstig"
   ]
 }

@@ -1,0 +1,89 @@
+{
+  "staffApiUrl": "https://script.google.com/macros/s/AKfycbxh-7nXpT8A7D4KCQJsvA3rS_fWbFZUPsxC6zjbiLuN5Cp2y8AZ35NrrtgwGhgX8KffRA/exec",
+  "staffLabelFormat": "naam-roepnummer-rang",
+  "staffValueMode": "label",
+
+  "discordWebhookProxyUrl": "https://script.google.com/macros/s/AKfycbxh-7nXpT8A7D4KCQJsvA3rS_fWbFZUPsxC6zjbiLuN5Cp2y8AZ35NrrtgwGhgX8KffRA/exec",
+  "discordUsername": "EMS Coma Tool",
+  "discordUseEmbeds": true,
+  "discordSendPlainContent": false,
+
+  "storageKey": "ems-coma-report-v1",
+
+  "gcsEyesOptions": [
+    "4 - spontaan",
+    "3 - op aanspreken",
+    "2 - op pijnprikkel",
+    "1 - geen"
+  ],
+  "gcsVerbalOptions": [
+    "5 - georiënteerd",
+    "4 - verward",
+    "3 - ongepaste woorden",
+    "2 - onverstaanbare klanken",
+    "1 - geen"
+  ],
+  "gcsMotorOptions": [
+    "6 - voert opdrachten uit",
+    "5 - localiseert pijn",
+    "4 - trekt terug bij pijn",
+    "3 - abnormale flexie",
+    "2 - extensie",
+    "1 - geen"
+  ],
+  "consciousnessOptions": [
+    "Alert",
+    "Suf",
+    "Somnolent",
+    "Bewusteloos",
+    "Coma"
+  ],
+  "responsivenessOptions": [
+    "Reageert normaal",
+    "Reageert op aanspreken",
+    "Reageert op pijnprikkel",
+    "Geen reactie"
+  ],
+  "pupilReactionOptions": [
+    "Normaal en symmetrisch",
+    "Traag reagerend",
+    "Asymmetrisch",
+    "Geen reactie",
+    "Niet beoordeelbaar"
+  ],
+  "neurologicalStatusOptions": [
+    "Stabiel",
+    "Verontrustend",
+    "Ernstig afwijkend",
+    "Kritiek"
+  ],
+  "pulseOptions": [
+    "Traag",
+    "Normaal",
+    "Snel"
+  ],
+  "temperatureOptions": [
+    "Normaal",
+    "Verhoging",
+    "Onderkoeld"
+  ],
+  "respirationOptions": [
+    "Normaal",
+    "Vertraagd",
+    "Versneld",
+    "Oppervlakkig",
+    "Ondersteund / beademd"
+  ],
+  "oxygenationOptions": [
+    "Goed",
+    "Licht verstoord",
+    "Slecht",
+    "Beademd / ondersteund"
+  ],
+  "stabilityOptions": [
+    "Stabiel",
+    "Matig stabiel",
+    "Onstabiel",
+    "Kritiek"
+  ]
+}

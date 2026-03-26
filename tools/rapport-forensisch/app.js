@@ -1,6 +1,6 @@
 /**
- * EMS Operatie Rapport v1
- * ----------------------
+ * EMS Forensisch Rapport v1
+ * ------------------------
  * Gebruikt centrale services:
  * - storage.js
  * - export.js
@@ -64,17 +64,17 @@ function handleAutoChange() {
 
 function presetDateTime() {
   const now = new Date();
-  if ($("#operationDate") && !$("#operationDate").value) $("#operationDate").value = toDateInputValue(now);
-  if ($("#operationTime") && !$("#operationTime").value) $("#operationTime").value = toTimeInputValue(now);
+  if ($("#reportDate") && !$("#reportDate").value) $("#reportDate").value = toDateInputValue(now);
+  if ($("#reportTime") && !$("#reportTime").value) $("#reportTime").value = toTimeInputValue(now);
 }
 
 function fillBasicSelects() {
-  fillSelect("#pulseType", CONFIG.pulseOptions || []);
-  fillSelect("#temperatureState", CONFIG.temperatureOptions || []);
+  fillSelect("#reportType", CONFIG.reportTypeOptions || []);
+  fillSelect("#consciousness", CONFIG.consciousnessOptions || []);
   fillSelect("#stability", CONFIG.stabilityOptions || []);
-  fillSelect("#operationType", CONFIG.operationTypeOptions || []);
-  fillSelect("#anesthesiaType", CONFIG.anesthesiaTypeOptions || []);
+  fillSelect("#temperatureState", CONFIG.temperatureOptions || []);
   fillSelect("#bloodLoss", CONFIG.bloodLossOptions || []);
+  fillSelect("#violenceIndicators", CONFIG.violenceIndicatorOptions || []);
 }
 
 function fillSelect(selector, options) {
@@ -112,12 +112,12 @@ async function initStaffFields() {
 }
 
 function populateStaffSelects() {
-  const leadSurgeonSelect = $("#leadSurgeon");
+  const leadDoctorSelect = $("#leadDoctor");
   const assistantsSelect = $("#assistants");
 
-  if (!leadSurgeonSelect || !assistantsSelect) return;
+  if (!leadDoctorSelect || !assistantsSelect) return;
 
-  window.EmsStaffService.populateSelect(leadSurgeonSelect, STAFF_ROWS, {
+  window.EmsStaffService.populateSelect(leadDoctorSelect, STAFF_ROWS, {
     includeEmpty: true,
     emptyLabel: "Kies een behandelaar",
     labelFormat: CONFIG.staffLabelFormat || "naam-roepnummer-rang",
@@ -131,7 +131,7 @@ function populateStaffSelects() {
   });
 
   if ((CONFIG.staffValueMode || "label") === "label") {
-    setSelectOptionValuesToLabels(leadSurgeonSelect, true);
+    setSelectOptionValuesToLabels(leadDoctorSelect, true);
     setSelectOptionValuesToLabels(assistantsSelect, false);
   }
 }
@@ -201,7 +201,7 @@ function parseMedicalLog() {
 
 function extractFromLog(text) {
   const result = {
-    patientName: matchGroup(text, /(?:pati[eë]nt|patient)\s*[:\-]\s*(.+)/i),
+    patientName: matchGroup(text, /(?:pati[eë]nt|patient|betrokkene)\s*[:\-]\s*(.+)/i),
     location: matchGroup(text, /(?:locatie|location)\s*[:\-]\s*(.+)/i),
     heartRate: matchGroup(text, /(?:hartslag|hr)\s*[:\-]?\s*(\d{2,3})/i),
     bpSys: "",
@@ -239,32 +239,34 @@ function collectFormData() {
     patientName: sanitizeText($("#patientName")?.value),
     patientDob: sanitizeText($("#patientDob")?.value),
     location: sanitizeText($("#location")?.value),
-    operationDate: sanitizeText($("#operationDate")?.value),
-    operationTime: sanitizeText($("#operationTime")?.value),
-    operatingRoom: sanitizeText($("#operatingRoom")?.value),
-    operationType: sanitizeText($("#operationType")?.value),
-    operationReason: sanitizeText($("#operationReason")?.value),
-    leadSurgeon: sanitizeText($("#leadSurgeon")?.value),
+    reportDate: sanitizeText($("#reportDate")?.value),
+    reportTime: sanitizeText($("#reportTime")?.value),
+    reportType: sanitizeText($("#reportType")?.value),
+    caseReference: sanitizeText($("#caseReference")?.value),
+    reasonForExam: sanitizeText($("#reasonForExam")?.value),
+    leadDoctor: sanitizeText($("#leadDoctor")?.value),
     assistants: getSelectedAssistants(),
-    anesthetist: sanitizeText($("#anesthetist")?.value),
-    supportStaff: sanitizeText($("#supportStaff")?.value),
+    requestedBy: sanitizeText($("#requestedBy")?.value),
+    presenceOthers: sanitizeText($("#presenceOthers")?.value),
+    consciousness: sanitizeText($("#consciousness")?.value),
+    stability: sanitizeText($("#stability")?.value),
     bpSys: sanitizeText($("#bpSys")?.value),
     bpDia: sanitizeText($("#bpDia")?.value),
     heartRate: sanitizeText($("#heartRate")?.value),
-    pulseType: sanitizeText($("#pulseType")?.value),
     temperatureState: sanitizeText($("#temperatureState")?.value),
-    stability: sanitizeText($("#stability")?.value),
-    preOpNotes: sanitizeText($("#preOpNotes")?.value),
-    anesthesiaType: sanitizeText($("#anesthesiaType")?.value),
-    patientPosition: sanitizeText($("#patientPosition")?.value),
-    preparation: sanitizeText($("#preparation")?.value),
-    procedureSummary: sanitizeText($("#procedureSummary")?.value),
-    findings: sanitizeText($("#findings")?.value),
-    complications: sanitizeText($("#complications")?.value),
+    generalConditionNotes: sanitizeText($("#generalConditionNotes")?.value),
+    injuryOverview: sanitizeText($("#injuryOverview")?.value),
     bloodLoss: sanitizeText($("#bloodLoss")?.value),
-    specimens: sanitizeText($("#specimens")?.value),
-    postOpStatus: sanitizeText($("#postOpStatus")?.value),
-    postOpPlan: sanitizeText($("#postOpPlan")?.value),
+    violenceIndicators: sanitizeText($("#violenceIndicators")?.value),
+    externalObservations: sanitizeText($("#externalObservations")?.value),
+    forensicFindings: sanitizeText($("#forensicFindings")?.value),
+    suspectedCause: sanitizeText($("#suspectedCause")?.value),
+    timeEstimate: sanitizeText($("#timeEstimate")?.value),
+    samplesTaken: sanitizeText($("#samplesTaken")?.value),
+    evidenceHandled: sanitizeText($("#evidenceHandled")?.value),
+    conclusion: sanitizeText($("#conclusion")?.value),
+    transferTo: sanitizeText($("#transferTo")?.value),
+    followUp: sanitizeText($("#followUp")?.value),
     costImport: sanitizeText($("#costImport")?.value),
     costTotal: sanitizeText($("#costTotal")?.value),
     costNotes: sanitizeText($("#costNotes")?.value),
@@ -281,62 +283,68 @@ function composeReport(data) {
 
   return [
     "---",
-    "__**OPERATIE RAPPORT**__",
+    "__**FORENSISCH RAPPORT**__",
     "---",
     "",
-    "__**PATIËNTGEGEVENS**__",
-    `- **Naam patiënt:** ${orDash(data.patientName)}`,
+    "__**PATIËNT / BETROKKENE**__",
+    `- **Naam betrokkene:** ${orDash(data.patientName)}`,
     `- **Geboortedatum:** ${formatDateDisplay(data.patientDob)}`,
     "",
     "---",
     "",
-    "__**OPERATIEGEGEVENS**__",
+    "__**ALGEMENE FORENSISCHE GEGEVENS**__",
     `- **Locatie:** ${orDash(data.location)}`,
-    `- **Datum operatie:** ${formatDateDisplay(data.operationDate)}`,
-    `- **Uur operatie:** ${orDash(data.operationTime)}`,
-    `- **Operatiezaal:** ${orDash(data.operatingRoom)}`,
-    `- **Type ingreep:** ${orDash(data.operationType)}`,
-    `- **Indicatie / reden:** ${orDash(data.operationReason)}`,
+    `- **Datum onderzoek:** ${formatDateDisplay(data.reportDate)}`,
+    `- **Uur onderzoek:** ${orDash(data.reportTime)}`,
+    `- **Type onderzoek:** ${orDash(data.reportType)}`,
+    `- **Referentie / dossiernummer:** ${orDash(data.caseReference)}`,
+    `- **Aanleiding onderzoek:** ${orDash(data.reasonForExam)}`,
     "",
     "---",
     "",
-    "__**OPERATIETEAM**__",
-    `- **Hoofdchirurg:** ${orDash(data.leadSurgeon)}`,
+    "__**ONDERZOEKSTEAM**__",
+    `- **Behandelaar / onderzoeker:** ${orDash(data.leadDoctor)}`,
     `- **Assistenten:** ${data.assistants.length ? data.assistants.join(", ") : "-"}`,
-    `- **Anesthesie / sedatie door:** ${orDash(data.anesthetist)}`,
-    `- **Overig operatieteam:** ${orDash(data.supportStaff)}`,
+    `- **Aangevraagd door:** ${orDash(data.requestedBy)}`,
+    `- **Aanwezigen bij onderzoek:** ${orDash(data.presenceOthers)}`,
     "",
     "---",
     "",
-    "__**PRE-OPERATIEVE TOESTAND**__",
+    "__**TOESTAND VAN BETROKKENE**__",
+    `- **Bewustzijn:** ${orDash(data.consciousness)}`,
+    `- **Algemene toestand:** ${orDash(data.stability)}`,
     `- **Bloeddruk:** ${formatBloodPressure(data.bpSys, data.bpDia)}`,
     `- **Hartslag:** ${orDash(data.heartRate)}`,
-    `- **Pols:** ${orDash(data.pulseType)}`,
     `- **Temperatuur:** ${orDash(data.temperatureState)}`,
-    `- **Toestand:** ${orDash(data.stability)}`,
-    `- **Notities:** ${orDash(data.preOpNotes)}`,
+    `- **Klinische notities:** ${orDash(data.generalConditionNotes)}`,
     "",
     "---",
     "",
-    "__**ANESTHESIE & VOORBEREIDING**__",
-    `- **Type anesthesie:** ${orDash(data.anesthesiaType)}`,
-    `- **Patiëntpositie:** ${orDash(data.patientPosition)}`,
-    `- **Voorbereiding:** ${orDash(data.preparation)}`,
-    "",
-    "---",
-    "",
-    "__**UITGEVOERDE INGREEP**__",
-    `- **Beschrijving ingreep:** ${orDash(data.procedureSummary)}`,
-    `- **Peroperatieve bevindingen:** ${orDash(data.findings)}`,
-    `- **Complicaties:** ${orDash(data.complications)}`,
+    "__**LETSELS EN UITERLIJKE VASTSTELLINGEN**__",
+    `- **Overzicht letsels:** ${orDash(data.injuryOverview)}`,
     `- **Bloedverlies:** ${orDash(data.bloodLoss)}`,
-    `- **Stalen / materiaal:** ${orDash(data.specimens)}`,
+    `- **Indicaties van geweld:** ${orDash(data.violenceIndicators)}`,
+    `- **Uiterlijke vaststellingen:** ${orDash(data.externalObservations)}`,
     "",
     "---",
     "",
-    "__**POST-OPERATIEF PLAN**__",
-    `- **Post-operatieve toestand:** ${orDash(data.postOpStatus)}`,
-    `- **Nazorg / verder beleid:** ${orDash(data.postOpPlan)}`,
+    "__**FORENSISCHE BEVINDINGEN**__",
+    `- **Bevindingen:** ${orDash(data.forensicFindings)}`,
+    `- **Vermoedelijke oorzaak:** ${orDash(data.suspectedCause)}`,
+    `- **Schatting tijdsverloop:** ${orDash(data.timeEstimate)}`,
+    "",
+    "---",
+    "",
+    "__**STALEN EN BEWIJSSTUKKEN**__",
+    `- **Afgenomen stalen:** ${orDash(data.samplesTaken)}`,
+    `- **Veiliggestelde elementen / bewijsstukken:** ${orDash(data.evidenceHandled)}`,
+    "",
+    "---",
+    "",
+    "__**BESLUIT EN OVERDRACHT**__",
+    `- **Medisch-forensisch besluit:** ${orDash(data.conclusion)}`,
+    `- **Overgedragen aan:** ${orDash(data.transferTo)}`,
+    `- **Vervolgactie:** ${orDash(data.followUp)}`,
     "",
     "---",
     "",
@@ -430,10 +438,10 @@ function renderMarkdownPreview(markdown) {
       return;
     }
 
-    if (trimmed === "__**OPERATIE RAPPORT**__") {
+    if (trimmed === "__**FORENSISCH RAPPORT**__") {
       closeParagraph();
       closeLists();
-      html.push(`<div class="report-title">OPERATIE RAPPORT</div>`);
+      html.push(`<div class="report-title">FORENSISCH RAPPORT</div>`);
       return;
     }
 
@@ -498,7 +506,7 @@ function formatInlineMarkdown(text) {
 ========================= */
 
 function getStorageKey() {
-  return String(CONFIG.storageKey || "ems-operation-report-v1");
+  return String(CONFIG.storageKey || "ems-forensic-report-v1");
 }
 
 function saveDraft() {
@@ -522,31 +530,33 @@ function restoreDraft() {
   setValue("#patientName", fields.patientName);
   setValue("#patientDob", fields.patientDob);
   setValue("#location", fields.location);
-  setValue("#operationDate", fields.operationDate);
-  setValue("#operationTime", fields.operationTime);
-  setValue("#operatingRoom", fields.operatingRoom);
-  setValue("#operationType", fields.operationType);
-  setValue("#operationReason", fields.operationReason);
-  setValue("#leadSurgeon", fields.leadSurgeon);
-  setValue("#anesthetist", fields.anesthetist);
-  setValue("#supportStaff", fields.supportStaff);
+  setValue("#reportDate", fields.reportDate);
+  setValue("#reportTime", fields.reportTime);
+  setValue("#reportType", fields.reportType);
+  setValue("#caseReference", fields.caseReference);
+  setValue("#reasonForExam", fields.reasonForExam);
+  setValue("#leadDoctor", fields.leadDoctor);
+  setValue("#requestedBy", fields.requestedBy);
+  setValue("#presenceOthers", fields.presenceOthers);
+  setValue("#consciousness", fields.consciousness);
+  setValue("#stability", fields.stability);
   setValue("#bpSys", fields.bpSys);
   setValue("#bpDia", fields.bpDia);
   setValue("#heartRate", fields.heartRate);
-  setValue("#pulseType", fields.pulseType);
   setValue("#temperatureState", fields.temperatureState);
-  setValue("#stability", fields.stability);
-  setValue("#preOpNotes", fields.preOpNotes);
-  setValue("#anesthesiaType", fields.anesthesiaType);
-  setValue("#patientPosition", fields.patientPosition);
-  setValue("#preparation", fields.preparation);
-  setValue("#procedureSummary", fields.procedureSummary);
-  setValue("#findings", fields.findings);
-  setValue("#complications", fields.complications);
+  setValue("#generalConditionNotes", fields.generalConditionNotes);
+  setValue("#injuryOverview", fields.injuryOverview);
   setValue("#bloodLoss", fields.bloodLoss);
-  setValue("#specimens", fields.specimens);
-  setValue("#postOpStatus", fields.postOpStatus);
-  setValue("#postOpPlan", fields.postOpPlan);
+  setValue("#violenceIndicators", fields.violenceIndicators);
+  setValue("#externalObservations", fields.externalObservations);
+  setValue("#forensicFindings", fields.forensicFindings);
+  setValue("#suspectedCause", fields.suspectedCause);
+  setValue("#timeEstimate", fields.timeEstimate);
+  setValue("#samplesTaken", fields.samplesTaken);
+  setValue("#evidenceHandled", fields.evidenceHandled);
+  setValue("#conclusion", fields.conclusion);
+  setValue("#transferTo", fields.transferTo);
+  setValue("#followUp", fields.followUp);
   setValue("#costImport", fields.costImport);
   setValue("#costTotal", fields.costTotal);
   setValue("#costNotes", fields.costNotes);
@@ -600,10 +610,10 @@ async function handleCopy() {
 
       await window.DiscordWebhookService.sendFormMessage({
         endpointUrl: CONFIG.discordWebhookProxyUrl,
-        formType: "operatie",
+        formType: "forensisch",
         content: report,
-        username: CONFIG.discordUsername || "EMS Operatie Tool",
-        extraData: buildOperationDiscordMeta(),
+        username: CONFIG.discordUsername || "EMS Forensisch Tool",
+        extraData: buildForensicDiscordMeta(),
         useEmbeds: CONFIG.discordUseEmbeds !== false,
         sendPlainContent: CONFIG.discordSendPlainContent !== false
       });
@@ -638,18 +648,18 @@ async function handleCopy() {
   showStatus("Kopiëren is mislukt.", "danger");
 }
 
-function buildOperationDiscordMeta() {
+function buildForensicDiscordMeta() {
   const data = collectFormData();
 
   return {
     patientName: data.patientName,
     patientDob: data.patientDob,
     location: data.location,
-    operationDate: data.operationDate,
-    operationTime: data.operationTime,
-    operationType: data.operationType,
-    leadSurgeon: data.leadSurgeon,
-    operatingRoom: data.operatingRoom
+    reportDate: data.reportDate,
+    reportTime: data.reportTime,
+    reportType: data.reportType,
+    leadDoctor: data.leadDoctor,
+    caseReference: data.caseReference
   };
 }
 
