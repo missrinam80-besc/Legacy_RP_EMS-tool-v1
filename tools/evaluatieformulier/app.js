@@ -201,7 +201,7 @@ function bindEvents() {
   if (form) form.addEventListener("submit", handleSubmit);
   if (resetBtn) resetBtn.addEventListener("click", resetForm);
   if (copyBtn) copyBtn.addEventListener("click", copyOutput);
-    if (discordBtn) discordBtn.addEventListener("click", sendOutputToDiscord);
+  if (discordBtn) discordBtn.addEventListener("click", sendOutputToDiscord);
   if (employeeSelect) employeeSelect.addEventListener("change", handleEmployeeSelect);
   if (evaluatorSelect) evaluatorSelect.addEventListener("change", handleEvaluatorSelect);
   if (toggleAccordionBtn) toggleAccordionBtn.addEventListener("click", toggleAllAccordionSections);
@@ -1030,12 +1030,18 @@ async function sendOutputToDiscord() {
         tool: "evaluation",
         employeeName: qs("#employeeName").value || "",
         callSign: qs("#callSign").value || "",
+        rank: qs("#rank").value || "",
         evaluatorName: qs("#evaluatorName").value || "",
         evaluatorRank: qs("#evaluatorRank").value || "",
         evaluationType: qs("#evaluationType").value || "",
         date: qs("#date").value || "",
         finalScore: qs("#finalScore").value || "",
-        decision: qs("#decision").value || ""
+        decision: qs("#decision").value || "",
+        context: qs("#context").value || "",
+        strengths: qs("#strengths").value || "",
+        improvements: qs("#improvements").value || "",
+        agreements: qs("#agreements").value || "",
+        categoryResults: getCategoryResults()
       }
     });
 
