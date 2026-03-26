@@ -17,21 +17,47 @@
     "Functioneringsgesprek"
   ],
   "categories": [
-    "Communicatie",
-    "Medische kennis",
-    "Klinisch redeneren",
-    "Teamwork",
-    "Administratie",
-    "Professionaliteit",
-    "Stressbestendigheid",
-    "Inzet en verantwoordelijkheid"
+    {
+      "label": "Communicatie",
+      "description": "Hoe duidelijk en correct iemand communiceert met patiënten en collega’s. Inclusief luisteren, uitleg geven en info juist doorgeven."
+    },
+    {
+      "label": "Medische kennis",
+      "description": "De kennis van aandoeningen en behandelingen, en hoe goed deze in de praktijk wordt toegepast."
+    },
+    {
+      "label": "Klinisch redeneren",
+      "description": "Het vermogen om situaties goed in te schatten, verbanden te leggen en de juiste keuzes te maken."
+    },
+    {
+      "label": "Teamwork",
+      "description": "Hoe goed iemand samenwerkt met collega’s en bijdraagt aan een vlotte en efficiënte samenwerking."
+    },
+    {
+      "label": "Administratie",
+      "description": "Het correct en volledig invullen van rapporten en documenten, op een duidelijke en gestructureerde manier."
+    },
+    {
+      "label": "Professionaliteit",
+      "description": "De houding en het gedrag tegenover patiënten en collega’s, inclusief respect en naleving van regels."
+    },
+    {
+      "label": "Stressbestendigheid",
+      "description": "Hoe goed iemand kalm en doordacht blijft werken in stressvolle of drukke situaties."
+    },
+    {
+      "label": "Inzet en verantwoordelijkheid",
+      "description": "De motivatie, inzet en betrouwbaarheid. Verantwoord omgaan met taken en actief bijdragen aan de werking."
+    }
   ],
+
   "scores": [
     "Onvoldoende",
     "Voldoende",
     "Goed",
     "Zeer goed"
   ],
+  
   "scoreMap": {
     "Onvoldoende": 1,
     "Voldoende": 2,

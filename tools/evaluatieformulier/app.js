@@ -64,12 +64,16 @@ function createEvaluationBlocks(categories) {
   container.innerHTML = "";
 
   categories.forEach(category => {
+    const label = typeof category === "string" ? category : (category.label || "");
+    const description = typeof category === "string" ? "" : (category.description || "");
+
     const block = document.createElement("div");
     block.className = "evaluation-block";
-    block.dataset.category = category;
+    block.dataset.category = label;
 
     block.innerHTML = `
-      <h4>${escapeHtml(category)}</h4>
+      <h4>${escapeHtml(label)}</h4>
+      ${description ? `<p class="evaluation-block__description text-soft">${escapeHtml(description)}</p>` : ""}
       <div class="evaluation-block__grid">
         <div class="form-field">
           <label>Score</label>
