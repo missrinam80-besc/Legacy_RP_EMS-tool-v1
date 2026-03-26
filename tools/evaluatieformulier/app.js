@@ -1015,23 +1015,27 @@ async function sendOutputToDiscord() {
     return setStatusMessage("discord-webhook.js is niet geladen.", "danger");
   }
 
-  const endpointUrl = String(config.discordWebhookProxyUrl || "").trim();
+  const endpointUrl = String(config.discordEndpointUrl || "").trim();
   if (!endpointUrl || endpointUrl === "PLAK_HIER_JE_APPS_SCRIPT_PROXY_URL") {
-    return setStatusMessage("Discord proxy-URL ontbreekt in config.json.", "warning");
+    return setStatusMessage("Discord endpoint ontbreekt in config.json.", "warning");
   }
 
   try {
     await window.DiscordWebhookService.sendFormMessage({
       endpointUrl,
-      formType: "evaluation",
+      formType: config.discordFormType || "evaluation",
       content: text,
-      username: config.discordWebhookUsername || "EMS Evaluatieformulier",
+      username: config.discordUsername || "EMS Evaluatieformulier",
       extraData: {
+        tool: "evaluation",
         employeeName: qs("#employeeName").value || "",
         callSign: qs("#callSign").value || "",
         evaluatorName: qs("#evaluatorName").value || "",
+        evaluatorRank: qs("#evaluatorRank").value || "",
         evaluationType: qs("#evaluationType").value || "",
-        date: qs("#date").value || ""
+        date: qs("#date").value || "",
+        finalScore: qs("#finalScore").value || "",
+        decision: qs("#decision").value || ""
       }
     });
 

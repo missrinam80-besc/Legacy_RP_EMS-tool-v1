@@ -1,9 +1,10 @@
 {
   "toolTitle": "Evaluatieformulier",
-  "toolDescription": "Gestandaardiseerde evaluaties voor EMS-medewerkers met personeelsselectie, score-overzicht, automatische samenvatting en printvriendelijke rapportweergave.",
+  "toolDescription": "Gestandaardiseerde evaluaties voor EMS-medewerkers met personeelsselectie, score-overzicht, automatische samenvatting en rapportweergave.",
   "staffApiUrl": "https://script.google.com/macros/s/AKfycbxh-7nXpT8A7D4KCQJsvA3rS_fWbFZUPsxC6zjbiLuN5Cp2y8AZ35NrrtgwGhgX8KffRA/exec",
-  "discordWebhookProxyUrl": "https://discord.com/api/webhooks/1481738745760976967/GeLaYb4WLNxYls-rslbSqz8eekLzl12Yus0Ng3GKcjvzxTvXLac5pWhKb_149GmsLU_1",
-  "discordWebhookUsername": "EMS Toolbox",
+  "discordEndpointUrl": "PLAK_HIER_JE_APPS_SCRIPT_PROXY_URL",
+  "discordUsername": "EMS Toolbox",
+  "discordFormType": "evaluation",
 
   "allowedEvaluatorRanks": [
     "Lieutenant",
@@ -53,14 +54,12 @@
       "description": "De motivatie, inzet en betrouwbaarheid. Verantwoord omgaan met taken en actief bijdragen aan de werking."
     }
   ],
-
   "scores": [
-    "Onvoldoende",
-    "Voldoende",
+    "Zeer goed",
     "Goed",
-    "Zeer goed"
+    "Voldoende",
+    "Onvoldoende"
   ],
-  
   "scoreMap": {
     "Onvoldoende": 1,
     "Voldoende": 2,
