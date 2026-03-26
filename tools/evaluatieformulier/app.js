@@ -112,9 +112,13 @@ function setDefaultDate() {
 
 async function loadStaffData() {
   const apiUrl = String(config.staffApiUrl || "").trim();
+  const staffLoadInfo = qs("#staffLoadInfo");
 
   if (!apiUrl || apiUrl === "PLAK_HIER_JE_APPS_SCRIPT_WEBAPP_URL") {
-    qs("#staffLoadInfo").textContent = "Personeelsbron is nog niet ingesteld in config.json.";
+    if (staffLoadInfo) {
+      staffLoadInfo.textContent = "Personeelsbron is nog niet ingesteld in config.json.";
+    }
+
     disableStaffSelects();
     setStatusMessage("Personeelsbron is nog niet ingesteld in config.json.", "warning");
     return;
@@ -141,7 +145,10 @@ async function loadStaffData() {
     ? `Personeelslijst geladen op ${formatDateTimeValue(loadedAt)}.`
     : "Personeelslijst geladen.";
 
-  qs("#staffLoadInfo").textContent = infoText;
+  if (staffLoadInfo) {
+    staffLoadInfo.textContent = infoText;
+  }
+
   setStatusMessage(infoText, "info");
 }
 
@@ -180,13 +187,21 @@ function enableStaffSelects() {
 }
 
 function bindEvents() {
-  qs("#evaluationForm").addEventListener("submit", handleSubmit);
-  qs("#resetBtn").addEventListener("click", resetForm);
-  qs("#copyBtn").addEventListener("click", copyOutput);
-  qs("#printBtn").addEventListener("click", printOutput);
-  qs("#employeeSelect").addEventListener("change", handleEmployeeSelect);
-  qs("#evaluatorSelect").addEventListener("change", handleEvaluatorSelect);
-  qs("#toggleAccordionBtn").addEventListener("click", toggleAllAccordionSections);
+  const form = qs("#evaluationForm");
+  const resetBtn = qs("#resetBtn");
+  const copyBtn = qs("#copyBtn");
+  const printBtn = qs("#printBtn");
+  const employeeSelect = qs("#employeeSelect");
+  const evaluatorSelect = qs("#evaluatorSelect");
+  const toggleAccordionBtn = qs("#toggleAccordionBtn");
+
+  if (form) form.addEventListener("submit", handleSubmit);
+  if (resetBtn) resetBtn.addEventListener("click", resetForm);
+  if (copyBtn) copyBtn.addEventListener("click", copyOutput);
+  if (printBtn) printBtn.addEventListener("click", printOutput);
+  if (employeeSelect) employeeSelect.addEventListener("change", handleEmployeeSelect);
+  if (evaluatorSelect) evaluatorSelect.addEventListener("change", handleEvaluatorSelect);
+  if (toggleAccordionBtn) toggleAccordionBtn.addEventListener("click", toggleAllAccordionSections);
 
   bindCategoryScoreEvents();
   bindProgressInputs();
@@ -309,7 +324,7 @@ function updateToggleAccordionButton() {
   const btn = qs("#toggleAccordionBtn");
   const sections = getAccordionSections();
   const allOpen = sections.length > 0 && sections.every(section => section.open);
-  btn.textContent = allOpen ? "Alles sluiten" : "Alles openen";
+  btn.textContent = allOpen ? "Alles dichtvouwen" : "Alles openvouwen";
 }
 
 // =========================
@@ -342,7 +357,6 @@ function isStepComplete(stepIndex) {
       return Boolean(
         qs("#evaluationType").value &&
         qs("#date").value &&
-        qs("#decision").value &&
         qs("#context").value.trim()
       );
     case 2:
@@ -354,7 +368,10 @@ function isStepComplete(stepIndex) {
     case 3:
       return Boolean(qs("#strengths").value.trim() && qs("#improvements").value.trim());
     case 4:
-      return Boolean(qs("#agreements").value.trim());
+      return Boolean(
+        qs("#agreements").value.trim() &&
+        qs("#decision").value
+      );
     default:
       return false;
   }
