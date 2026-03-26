@@ -401,8 +401,9 @@ window.DiscordWebhookService = (() => {
     content,
     username,
     extraData,
-    useEmbeds = true
-  }) {
+    useEmbeds = true,
+    sendPlainContent = true
+    }) {
     if (!endpointUrl) {
       throw new Error("Geen endpointUrl opgegeven.");
     }
@@ -430,7 +431,7 @@ window.DiscordWebhookService = (() => {
 
     const payload = {
       formType: normalizedFormType,
-      content: formattedContent,
+      content: sendPlainContent ? formattedContent : "",
       username: username || "EMS Tool",
       extraData: normalizedExtraData,
       embeds
