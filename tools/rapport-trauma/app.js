@@ -416,7 +416,7 @@ function composeReport(data) {
   const injuryText = buildInjuryMarkdown(data.injuries);
   const costText = buildCostMarkdown(data);
   const logText = data.medicalLog
-    ? `__**MEDISCH SYSTEEMLOG**__\n\n${escapeMarkdownText(data.medicalLog)}`
+    ? `__**MEDISCH SYSTEEMLOG**__\n\n- ${escapeMarkdownText(data.medicalLog).replace(/\n/g, "\n- ")}`
     : `__**MEDISCH SYSTEEMLOG**__\n\n-`;
 
   return [
@@ -425,31 +425,31 @@ function composeReport(data) {
     "---",
     "",
     "__**PATIËNTGEGEVENS**__",
-    `**Naam patiënt:** ${orDash(data.patientName)}`,
-    `**Geboortedatum:** ${formatDateDisplay(data.patientDob)}`,
+    `- **Naam patiënt:** ${orDash(data.patientName)}`,
+    `- **Geboortedatum:** ${formatDateDisplay(data.patientDob)}`,
     "",
     "---",
     "",
     "__**SITUATIEGEGEVENS**__",
-    `**Locatie:** ${orDash(data.location)}`,
-    `**Datum:** ${formatDateDisplay(data.incidentDate)}`,
-    `**Uur:** ${orDash(data.incidentTime)}`,
+    `- **Locatie:** ${orDash(data.location)}`,
+    `- **Datum:** ${formatDateDisplay(data.incidentDate)}`,
+    `- **Uur:** ${orDash(data.incidentTime)}`,
     "",
     "---",
     "",
     "__**ARTS & TEAM**__",
-    `**Naam behandelaar:** ${orDash(data.leadDoctor)}`,
-    `**Assistenten:** ${data.assistants.length ? data.assistants.join(", ") : "-"}`,
+    `- **Naam behandelaar:** ${orDash(data.leadDoctor)}`,
+    `- **Assistenten:** ${data.assistants.length ? data.assistants.join(", ") : "-"}`,
     "",
     "---",
     "",
     "__**TRAUMA VITALS**__",
-    `**Bloeddruk:** ${formatBloodPressure(data.bpSys, data.bpDia)}`,
-    `**Hartslag:** ${orDash(data.heartRate)}`,
-    `**Pols:** ${orDash(data.pulseType)}`,
-    `**Temperatuur:** ${orDash(data.temperatureState)}`,
-    `**Bloedverlies:** ${orDash(data.bloodLoss)}`,
-    `**Pijn:** ${orDash(data.painLevel)}`,
+    `- **Bloeddruk:** ${formatBloodPressure(data.bpSys, data.bpDia)}`,
+    `- **Hartslag:** ${orDash(data.heartRate)}`,
+    `- **Pols:** ${orDash(data.pulseType)}`,
+    `- **Temperatuur:** ${orDash(data.temperatureState)}`,
+    `- **Bloedverlies:** ${orDash(data.bloodLoss)}`,
+    `- **Pijn:** ${orDash(data.painLevel)}`,
     "",
     "---",
     "",
@@ -464,7 +464,7 @@ function composeReport(data) {
     "---",
     "",
     "__**SAMENVATTING / EXTRA NOTITIES**__",
-    `${orDash(data.summaryNotes)}`,
+    `- ${orDash(data.summaryNotes)}`,
     "",
     "---",
     "",
@@ -482,7 +482,10 @@ function renderMarkdownPreview(markdown) {
 
   const lines = String(markdown || "").split("\n");
   const html = [];
+
   let inParagraph = false;
+  let inUl = false;
+  let inOl = false;
 
   function closeParagraph() {
     if (inParagraph) {
@@ -491,44 +494,111 @@ function renderMarkdownPreview(markdown) {
     }
   }
 
-  lines.forEach(line => {
+  function closeLists() {
+    if (inUl) {
+      html.push("</ul>");
+      inUl = false;
+    }
+    if (inOl) {
+      html.push("</ol>");
+      inOl = false;
+    }
+  }
+
+  function openParagraph() {
+    if (!inParagraph) {
+      closeLists();
+      html.push("<p>");
+      inParagraph = true;
+    }
+  }
+
+  lines.forEach(rawLine => {
+    const line = rawLine.replace(/\t/g, "    ");
     const trimmed = line.trim();
 
     if (trimmed === "---") {
       closeParagraph();
+      closeLists();
       html.push("<hr>");
       return;
     }
 
     if (!trimmed) {
       closeParagraph();
+      closeLists();
       return;
     }
 
     if (trimmed === "__**TRAUMA RAPPORT**__") {
       closeParagraph();
+      closeLists();
       html.push(`<div class="report-title">TRAUMA RAPPORT</div>`);
       return;
     }
 
     if (/^__\*\*(.+)\*\*__$/.test(trimmed)) {
       closeParagraph();
+      closeLists();
       const text = trimmed.replace(/^__\*\*(.+)\*\*__$/, "$1");
       html.push(`<div class="report-section-title">${escapeHtml(text)}</div>`);
       return;
     }
 
-    const formatted = formatInlineMarkdown(trimmed);
+    // Bullet list
+    if (/^- /.test(trimmed)) {
+      closeParagraph();
+      if (inOl) {
+        html.push("</ol>");
+        inOl = false;
+      }
+      if (!inUl) {
+        html.push("<ul>");
+        inUl = true;
+      }
 
-    if (!inParagraph) {
-      html.push("<p>");
-      inParagraph = true;
+      const content = trimmed.replace(/^- /, "");
+      html.push(`<li>${formatInlineMarkdown(content)}</li>`);
+      return;
     }
 
-    html.push(formatted);
+    // Numbered list
+    if (/^\d+\.\s/.test(trimmed)) {
+      closeParagraph();
+      if (inUl) {
+        html.push("</ul>");
+        inUl = false;
+      }
+      if (!inOl) {
+        html.push("<ol>");
+        inOl = true;
+      }
+
+      const content = trimmed.replace(/^\d+\.\s/, "");
+      html.push(`<li>${formatInlineMarkdown(content)}</li>`);
+      return;
+    }
+
+    // Indented bullet
+    if (/^-\s/.test(trimmed)) {
+      closeParagraph();
+      if (!inUl) {
+        html.push("<ul>");
+        inUl = true;
+      }
+      const content = trimmed.replace(/^-\s/, "");
+      html.push(`<li>${formatInlineMarkdown(content)}</li>`);
+      return;
+    }
+
+    // Gewone tekstregel
+    openParagraph();
+    html.push(`${formatInlineMarkdown(trimmed)}<br>`);
   });
 
   closeParagraph();
+  closeLists();
+
   preview.innerHTML = html.join("");
 }
 
@@ -544,18 +614,21 @@ function buildInjuryMarkdown(injuries) {
 
   Object.keys(injuries).forEach(part => {
     const items = injuries[part] || [];
+
     if (!items.length) {
-      lines.push(`**${part}:** geen geregistreerde verwondingen.`);
+      lines.push(`- **${part}:** geen geregistreerde verwondingen.`);
       return;
     }
 
     hasAny = true;
-    lines.push(`**${part}:**`);
+    lines.push(`- **${part}:**`);
+
     items.forEach((item, index) => {
       lines.push(
-        `${index + 1}. **Type:** ${orDash(item.type)} | **Ernst:** ${orDash(item.severity)} | **Toelichting:** ${orDash(item.note)}`
+        `  ${index + 1}. **Type:** ${orDash(item.type)} | **Ernst:** ${orDash(item.severity)} | **Toelichting:** ${orDash(item.note)}`
       );
     });
+
     lines.push("");
   });
 
@@ -563,12 +636,21 @@ function buildInjuryMarkdown(injuries) {
 }
 
 function buildCostMarkdown(data) {
-  return [
-    `**Totaalbedrag:** ${data.costTotal ? `€ ${data.costTotal}` : "-"}`,
-    `**Opmerking:** ${orDash(data.costNotes)}`,
-    `**Export kostentool:**`,
-    `${data.costImport || "-"}`
-  ].join("\n");
+  const lines = [
+    `- **Totaalbedrag:** ${data.costTotal ? `€ ${data.costTotal}` : "-"}`,
+    `- **Opmerking:** ${orDash(data.costNotes)}`,
+    `- **Export kostentool:**`
+  ];
+
+  if (data.costImport) {
+    data.costImport.split("\n").forEach(line => {
+      lines.push(`  - ${line.trim() || "-"}`);
+    });
+  } else {
+    lines.push("  - -");
+  }
+
+  return lines.join("\n");
 }
 
 /* =========================

@@ -79,7 +79,17 @@
 }
 
 .report-preview p {
-  margin: 0 0 0.55rem;
+  margin: 0 0 0.75rem;
+}
+
+.report-preview ul,
+.report-preview ol {
+  margin: 0.25rem 0 0.9rem 1.4rem;
+  padding-left: 1rem;
+}
+
+.report-preview li {
+  margin: 0.2rem 0;
 }
 
 .report-preview .report-title {
