@@ -199,7 +199,7 @@
                   </div>
 
                   <div class="button-row">
-                    <button type="button" class="btn btn-secondary" id="parseLogBtn">
+                    <button type="button" class="btn btn-secondary btn-compact" id="parseLogBtn">
                       Lees log uit
                     </button>
                   </div>
@@ -217,22 +217,22 @@
                   </div>
                 </div>
               </details>
-
-
             </div>
           </div>
         </div>
 
         <div class="tool-output-column">
-          <div class="panel output-panel">
-            <div class="button-row">
-              <button type="button" class="btn btn-primary" id="buildBtn">Bouw rapport</button>
-              <button type="button" class="btn btn-secondary" id="copyBtn">Kopieer</button>
-              <button type="button" class="btn btn-secondary" id="resetBtn">Reset</button>
+          <div class="panel output-actions-panel">
+            <div class="button-row button-row--compact">
+              <button type="button" class="btn btn-primary btn-compact" id="buildBtn">Bouw rapport</button>
+              <button type="button" class="btn btn-secondary btn-compact" id="copyBtn">Kopieer</button>
+              <button type="button" class="btn btn-secondary btn-compact" id="resetBtn">Reset</button>
             </div>
 
             <div id="statusBox" class="status-box hidden"></div>
+          </div>
 
+          <div class="panel output-panel">
             <div class="output-panel__header">
               <h2>Gegenereerd rapport</h2>
               <p>Hier verschijnt het trauma rapport in leesbare vorm.</p>
@@ -248,6 +248,7 @@
     </div>
   </div>
 
+  <script src="../../assets/scripts/ems-staff-service.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

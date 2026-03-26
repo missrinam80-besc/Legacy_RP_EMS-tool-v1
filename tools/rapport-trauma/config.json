@@ -1,6 +1,8 @@
 {
-  "personnelSourceUrl": "../../data/personnel.json",
-  "discordWebhookProxyUrl": "",
+  "staffApiUrl": "https://script.google.com/macros/s/AKfycbxh-7nXpT8A7D4KCQJsvA3rS_fWbFZUPsxC6zjbiLuN5Cp2y8AZ35NrrtgwGhgX8KffRA/exec",
+  "staffLabelFormat": "naam-roepnummer-rang",
+  "staffValueMode": "label",
+  "discordWebhookProxyUrl": "https://script.google.com/macros/s/AKfycbxh-7nXpT8A7D4KCQJsvA3rS_fWbFZUPsxC6zjbiLuN5Cp2y8AZ35NrrtgwGhgX8KffRA/exec",
 
   "pulseOptions": [
     "Traag",

@@ -11,6 +11,7 @@
  * - Rapport opbouwen
  * - Rapport kopiëren
  * - Optioneel Discord log via proxy/webhook-endpoint
+ * - Koppeling met EMS personeelslijst via EmsStaffService
  *
  * Belangrijk:
  * Zet NOOIT een ruwe Discord webhook rechtstreeks in frontend code.
@@ -18,7 +19,7 @@
  */
 
 let CONFIG = {};
-let PERSONNEL = [];
+let STAFF_ROWS = [];
 const injuryState = {};
 
 document.addEventListener("DOMContentLoaded", init);
@@ -26,11 +27,14 @@ document.addEventListener("DOMContentLoaded", init);
 async function init() {
   try {
     CONFIG = await loadConfig();
+
     fillBasicSelects();
     buildInjurySections();
-    await loadPersonnel();
     bindEvents();
     presetDateTime();
+
+    await initStaffFields();
+
     buildReport();
   } catch (error) {
     showStatus(`Fout bij laden: ${error.message}`, "danger");
@@ -46,10 +50,10 @@ async function loadConfig() {
 }
 
 function bindEvents() {
-  $("#buildBtn").addEventListener("click", buildReport);
-  $("#copyBtn").addEventListener("click", handleCopy);
-  $("#resetBtn").addEventListener("click", handleReset);
-  $("#parseLogBtn").addEventListener("click", parseMedicalLog);
+  $("#buildBtn")?.addEventListener("click", buildReport);
+  $("#copyBtn")?.addEventListener("click", handleCopy);
+  $("#resetBtn")?.addEventListener("click", handleReset);
+  $("#parseLogBtn")?.addEventListener("click", parseMedicalLog);
 
   document.querySelectorAll("input, textarea, select").forEach(el => {
     el.addEventListener("input", debounce(buildReport, 150));
@@ -59,8 +63,8 @@ function bindEvents() {
 
 function presetDateTime() {
   const now = new Date();
-  $("#incidentDate").value = toDateInputValue(now);
-  $("#incidentTime").value = toTimeInputValue(now);
+  if ($("#incidentDate")) $("#incidentDate").value = toDateInputValue(now);
+  if ($("#incidentTime")) $("#incidentTime").value = toTimeInputValue(now);
 }
 
 function fillBasicSelects() {
@@ -72,6 +76,8 @@ function fillBasicSelects() {
 
 function fillSelect(selector, options) {
   const select = $(selector);
+  if (!select) return;
+
   select.innerHTML = `<option value="">Kies een optie</option>`;
   options.forEach(option => {
     const el = document.createElement("option");
@@ -81,8 +87,81 @@ function fillSelect(selector, options) {
   });
 }
 
+/* =========================
+   PERSONEELSKOPPELING
+========================= */
+
+async function initStaffFields() {
+  if (!window.EmsStaffService) {
+    throw new Error("EMS Staff Service is niet geladen.");
+  }
+
+  const apiUrl = String(CONFIG.staffApiUrl || "").trim();
+  if (!apiUrl) {
+    showStatus("Personeelsservice is nog niet ingesteld in config.json.", "warning");
+    return;
+  }
+
+  window.EmsStaffService.setApiUrl(apiUrl);
+  STAFF_ROWS = await window.EmsStaffService.getVisibleStaff();
+
+  populateStaffSelects();
+}
+
+function populateStaffSelects() {
+  const leadDoctorSelect = $("#leadDoctor");
+  const assistantsSelect = $("#assistants");
+
+  if (!leadDoctorSelect || !assistantsSelect) return;
+
+  // We laten de service de labels genereren.
+  // Daarna zetten we de option.value bewust gelijk aan het zichtbare label,
+  // zodat naam + roepnummer samen gebruikt worden.
+  window.EmsStaffService.populateSelect(leadDoctorSelect, STAFF_ROWS, {
+    includeEmpty: true,
+    emptyLabel: "Kies een behandelaar",
+    labelFormat: CONFIG.staffLabelFormat || "naam-roepnummer-rang",
+    valueField: "naam"
+  });
+
+  window.EmsStaffService.populateSelect(assistantsSelect, STAFF_ROWS, {
+    includeEmpty: false,
+    labelFormat: CONFIG.staffLabelFormat || "naam-roepnummer-rang",
+    valueField: "naam"
+  });
+
+  if ((CONFIG.staffValueMode || "label") === "label") {
+    setSelectOptionValuesToLabels(leadDoctorSelect, true);
+    setSelectOptionValuesToLabels(assistantsSelect, false);
+  }
+}
+
+function setSelectOptionValuesToLabels(selectElement, keepEmpty = true) {
+  if (!selectElement) return;
+
+  Array.from(selectElement.options).forEach((option, index) => {
+    if (keepEmpty && index === 0 && option.value === "") return;
+    option.value = option.textContent.trim();
+  });
+}
+
+function getSelectedAssistants() {
+  const select = $("#assistants");
+  if (!select) return [];
+
+  return Array.from(select.selectedOptions)
+    .map(option => option.value)
+    .filter(Boolean);
+}
+
+/* =========================
+   VERWONDINGEN
+========================= */
+
 function buildInjurySections() {
   const container = $("#injurySections");
+  if (!container) return;
+
   container.innerHTML = "";
 
   (CONFIG.bodyParts || []).forEach(part => {
@@ -95,7 +174,7 @@ function buildInjurySections() {
     block.innerHTML = `
       <div class="injury-block-header">
         <h3>${escapeHtml(part)}</h3>
-        <button type="button" class="btn btn-secondary add-injury-btn" data-part="${escapeAttr(part)}">
+        <button type="button" class="btn btn-secondary btn-compact add-injury-btn" data-part="${escapeAttr(part)}">
           + Verwonding toevoegen
         </button>
       </div>
@@ -108,6 +187,8 @@ function buildInjurySections() {
   container.querySelectorAll(".add-injury-btn").forEach(btn => {
     btn.addEventListener("click", () => addInjuryItem(btn.dataset.part));
   });
+
+  Object.keys(injuryState).forEach(part => renderInjuryList(part));
 }
 
 function addInjuryItem(part, initialData = {}) {
@@ -175,7 +256,7 @@ function renderInjuryList(part) {
           data-field="note">${escapeHtml(item.note)}</textarea>
       </div>
 
-      <button type="button" class="btn btn-secondary remove-btn"
+      <button type="button" class="btn btn-secondary btn-compact remove-btn"
         data-remove-part="${escapeAttr(part)}"
         data-remove-id="${escapeAttr(item.id)}">
         Verwijder verwonding
@@ -214,8 +295,12 @@ function removeInjuryItem(part, id) {
   buildReport();
 }
 
+/* =========================
+   MEDISCH LOG
+========================= */
+
 function parseMedicalLog() {
-  const raw = sanitizeText($("#medicalLog").value);
+  const raw = sanitizeText($("#medicalLog")?.value);
   if (!raw) {
     showStatus("Er is geen tekstlog om uit te lezen.", "warning");
     return;
@@ -223,32 +308,28 @@ function parseMedicalLog() {
 
   const extracted = extractFromLog(raw);
 
-  if (extracted.patientName && !$("#patientName").value.trim()) {
+  if (extracted.patientName && !$("#patientName")?.value.trim()) {
     $("#patientName").value = extracted.patientName;
   }
 
-  if (extracted.leadDoctor && !$("#leadDoctor").value.trim()) {
-    $("#leadDoctor").value = extracted.leadDoctor;
-  }
-
-  if (extracted.location && !$("#location").value.trim()) {
+  if (extracted.location && !$("#location")?.value.trim()) {
     $("#location").value = extracted.location;
   }
 
-  if (extracted.heartRate && !$("#heartRate").value.trim()) {
+  if (extracted.heartRate && !$("#heartRate")?.value.trim()) {
     $("#heartRate").value = extracted.heartRate;
   }
 
-  if (extracted.bpSys && !$("#bpSys").value.trim()) {
+  if (extracted.bpSys && !$("#bpSys")?.value.trim()) {
     $("#bpSys").value = extracted.bpSys;
   }
 
-  if (extracted.bpDia && !$("#bpDia").value.trim()) {
+  if (extracted.bpDia && !$("#bpDia")?.value.trim()) {
     $("#bpDia").value = extracted.bpDia;
   }
 
   if (extracted.summary) {
-    const current = $("#summaryNotes").value.trim();
+    const current = $("#summaryNotes")?.value.trim() || "";
     $("#summaryNotes").value = current
       ? `${current}\n\n[Uit log gehaald]\n${extracted.summary}`
       : `[Uit log gehaald]\n${extracted.summary}`;
@@ -261,7 +342,6 @@ function parseMedicalLog() {
 function extractFromLog(text) {
   const result = {
     patientName: matchGroup(text, /(?:pati[eë]nt|patient)\s*[:\-]\s*(.+)/i),
-    leadDoctor: matchGroup(text, /(?:behandelaar|arts|doctor)\s*[:\-]\s*(.+)/i),
     location: matchGroup(text, /(?:locatie|location)\s*[:\-]\s*(.+)/i),
     heartRate: matchGroup(text, /(?:hartslag|hr)\s*[:\-]?\s*(\d{2,3})/i),
     bpSys: "",
@@ -278,97 +358,43 @@ function extractFromLog(text) {
   return result;
 }
 
+/* =========================
+   RAPPORT
+========================= */
+
 function buildReport() {
   const data = collectFormData();
   const report = composeReport(data);
-  $("#reportOutput").value = report;
+
+  if ($("#reportOutput")) {
+    $("#reportOutput").value = report;
+  }
+
   renderMarkdownPreview(report);
   return report;
 }
 
-function renderMarkdownPreview(markdown) {
-  const preview = $("#reportPreview");
-  if (!preview) return;
-
-  const lines = String(markdown || "").split("\n");
-  const html = [];
-  let inParagraph = false;
-
-  function closeParagraph() {
-    if (inParagraph) {
-      html.push("</p>");
-      inParagraph = false;
-    }
-  }
-
-  lines.forEach(line => {
-    const trimmed = line.trim();
-
-    if (trimmed === "---") {
-      closeParagraph();
-      html.push("<hr>");
-      return;
-    }
-
-    if (!trimmed) {
-      closeParagraph();
-      return;
-    }
-
-    if (trimmed === "__**TRAUMA RAPPORT**__") {
-      closeParagraph();
-      html.push(`<div class="report-title">TRAUMA RAPPORT</div>`);
-      return;
-    }
-
-    if (/^__\*\*(.+)\*\*__$/.test(trimmed)) {
-      closeParagraph();
-      const text = trimmed.replace(/^__\*\*(.+)\*\*__$/, "$1");
-      html.push(`<div class="report-section-title">${escapeHtml(text)}</div>`);
-      return;
-    }
-
-    const formatted = formatInlineMarkdown(trimmed);
-
-    if (!inParagraph) {
-      html.push("<p>");
-      inParagraph = true;
-    }
-
-    html.push(formatted);
-  });
-
-  closeParagraph();
-  preview.innerHTML = html.join("");
-}
-
-function formatInlineMarkdown(text) {
-  return escapeHtml(text)
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/__(.+?)__/g, "<u>$1</u>");
-}
-
 function collectFormData() {
   return {
-    patientName: sanitizeText($("#patientName").value),
-    patientDob: sanitizeText($("#patientDob").value),
-    location: sanitizeText($("#location").value),
-    incidentDate: sanitizeText($("#incidentDate").value),
-    incidentTime: sanitizeText($("#incidentTime").value),
-    leadDoctor: sanitizeText($("#leadDoctor").value),
+    patientName: sanitizeText($("#patientName")?.value),
+    patientDob: sanitizeText($("#patientDob")?.value),
+    location: sanitizeText($("#location")?.value),
+    incidentDate: sanitizeText($("#incidentDate")?.value),
+    incidentTime: sanitizeText($("#incidentTime")?.value),
+    leadDoctor: sanitizeText($("#leadDoctor")?.value),
     assistants: getSelectedAssistants(),
-    bpSys: sanitizeText($("#bpSys").value),
-    bpDia: sanitizeText($("#bpDia").value),
-    heartRate: sanitizeText($("#heartRate").value),
-    pulseType: sanitizeText($("#pulseType").value),
-    temperatureState: sanitizeText($("#temperatureState").value),
-    bloodLoss: sanitizeText($("#bloodLoss").value),
-    painLevel: sanitizeText($("#painLevel").value),
-    costImport: sanitizeText($("#costImport").value),
-    costTotal: sanitizeText($("#costTotal").value),
-    costNotes: sanitizeText($("#costNotes").value),
-    medicalLog: sanitizeText($("#medicalLog").value),
-    summaryNotes: sanitizeText($("#summaryNotes").value),
+    bpSys: sanitizeText($("#bpSys")?.value),
+    bpDia: sanitizeText($("#bpDia")?.value),
+    heartRate: sanitizeText($("#heartRate")?.value),
+    pulseType: sanitizeText($("#pulseType")?.value),
+    temperatureState: sanitizeText($("#temperatureState")?.value),
+    bloodLoss: sanitizeText($("#bloodLoss")?.value),
+    painLevel: sanitizeText($("#painLevel")?.value),
+    costImport: sanitizeText($("#costImport")?.value),
+    costTotal: sanitizeText($("#costTotal")?.value),
+    costNotes: sanitizeText($("#costNotes")?.value),
+    medicalLog: sanitizeText($("#medicalLog")?.value),
+    summaryNotes: sanitizeText($("#summaryNotes")?.value),
     injuries: getStructuredInjuries()
   };
 }
@@ -450,91 +476,107 @@ function composeReport(data) {
   ].join("\n");
 }
 
-function buildInjuryText(injuries) {
+function renderMarkdownPreview(markdown) {
+  const preview = $("#reportPreview");
+  if (!preview) return;
+
+  const lines = String(markdown || "").split("\n");
+  const html = [];
+  let inParagraph = false;
+
+  function closeParagraph() {
+    if (inParagraph) {
+      html.push("</p>");
+      inParagraph = false;
+    }
+  }
+
+  lines.forEach(line => {
+    const trimmed = line.trim();
+
+    if (trimmed === "---") {
+      closeParagraph();
+      html.push("<hr>");
+      return;
+    }
+
+    if (!trimmed) {
+      closeParagraph();
+      return;
+    }
+
+    if (trimmed === "__**TRAUMA RAPPORT**__") {
+      closeParagraph();
+      html.push(`<div class="report-title">TRAUMA RAPPORT</div>`);
+      return;
+    }
+
+    if (/^__\*\*(.+)\*\*__$/.test(trimmed)) {
+      closeParagraph();
+      const text = trimmed.replace(/^__\*\*(.+)\*\*__$/, "$1");
+      html.push(`<div class="report-section-title">${escapeHtml(text)}</div>`);
+      return;
+    }
+
+    const formatted = formatInlineMarkdown(trimmed);
+
+    if (!inParagraph) {
+      html.push("<p>");
+      inParagraph = true;
+    }
+
+    html.push(formatted);
+  });
+
+  closeParagraph();
+  preview.innerHTML = html.join("");
+}
+
+function formatInlineMarkdown(text) {
+  return escapeHtml(text)
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/__(.+?)__/g, "<u>$1</u>");
+}
+
+function buildInjuryMarkdown(injuries) {
   const lines = [];
   let hasAny = false;
 
   Object.keys(injuries).forEach(part => {
     const items = injuries[part] || [];
     if (!items.length) {
-      lines.push(`${part}: geen geregistreerde verwondingen.`);
+      lines.push(`**${part}:** geen geregistreerde verwondingen.`);
       return;
     }
 
     hasAny = true;
-    lines.push(`${part}:`);
+    lines.push(`**${part}:**`);
     items.forEach((item, index) => {
       lines.push(
-        `  ${index + 1}. ${orDash(item.type)} | ernst: ${orDash(item.severity)} | toelichting: ${orDash(item.note)}`
+        `${index + 1}. **Type:** ${orDash(item.type)} | **Ernst:** ${orDash(item.severity)} | **Toelichting:** ${orDash(item.note)}`
       );
     });
+    lines.push("");
   });
 
   return hasAny ? lines.join("\n") : "-";
 }
 
-function buildCostText(data) {
-  const parts = [
-    `Totaalbedrag: ${data.costTotal ? `€ ${data.costTotal}` : "-"}`,
-    `Opmerking: ${orDash(data.costNotes)}`,
-    "Export kostentool:",
-    data.costImport || "-"
-  ];
-
-  return parts.join("\n");
+function buildCostMarkdown(data) {
+  return [
+    `**Totaalbedrag:** ${data.costTotal ? `€ ${data.costTotal}` : "-"}`,
+    `**Opmerking:** ${orDash(data.costNotes)}`,
+    `**Export kostentool:**`,
+    `${data.costImport || "-"}`
+  ].join("\n");
 }
 
-async function loadPersonnel() {
-  const sourceUrl = (CONFIG.personnelSourceUrl || "").trim();
-  if (!sourceUrl) return;
-
-  const response = await fetch(sourceUrl);
-  if (!response.ok) {
-    throw new Error("Personeelslijst kon niet geladen worden.");
-  }
-
-  const data = await response.json();
-  PERSONNEL = Array.isArray(data) ? data : (data.items || []);
-
-  populatePersonnelFields();
-}
-
-function populatePersonnelFields() {
-  const doctorSelect = $("#leadDoctor");
-  const assistantsSelect = $("#assistants");
-
-  if (!doctorSelect || !assistantsSelect) return;
-
-  doctorSelect.innerHTML = `<option value="">Kies een behandelaar</option>`;
-  assistantsSelect.innerHTML = "";
-
-  PERSONNEL.forEach(person => {
-    const name = typeof person === "string"
-      ? person
-      : (person.name || person.naam || person.displayName || "");
-
-    if (!name) return;
-
-    const doctorOption = document.createElement("option");
-    doctorOption.value = name;
-    doctorOption.textContent = name;
-    doctorSelect.appendChild(doctorOption);
-
-    const assistantOption = document.createElement("option");
-    assistantOption.value = name;
-    assistantOption.textContent = name;
-    assistantsSelect.appendChild(assistantOption);
-  });
-}
-
-function getSelectedAssistants() {
-  const select = $("#assistants");
-  if (!select) return [];
-  return Array.from(select.selectedOptions).map(option => option.value).filter(Boolean);
-}
+/* =========================
+   ACTIES
+========================= */
 
 async function handleCopy() {
-  const report = $("#reportOutput").value.trim();
+  const report = $("#reportOutput")?.value.trim();
 
   if (!report) {
     showStatus("Er is nog geen rapport om te kopiëren.", "warning");
@@ -587,7 +629,7 @@ async function handleCopy() {
 
 async function sendToDiscord(reportText) {
   const payload = {
-    content: `**Nieuw trauma rapport**\n\`\`\`\n${truncate(reportText, 1800)}\n\`\`\``
+    content: truncate(reportText, 1800)
   };
 
   const response = await fetch(CONFIG.discordWebhookProxyUrl, {
@@ -606,7 +648,9 @@ async function sendToDiscord(reportText) {
 function handleReset() {
   document.querySelectorAll("input, textarea, select").forEach(el => {
     if (el.tagName === "SELECT" && el.multiple) {
-      Array.from(el.options).forEach(option => option.selected = false);
+      Array.from(el.options).forEach(option => {
+        option.selected = false;
+      });
     } else if (el.tagName === "SELECT") {
       el.selectedIndex = 0;
     } else {
@@ -621,26 +665,40 @@ function handleReset() {
     renderInjuryList(part);
   });
 
-  $("#reportOutput").value = "";
+  if ($("#reportOutput")) {
+    $("#reportOutput").value = "";
+  }
+
   const preview = $("#reportPreview");
   if (preview) preview.innerHTML = "";
+
   clearStatus();
   buildReport();
 }
 
+/* =========================
+   STATUS
+========================= */
+
 function showStatus(message, type = "success") {
   const box = $("#statusBox");
+  if (!box) return;
+
   box.textContent = message;
   box.className = `status-box status-${type}`;
 }
 
 function clearStatus() {
   const box = $("#statusBox");
+  if (!box) return;
+
   box.textContent = "";
   box.className = "status-box hidden";
 }
 
-/* Helpers */
+/* =========================
+   HELPERS
+========================= */
 
 function $(selector) {
   return document.querySelector(selector);
@@ -711,6 +769,10 @@ function escapeAttr(value) {
   return escapeHtml(value);
 }
 
+function escapeMarkdownText(text) {
+  return String(text || "").trim();
+}
+
 function slugify(value) {
   return String(value || "")
     .toLowerCase()
@@ -736,41 +798,4 @@ function debounce(fn, delay = 200) {
 function matchGroup(text, regex) {
   const match = text.match(regex);
   return match && match[1] ? match[1].trim() : "";
-}
-
-function buildInjuryMarkdown(injuries) {
-  const lines = [];
-  let hasAny = false;
-
-  Object.keys(injuries).forEach(part => {
-    const items = injuries[part] || [];
-    if (!items.length) {
-      lines.push(`**${part}:** geen geregistreerde verwondingen.`);
-      return;
-    }
-
-    hasAny = true;
-    lines.push(`**${part}:**`);
-    items.forEach((item, index) => {
-      lines.push(
-        `${index + 1}. **Type:** ${orDash(item.type)} | **Ernst:** ${orDash(item.severity)} | **Toelichting:** ${orDash(item.note)}`
-      );
-    });
-    lines.push("");
-  });
-
-  return hasAny ? lines.join("\n") : "-";
-}
-
-function buildCostMarkdown(data) {
-  return [
-    `**Totaalbedrag:** ${data.costTotal ? `€ ${data.costTotal}` : "-"}`,
-    `**Opmerking:** ${orDash(data.costNotes)}`,
-    `**Export kostentool:**`,
-    `${data.costImport || "-"}`
-  ].join("\n");
-}
-
-function escapeMarkdownText(text) {
-  return String(text || "").trim();
 }
