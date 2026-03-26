@@ -125,21 +125,23 @@
 .accordion-toolbar {
   display: flex;
   justify-content: flex-end;
-  align-items: center;
+  align-items: flex-start;
+  align-self: start;
 }
 
 /* PROGRESS */
 .progress-wrap {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 12px 16px;
-  align-items: end;
+  gap: 8px 16px;
+  align-items: start;
 }
 
 .progress-meta {
   display: grid;
   gap: 4px;
   align-content: start;
+  align-self: start;
 }
 
 #progressLabel {
@@ -187,17 +189,19 @@
 .button-row--right {
   justify-content: flex-end;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 8px;
   margin-top: 0;
   margin-bottom: 12px;
 }
 
 .button-row--right .btn {
-  padding: 0.68rem 0.9rem;
-  font-size: 0.96rem;
+  padding: 0.62rem 0.82rem;
+  font-size: 0.88rem;
+  line-height: 1.1;
   border-radius: 12px;
   min-height: auto;
+  white-space: nowrap;
 }
 
 /* EXISTING */
@@ -365,7 +369,8 @@
   }
 
   .button-row--right {
-    justify-content: flex-start;
+  justify-content: flex-start;
+  flex-wrap: wrap;
   }
 }
 
