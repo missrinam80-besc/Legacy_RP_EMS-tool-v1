@@ -79,12 +79,12 @@
 }
 
 .btn-secondary {
-  background: #e5e7eb;
-  color: var(--color-text);
+  background: var(--color-primary);
+  color: #fff;
 }
 
 .btn-secondary:hover {
-  background: #d1d5db;
+  background: var(--color-primary-dark);
 }
 
 /* =========================
@@ -367,9 +367,9 @@
 
 .form-input[readonly],
 .form-textarea[readonly] {
-  background: #e5e7eb;
+  background: rgba(229, 231, 235, 0.55);
   color: #374151;
-  border-color: var(--color-border);
+  border-color: #d1d5db;
   cursor: not-allowed;
 }
 
@@ -379,14 +379,26 @@
   box-shadow: none;
 }
 
+/* =========================
+   Back button navigation (GLOBAL)
+========================= */
+
 .tool-nav a {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  font-weight: 600;
+  gap: 0.5rem;
+  padding: 0.95rem 1.25rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-sm);
+  font-weight: 700;
+  color: var(--color-primary);
   text-decoration: none;
 }
 
 .tool-nav a:hover {
-  text-decoration: underline;
+  text-decoration: none;
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
