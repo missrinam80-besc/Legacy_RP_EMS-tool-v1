@@ -2,7 +2,7 @@
   "toolTitle": "Evaluatieformulier",
   "toolDescription": "Gestandaardiseerde evaluaties voor EMS-medewerkers met personeelsselectie, score-overzicht, automatische samenvatting en rapportweergave.",
   "staffApiUrl": "https://script.google.com/macros/s/AKfycbxh-7nXpT8A7D4KCQJsvA3rS_fWbFZUPsxC6zjbiLuN5Cp2y8AZ35NrrtgwGhgX8KffRA/exec",
-  "discordEndpointUrl": "PLAK_HIER_JE_APPS_SCRIPT_PROXY_URL",
+  "discordEndpointUrl": "https://script.google.com/macros/s/AKfycbxh-7nXpT8A7D4KCQJsvA3rS_fWbFZUPsxC6zjbiLuN5Cp2y8AZ35NrrtgwGhgX8KffRA/exec",
   "discordUsername": "EMS Toolbox",
   "discordFormType": "evaluation",
 
