@@ -183,7 +183,6 @@ function bindEvents() {
   qs("#evaluationForm").addEventListener("submit", handleSubmit);
   qs("#resetBtn").addEventListener("click", resetForm);
   qs("#copyBtn").addEventListener("click", copyOutput);
-  qs("#downloadBtn").addEventListener("click", downloadOutput);
   qs("#printBtn").addEventListener("click", printOutput);
   qs("#employeeSelect").addEventListener("change", handleEmployeeSelect);
   qs("#evaluatorSelect").addEventListener("change", handleEvaluatorSelect);
@@ -888,17 +887,6 @@ async function copyOutput() {
 
   await copyTextToClipboard(text);
   setStatusMessage("Verslag gekopieerd.", "success");
-}
-
-function downloadOutput() {
-  const text = qs("#output").value.trim();
-
-  if (!text) {
-    return setStatusMessage("Geen verslag om te downloaden.", "warning");
-  }
-
-  downloadTextFile("evaluatieverslag.txt", text);
-  setStatusMessage("Download gestart.", "success");
 }
 
 function printOutput() {
