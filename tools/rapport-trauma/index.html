@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>EMS Trauma Rapport v2</title>
 
-  <!-- Gedeelde EMS styles -->
   <link rel="stylesheet" href="../../assets/styles/theme.css" />
   <link rel="stylesheet" href="../../assets/styles/base.css" />
   <link rel="stylesheet" href="../../assets/styles/layout.css" />
@@ -17,225 +16,230 @@
 <body>
   <div class="app">
     <header class="site-header">
-      <img src="../../assets/images/Banner.png" alt="EMS Tools Hub banner" />
+      <img src="../../assets/images/Banner.png" alt="EMS Tools Hub banner" class="site-banner" />
     </header>
 
-    <section class="intro panel">
-      <h1>EMS Trauma Rapport v2</h1>
-      <p>
-        Vul de trauma-informatie in en bouw een gestructureerd rapport op. 
-        Gegevens blijven lokaal in de browser, behalve wanneer een Discord-log actief is ingesteld.
-      </p>
-    </section>
+    <div class="page-container">
+      <section class="intro panel">
+        <h1>EMS Trauma Rapport v2</h1>
+        <p>
+          Vul de trauma-informatie in en bouw een gestructureerd rapport op.
+          Gegevens blijven lokaal in de browser, behalve wanneer een Discord-log actief is ingesteld.
+        </p>
+      </section>
 
-    <div class="tool-nav panel">
-      <a href="../../index.html">← Terug naar EMS Tools Hub</a>
+      <div class="tool-nav">
+        <a href="../../index.html">← Terug naar EMS Tools Hub</a>
+      </div>
+
+      <section class="panel patient-panel">
+        <div class="panel-header">
+          <h2>Patiëntgegevens</h2>
+          <p>Basisgegevens die steeds bovenaan in het rapport komen.</p>
+        </div>
+
+        <div class="panel-body">
+          <div class="form-row form-row--2">
+            <div class="field">
+              <label for="patientName">Naam patiënt</label>
+              <input id="patientName" type="text" placeholder="Voornaam Achternaam" />
+            </div>
+
+            <div class="field">
+              <label for="patientDob">Geboortedatum</label>
+              <input id="patientDob" type="date" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="workspace-grid">
+        <div class="tool-form-column">
+          <div class="panel input-panel">
+            <div class="panel-header">
+              <h2>Invoer</h2>
+              <p>Werk met uitklapbare secties en bouw daarna het rapport op.</p>
+            </div>
+
+            <div class="panel-body">
+              <details class="accordion-section" open>
+                <summary>Situatiegegevens</summary>
+                <div class="accordion-content">
+                  <div class="form-row form-row--1">
+                    <div class="field">
+                      <label for="location">Locatie</label>
+                      <input id="location" type="text" placeholder="Pillbox, incidentlocatie, spoed..." />
+                    </div>
+                  </div>
+
+                  <div class="form-row form-row--2">
+                    <div class="field">
+                      <label for="incidentDate">Datum</label>
+                      <input id="incidentDate" type="date" />
+                    </div>
+
+                    <div class="field">
+                      <label for="incidentTime">Uur</label>
+                      <input id="incidentTime" type="time" />
+                    </div>
+                  </div>
+                </div>
+              </details>
+
+              <details class="accordion-section">
+                <summary>Arts & team</summary>
+                <div class="accordion-content">
+                  <div class="form-row form-row--2">
+                    <div class="field">
+                      <label for="leadDoctor">Naam behandelaar</label>
+                      <input id="leadDoctor" type="text" placeholder="Naam behandelaar" />
+                    </div>
+
+                    <div class="field">
+                      <label for="assistants">Assistenten</label>
+                      <input id="assistants" type="text" placeholder="Naam 1, naam 2..." />
+                    </div>
+                  </div>
+                </div>
+              </details>
+
+              <details class="accordion-section">
+                <summary>Vitals</summary>
+                <div class="accordion-content">
+                  <div class="form-row form-row--2">
+                    <div class="field">
+                      <label for="bpSys">Bloeddruk boven</label>
+                      <input id="bpSys" type="number" min="0" placeholder="Bijv. 120" />
+                    </div>
+
+                    <div class="field">
+                      <label for="bpDia">Bloeddruk onder</label>
+                      <input id="bpDia" type="number" min="0" placeholder="Bijv. 80" />
+                    </div>
+                  </div>
+
+                  <div class="form-row form-row--2">
+                    <div class="field">
+                      <label for="heartRate">Hartslag</label>
+                      <input id="heartRate" type="number" min="0" placeholder="Bijv. 88" />
+                    </div>
+
+                    <div class="field">
+                      <label for="pulseType">Pols</label>
+                      <select id="pulseType"></select>
+                    </div>
+                  </div>
+
+                  <div class="form-row form-row--2">
+                    <div class="field">
+                      <label for="temperatureState">Temperatuur</label>
+                      <select id="temperatureState"></select>
+                    </div>
+
+                    <div class="field">
+                      <label for="bloodLoss">Bloedverlies</label>
+                      <select id="bloodLoss"></select>
+                    </div>
+                  </div>
+
+                  <div class="form-row form-row--1">
+                    <div class="field">
+                      <label for="painLevel">Pijn</label>
+                      <select id="painLevel"></select>
+                    </div>
+                  </div>
+                </div>
+              </details>
+
+              <details class="accordion-section">
+                <summary>Verwondingen per ledemaat</summary>
+                <div class="accordion-content">
+                  <p class="soft-text">
+                    Voeg per lichaamsdeel meerdere verwondingen toe.
+                  </p>
+                  <div id="injurySections"></div>
+                </div>
+              </details>
+
+              <details class="accordion-section">
+                <summary>Kosteninformatie</summary>
+                <div class="accordion-content">
+                  <div class="form-row form-row--1">
+                    <div class="field">
+                      <label for="costImport">Export uit kostentool</label>
+                      <textarea id="costImport" rows="6" placeholder="Plak hier de export uit de kostentool..."></textarea>
+                    </div>
+                  </div>
+
+                  <div class="form-row form-row--2">
+                    <div class="field">
+                      <label for="costTotal">Totaalbedrag (€)</label>
+                      <input id="costTotal" type="number" min="0" step="1" placeholder="Bijv. 1500" />
+                    </div>
+
+                    <div class="field">
+                      <label for="costNotes">Opmerking kosten</label>
+                      <input id="costNotes" type="text" placeholder="Optionele toelichting" />
+                    </div>
+                  </div>
+                </div>
+              </details>
+
+              <details class="accordion-section">
+                <summary>Medisch systeem log import</summary>
+                <div class="accordion-content">
+                  <div class="form-row form-row--1">
+                    <div class="field">
+                      <label for="medicalLog">Tekstlog</label>
+                      <textarea id="medicalLog" rows="10" placeholder="Plak hier de tekstlog uit het medische systeem..."></textarea>
+                    </div>
+                  </div>
+
+                  <div class="button-row">
+                    <button type="button" class="btn btn-secondary" id="parseLogBtn">
+                      Lees log uit
+                    </button>
+                  </div>
+                </div>
+              </details>
+
+              <details class="accordion-section">
+                <summary>Extra notities</summary>
+                <div class="accordion-content">
+                  <div class="form-row form-row--1">
+                    <div class="field">
+                      <label for="summaryNotes">Samenvatting / extra medische notities</label>
+                      <textarea id="summaryNotes" rows="6" placeholder="Vrije medische notities, conclusie, bijzonderheden..."></textarea>
+                    </div>
+                  </div>
+                </div>
+              </details>
+
+              <div class="button-row">
+                <button type="button" class="btn btn-primary" id="buildBtn">Bouw rapport</button>
+                <button type="button" class="btn btn-secondary" id="copyBtn">Kopieer</button>
+                <button type="button" class="btn btn-secondary" id="resetBtn">Reset</button>
+              </div>
+
+              <div id="statusBox" class="status-box hidden"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tool-output-column">
+          <div class="panel output-panel">
+            <div class="output-panel__header">
+              <h2>Gegenereerd rapport</h2>
+              <p>Hier verschijnt het trauma rapport in leesbare vorm.</p>
+            </div>
+
+            <div class="output-canvas">
+              <textarea id="reportOutput" class="output-canvas__textarea" readonly></textarea>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
-
-    <!-- Patiënt bovenaan -->
-    <section class="panel patient-panel">
-      <div class="panel-header">
-        <h2>Patiëntgegevens</h2>
-        <p>Basisgegevens die steeds bovenaan in het rapport komen.</p>
-      </div>
-
-      <div class="panel-body">
-        <div class="grid">
-          <div class="field col-6">
-            <label for="patientName">Naam patiënt</label>
-            <input id="patientName" type="text" placeholder="Voornaam Achternaam" />
-          </div>
-
-          <div class="field col-6">
-            <label for="patientDob">Geboortedatum</label>
-            <input id="patientDob" type="date" />
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 2 kolommen -->
-    <section class="layout layout-2col">
-      <!-- LINKS -->
-      <div class="panel input-panel">
-        <div class="panel-header">
-          <h2>Invoer</h2>
-          <p>Werk met uitklapbare secties en bouw daarna het rapport op.</p>
-        </div>
-
-        <div class="panel-body">
-          <!-- Situatie -->
-          <details class="accordion" open>
-            <summary>Situatiegegevens</summary>
-            <div class="accordion-content">
-              <div class="grid">
-                <div class="field col-12">
-                  <label for="location">Locatie</label>
-                  <input id="location" type="text" placeholder="Pillbox, incidentlocatie, spoed..." />
-                </div>
-
-                <div class="field col-6">
-                  <label for="incidentDate">Datum</label>
-                  <input id="incidentDate" type="date" />
-                </div>
-
-                <div class="field col-6">
-                  <label for="incidentTime">Uur</label>
-                  <input id="incidentTime" type="time" />
-                </div>
-              </div>
-            </div>
-          </details>
-
-          <!-- Arts -->
-          <details class="accordion">
-            <summary>Arts & team</summary>
-            <div class="accordion-content">
-              <div class="grid">
-                <div class="field col-6">
-                  <label for="leadDoctor">Naam behandelaar</label>
-                  <input id="leadDoctor" type="text" placeholder="Naam behandelaar" />
-                </div>
-
-                <div class="field col-6">
-                  <label for="assistants">Assistenten</label>
-                  <input id="assistants" type="text" placeholder="Naam 1, naam 2..." />
-                </div>
-              </div>
-            </div>
-          </details>
-
-          <!-- Vitals -->
-          <details class="accordion">
-            <summary>Vitals</summary>
-            <div class="accordion-content">
-              <div class="grid">
-                <div class="field col-6">
-                  <label for="bpSys">Bloeddruk boven</label>
-                  <input id="bpSys" type="number" min="0" placeholder="Bijv. 120" />
-                </div>
-
-                <div class="field col-6">
-                  <label for="bpDia">Bloeddruk onder</label>
-                  <input id="bpDia" type="number" min="0" placeholder="Bijv. 80" />
-                </div>
-
-                <div class="field col-6">
-                  <label for="heartRate">Hartslag</label>
-                  <input id="heartRate" type="number" min="0" placeholder="Bijv. 88" />
-                </div>
-
-                <div class="field col-6">
-                  <label for="pulseType">Pols</label>
-                  <select id="pulseType"></select>
-                </div>
-
-                <div class="field col-6">
-                  <label for="temperatureState">Temperatuur</label>
-                  <select id="temperatureState"></select>
-                </div>
-
-                <div class="field col-6">
-                  <label for="bloodLoss">Bloedverlies</label>
-                  <select id="bloodLoss"></select>
-                </div>
-
-                <div class="field col-12">
-                  <label for="painLevel">Pijn</label>
-                  <select id="painLevel"></select>
-                </div>
-              </div>
-            </div>
-          </details>
-
-          <!-- Verwondingen -->
-          <details class="accordion">
-            <summary>Verwondingen per ledemaat</summary>
-            <div class="accordion-content">
-              <p class="soft-text">
-                Voeg per lichaamsdeel meerdere verwondingen toe.
-              </p>
-              <div id="injurySections"></div>
-            </div>
-          </details>
-
-          <!-- Kosten -->
-          <details class="accordion">
-            <summary>Kosteninformatie</summary>
-            <div class="accordion-content">
-              <div class="grid">
-                <div class="field col-12">
-                  <label for="costImport">Export uit kostentool</label>
-                  <textarea id="costImport" rows="6" placeholder="Plak hier de export uit de kostentool..."></textarea>
-                </div>
-
-                <div class="field col-6">
-                  <label for="costTotal">Totaalbedrag (€)</label>
-                  <input id="costTotal" type="number" min="0" step="1" placeholder="Bijv. 1500" />
-                </div>
-
-                <div class="field col-6">
-                  <label for="costNotes">Opmerking kosten</label>
-                  <input id="costNotes" type="text" placeholder="Optionele toelichting" />
-                </div>
-              </div>
-            </div>
-          </details>
-
-          <!-- Medisch log -->
-          <details class="accordion">
-            <summary>Medisch systeem log import</summary>
-            <div class="accordion-content">
-              <div class="grid">
-                <div class="field col-12">
-                  <label for="medicalLog">Tekstlog</label>
-                  <textarea id="medicalLog" rows="10" placeholder="Plak hier de tekstlog uit het medische systeem..."></textarea>
-                </div>
-
-                <div class="field col-12">
-                  <button type="button" class="btn btn-secondary" id="parseLogBtn">
-                    Lees log uit
-                  </button>
-                </div>
-              </div>
-            </div>
-          </details>
-
-          <!-- Extra notities -->
-          <details class="accordion">
-            <summary>Extra notities</summary>
-            <div class="accordion-content">
-              <div class="grid">
-                <div class="field col-12">
-                  <label for="summaryNotes">Samenvatting / extra medische notities</label>
-                  <textarea id="summaryNotes" rows="6" placeholder="Vrije medische notities, conclusie, bijzonderheden..."></textarea>
-                </div>
-              </div>
-            </div>
-          </details>
-
-          <div class="action-row">
-            <button type="button" class="btn btn-primary" id="buildBtn">Bouw rapport</button>
-            <button type="button" class="btn btn-secondary" id="copyBtn">Kopieer</button>
-            <button type="button" class="btn btn-secondary" id="resetBtn">Reset</button>
-          </div>
-
-          <div id="statusBox" class="status-box hidden"></div>
-        </div>
-      </div>
-
-      <!-- RECHTS -->
-      <div class="panel output-panel">
-        <div class="panel-header">
-          <h2>Gegenereerd rapport</h2>
-          <p>Hier verschijnt het trauma rapport in leesbare vorm.</p>
-        </div>
-
-        <div class="panel-body">
-          <textarea id="reportOutput" readonly></textarea>
-        </div>
-      </div>
-    </section>
   </div>
 
   <script src="app.js"></script>
