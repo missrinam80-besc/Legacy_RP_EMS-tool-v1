@@ -1,32 +1,241 @@
 {
-  "toolTitle": "Behandelingsadviseur",
-  "toolDescription": "Ondersteuning bij letsels, vitale functies en behandelkeuze.",
   "bodyParts": [
-    "Linkerarm",
-    "Rechterarm",
-    "Linkerbeen",
-    "Rechterbeen",
-    "Hoofd",
-    "Rompgedeelte"
+    { "key": "head", "label": "Hoofd / nek", "fractureZone": "neck" },
+    { "key": "torso", "label": "Rompgedeelte", "fractureZone": "torso" },
+    { "key": "leftArm", "label": "Linkerarm", "fractureZone": "arm" },
+    { "key": "rightArm", "label": "Rechterarm", "fractureZone": "arm" },
+    { "key": "leftLeg", "label": "Linkerbeen", "fractureZone": "leg" },
+    { "key": "rightLeg", "label": "Rechterbeen", "fractureZone": "leg" }
   ],
-  "injuryTypes": [
-    "Snijwonde",
-    "Steekwonde",
-    "Schotwonde",
-    "Brandwonde",
-    "Breuk",
-    "Kneuzing"
+  "woundOptions": [
+    { "value": "", "label": "Geen wond" },
+    { "value": "abrasion", "label": "Schaafwonde" },
+    { "value": "avulsion", "label": "Avulsiewonde / afgescheurd weefsel" },
+    { "value": "contusion", "label": "Kneuzing" },
+    { "value": "crush", "label": "Verpletteringsletsel" },
+    { "value": "cut", "label": "Snijwonde" },
+    { "value": "laceration", "label": "Scheurwonde" },
+    { "value": "puncturewound", "label": "Steekwonde" },
+    { "value": "lowvelocitywound", "label": "Lichte schotwonde" },
+    { "value": "mediumvelocitywound", "label": "Matige schotwonde" },
+    { "value": "highvelocitywound", "label": "Ernstige schotwonde" },
+    { "value": "velocitywound", "label": "Schotwonde / shotgunwonde" },
+    { "value": "burn", "label": "Brandwonde" }
   ],
-  "painLevels": [
-    "Licht",
-    "Gemiddeld",
-    "Hoog",
-    "Extreem"
-  ],
-  "bloodLossLevels": [
-    "Licht",
-    "Gemiddeld",
-    "Hoog",
-    "Extreem"
-  ]
+  "selectOptions": {
+    "consciousness": [
+      { "value": "alert", "label": "Bij bewustzijn" },
+      { "value": "reduced", "label": "Verminderd bewustzijn" },
+      { "value": "unconscious", "label": "Bewusteloos" }
+    ],
+    "triage": [
+      { "value": "none", "label": "Geen" },
+      { "value": "non-urgent", "label": "Niet urgent" },
+      { "value": "urgent", "label": "Urgent" },
+      { "value": "critical", "label": "Kritiek" }
+    ],
+    "pulse": [
+      { "value": "normal", "label": "Normaal" },
+      { "value": "fast", "label": "Snel" },
+      { "value": "slow", "label": "Traag" },
+      { "value": "weak", "label": "Zwak" }
+    ],
+    "temperature": [
+      { "value": "normal", "label": "Normaal" },
+      { "value": "elevated", "label": "Verhoogd" },
+      { "value": "low", "label": "Verlaagd" }
+    ],
+    "painLevel": [
+      { "value": "light", "label": "Licht" },
+      { "value": "moderate", "label": "Gemiddeld" },
+      { "value": "high", "label": "Hoog" },
+      { "value": "extreme", "label": "Extreem" }
+    ],
+    "bleedingLevel": [
+      { "value": "none", "label": "Geen" },
+      { "value": "light", "label": "Licht" },
+      { "value": "moderate", "label": "Gemiddeld" },
+      { "value": "high", "label": "Hoog" },
+      { "value": "extreme", "label": "Extreem" }
+    ]
+  },
+  "woundRules": {
+    "abrasion": {
+      "severity": 1,
+      "actions": [
+        "Reinig de schaafwonde",
+        "Ontsmet de huid",
+        "Dek de wonde af met een basisverband"
+      ],
+      "items": ["field_dressing"],
+      "warnings": ["Controleer op vervuiling van de wonde"]
+    },
+    "avulsion": {
+      "severity": 3,
+      "actions": [
+        "Controleer actief bloedverlies",
+        "Dek beschadigd weefsel steriel af",
+        "Voorzie wondsluiting of chirurgische opvolging"
+      ],
+      "items": ["quick_clot", "packing_bandage", "sewing_kit"],
+      "warnings": ["Hoge kans op complex weefselletsel", "Overweeg snelle doorverwijzing"]
+    },
+    "contusion": {
+      "severity": 1,
+      "actions": [
+        "Observeer de kneuzing",
+        "Controleer pijn en mobiliteit",
+        "Voorzie ondersteuning of rustmaatregelen"
+      ],
+      "items": ["elastic_bandage", "painkillers"],
+      "warnings": ["Let op onderliggende breuk of intern letsel bij zware impact"]
+    },
+    "crush": {
+      "severity": 3,
+      "actions": [
+        "Controleer op verpletteringsletsel en bijkomende schade",
+        "Stabiliseer het getroffen lichaamsdeel",
+        "Voorzie snelle evaluatie op intern letsel"
+      ],
+      "items": ["elastic_bandage", "painkillers", "saline500ml"],
+      "warnings": ["Verhoogd risico op inwendig letsel", "Controleer beweging en pijn nauwgezet"]
+    },
+    "cut": {
+      "severity": 2,
+      "actions": [
+        "Reinig de snijwonde",
+        "Controleer de bloeding",
+        "Hecht de wonde indien nodig"
+      ],
+      "items": ["field_dressing", "sewing_kit"],
+      "warnings": ["Controleer diepte en wondranden"]
+    },
+    "laceration": {
+      "severity": 3,
+      "actions": [
+        "Reinig de scheurwonde",
+        "Stelp de bloeding",
+        "Voorzie wondsluiting"
+      ],
+      "items": ["quick_clot", "field_dressing", "sewing_kit"],
+      "warnings": ["Onregelmatige wondranden, grotere kans op complexe wondzorg"]
+    },
+    "puncturewound": {
+      "severity": 3,
+      "actions": [
+        "Beoordeel de diepte van de steekwonde",
+        "Controleer actief bloedverlies",
+        "Overweeg interne schade"
+      ],
+      "items": ["packing_bandage", "quick_clot", "sewing_kit"],
+      "warnings": ["Diepe penetrerende letsels kunnen verborgen schade geven"]
+    },
+    "lowvelocitywound": {
+      "severity": 3,
+      "actions": [
+        "Controleer de schotwonde",
+        "Stelp bloeding",
+        "Voorzie verdere evaluatie en opvolging"
+      ],
+      "items": ["quick_clot", "packing_bandage", "field_dressing"],
+      "warnings": ["Overweeg RX of verdere beeldvorming"]
+    },
+    "mediumvelocitywound": {
+      "severity": 4,
+      "actions": [
+        "Stelp bloeding onmiddellijk",
+        "Dek de wonde af en stabiliseer",
+        "Bereid snelle overdracht of chirurgie voor"
+      ],
+      "items": ["tourniquet", "quick_clot", "packing_bandage", "blood250ml"],
+      "warnings": ["Hoger risico op ernstig weefselletsel", "Overweeg transfusie bij bloedverlies"]
+    },
+    "highvelocitywound": {
+      "severity": 5,
+      "actions": [
+        "Pak de schotwonde als kritiek letsel aan",
+        "Controleer zware bloeding onmiddellijk",
+        "Bereid spoedtransport of operatie voor"
+      ],
+      "items": ["tourniquet", "quick_clot", "packing_bandage", "blood500ml"],
+      "warnings": ["Zeer hoog risico op ernstig trauma", "Onmiddellijke verdere medische opvolging aanbevolen"]
+    },
+    "velocitywound": {
+      "severity": 4,
+      "actions": [
+        "Controleer schot- of shotgunletsel",
+        "Stop actieve bloeding",
+        "Stabiliseer de patiënt en bereid transport voor"
+      ],
+      "items": ["tourniquet", "quick_clot", "packing_bandage"],
+      "warnings": ["Kan uitgebreide weefselschade geven"]
+    },
+    "burn": {
+      "severity": 3,
+      "actions": [
+        "Stop de blootstelling aan hitte of vuur",
+        "Koel de brandwonde",
+        "Dek de wonde steriel af"
+      ],
+      "items": ["field_dressing", "saline250ml", "painkillers"],
+      "warnings": ["Controleer temperatuur en algemene toestand"]
+    }
+  },
+  "itemLabels": {
+    "tourniquet": "Tourniquet",
+    "field_dressing": "Veldverband",
+    "elastic_bandage": "Elastisch verband",
+    "quick_clot": "Hemostatisch verband / Quick Clot",
+    "packing_bandage": "Packing bandage / opvulverband",
+    "sewing_kit": "Hechtset",
+    "painkillers": "Pijnstillers",
+    "morphine": "Morfine",
+    "epinephrine": "Epinefrine / adrenaline",
+    "blood250ml": "Bloed 250 ml",
+    "blood500ml": "Bloed 500 ml",
+    "saline250ml": "Saline 250 ml",
+    "saline500ml": "Saline 500 ml",
+    "neckbrace": "Nekbrace",
+    "armsplint": "Armspalk",
+    "legsplint": "Beenspalk",
+    "armcast": "Armgips",
+    "legcast": "Beengips"
+  },
+  "textMap": {
+    "consciousness": {
+      "alert": "bij bewustzijn",
+      "reduced": "met verminderd bewustzijn",
+      "unconscious": "bewusteloos"
+    },
+    "pulse": {
+      "normal": "normale pols",
+      "fast": "snelle pols",
+      "slow": "trage pols",
+      "weak": "zwakke pols"
+    },
+    "temperature": {
+      "normal": "normale lichaamstemperatuur",
+      "elevated": "verhoogde lichaamstemperatuur",
+      "low": "verlaagde lichaamstemperatuur"
+    },
+    "painLevel": {
+      "light": "lichte pijn",
+      "moderate": "gemiddelde pijn",
+      "high": "hoge pijn",
+      "extreme": "extreme pijn"
+    },
+    "bleedingLevel": {
+      "none": "geen duidelijk bloedverlies",
+      "light": "licht bloedverlies",
+      "moderate": "matig bloedverlies",
+      "high": "hoog bloedverlies",
+      "extreme": "extreem bloedverlies"
+    },
+    "triage": {
+      "none": "geen triage toegekend",
+      "non-urgent": "niet urgent",
+      "urgent": "urgent",
+      "critical": "kritiek"
+    }
+  }
 }

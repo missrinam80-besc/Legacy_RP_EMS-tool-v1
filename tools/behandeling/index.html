@@ -3,76 +3,169 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Behandelingsadviseur</title>
+  <title>EMS Behandeltool v1</title>
 
-  <link rel="stylesheet" href="../../assets/styles/theme.css" />
   <link rel="stylesheet" href="../../assets/styles/base.css" />
-  <link rel="stylesheet" href="../../assets/styles/layout.css" />
   <link rel="stylesheet" href="../../assets/styles/components.css" />
+  <link rel="stylesheet" href="../../assets/styles/layout.css" />
+  <link rel="stylesheet" href="../../assets/styles/theme.css" />
   <link rel="stylesheet" href="../../assets/styles/utilities.css" />
+  <link rel="stylesheet" href="../../assets/styles/behandeling.css" />
 </head>
 <body>
-  <main class="page-container">
-    <section class="panel">
-      <h1 id="toolTitle">Behandelingsadviseur</h1>
-      <p id="toolDescription" class="text-soft"></p>
+  <div class="app-shell behandeltool-app">
+    <header class="site-header behandeltool-header">
+      <div>
+        <h1>EMS Behandeltool v1</h1>
+        <p class="subtitle">
+          Beslissingshulp voor letsels, bloedverlies, breuken en basisbehandeling.
+        </p>
+      </div>
+
+      <div class="header-actions">
+        <button id="resetBtn" class="btn btn-secondary" type="button">Reset</button>
+        <button id="copyReportBtn" class="btn btn-primary" type="button">Kopieer samenvatting</button>
+      </div>
+    </header>
+
+    <section class="intro-card">
+      <p>
+        Deze tool helpt medewerkers om op basis van letsels, vitale functies, pijn en bloedverlies
+        een logisch behandeladvies op te bouwen. De tool is ondersteunend en vervangt geen eigen
+        klinisch redeneren of RP-inschatting.
+      </p>
     </section>
 
-    <section class="panel mt-2">
-      <form id="treatmentForm">
-        <div class="form-grid">
-          <div class="form-field">
-            <label for="bodyPart">Lichaamsdeel</label>
-            <select class="form-select" id="bodyPart"></select>
-          </div>
+    <section class="patient-section">
+      <h2>Patiëntgegevens</h2>
 
-          <div class="form-field">
-            <label for="injuryType">Type letsel</label>
-            <select class="form-select" id="injuryType"></select>
-          </div>
-
-          <div class="form-field">
-            <label for="painLevel">Pijnlevel</label>
-            <select class="form-select" id="painLevel"></select>
-          </div>
-
-          <div class="form-field">
-            <label for="bloodLoss">Bloedverlies</label>
-            <select class="form-select" id="bloodLoss"></select>
-          </div>
+      <div class="patient-grid">
+        <div class="form-group">
+          <label for="patientName">Naam patiënt</label>
+          <input type="text" id="patientName" placeholder="Bijv. John Doe" />
         </div>
 
-        <div class="form-grid mt-2">
-          <div class="form-field">
-            <label for="heartRate">Hartslag / pols</label>
-            <input class="form-input" id="heartRate" type="text" />
-          </div>
-
-          <div class="form-field">
-            <label for="bloodPressure">Bloeddruk</label>
-            <input class="form-input" id="bloodPressure" type="text" />
-          </div>
+        <div class="form-group">
+          <label for="patientDob">Geboortedatum</label>
+          <input type="text" id="patientDob" placeholder="Bijv. 01/01/1990" />
         </div>
 
-        <div class="button-row">
-          <button type="submit" class="btn btn-primary">Advies genereren</button>
-          <button type="button" class="btn btn-secondary" id="resetBtn">Leegmaken</button>
-          <button type="button" class="btn btn-secondary" id="copyBtn">Kopiëren</button>
+        <div class="form-group">
+          <label for="incidentLocation">Locatie</label>
+          <input type="text" id="incidentLocation" placeholder="Bijv. Vespucci Boulevard" />
         </div>
-      </form>
 
-      <div id="statusBox" class="status-box hidden mt-2"></div>
+        <div class="form-group">
+          <label for="treatingMedic">Behandelaar</label>
+          <input type="text" id="treatingMedic" placeholder="Naam EMS-medewerker" />
+        </div>
+      </div>
     </section>
 
-    <section class="output-card mt-2">
-      <h2>Behandeladvies</h2>
-      <textarea id="output" class="form-textarea" readonly></textarea>
-    </section>
-  </main>
+    <main class="layout behandeltool-layout">
+      <section class="left-column">
+        <details class="tool-section" open>
+          <summary>Algemene toestand</summary>
 
-  <script src="../../assets/scripts/core.js"></script>
-  <script src="../../assets/scripts/ui.js"></script>
-  <script src="../../assets/scripts/export.js"></script>
+          <div class="section-content">
+            <div class="grid-2">
+              <div class="form-group">
+                <label for="consciousness">Bewustzijn</label>
+                <select id="consciousness"></select>
+              </div>
+
+              <div class="form-group">
+                <label for="triage">Triage-inschatting</label>
+                <select id="triage"></select>
+              </div>
+
+              <div class="form-group">
+                <label for="pulse">Pols</label>
+                <select id="pulse"></select>
+              </div>
+
+              <div class="form-group">
+                <label for="temperature">Lichaamstemperatuur</label>
+                <select id="temperature"></select>
+              </div>
+
+              <div class="form-group">
+                <label for="painLevel">Pijnniveau</label>
+                <select id="painLevel"></select>
+              </div>
+
+              <div class="form-group">
+                <label for="bleedingLevel">Bloedverlies</label>
+                <select id="bleedingLevel"></select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="generalNotes">Algemene observaties</label>
+              <textarea
+                id="generalNotes"
+                rows="4"
+                placeholder="Vrije observaties, symptomen of context..."
+              ></textarea>
+            </div>
+          </div>
+        </details>
+
+        <details class="tool-section" open>
+          <summary>Letsels per lichaamsdeel</summary>
+          <div class="section-content bodyparts-wrap" id="bodypartsContainer">
+            <!-- Wordt dynamisch gevuld -->
+          </div>
+        </details>
+      </section>
+
+      <section class="right-column">
+        <div class="result-card">
+          <div class="result-header">
+            <h2>Behandeladvies</h2>
+            <button id="generateBtn" class="btn btn-primary" type="button">Genereer advies</button>
+          </div>
+
+          <div class="result-block">
+            <h3>Prioriteit</h3>
+            <div id="priorityBadge" class="priority-badge neutral">Nog niet berekend</div>
+          </div>
+
+          <div class="result-block">
+            <h3>Aanbevolen handelingen</h3>
+            <ul id="actionsList" class="result-list">
+              <li>Vul de gegevens in en genereer het behandeladvies.</li>
+            </ul>
+          </div>
+
+          <div class="result-block">
+            <h3>Aanbevolen items</h3>
+            <ul id="itemsList" class="result-list">
+              <li>Nog geen items geselecteerd.</li>
+            </ul>
+          </div>
+
+          <div class="result-block">
+            <h3>Aandachtspunten</h3>
+            <ul id="warningsList" class="result-list">
+              <li>Nog geen aandachtspunten.</li>
+            </ul>
+          </div>
+
+          <div class="result-block">
+            <h3>Korte rapportsamenvatting</h3>
+            <textarea
+              id="reportSummary"
+              rows="14"
+              readonly
+              placeholder="De samenvatting verschijnt hier..."
+            ></textarea>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
   <script src="app.js"></script>
 </body>
 </html>
