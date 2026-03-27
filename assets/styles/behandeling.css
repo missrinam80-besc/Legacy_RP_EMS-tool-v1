@@ -164,6 +164,10 @@
   margin-top: 8px;
 }
 
+.compact-list li + li {
+  margin-top: 4px;
+}
+
 .priority-badge {
   display: inline-flex;
   align-items: center;
@@ -209,6 +213,25 @@
   padding: 6px 10px;
   border-radius: 999px;
   font-size: 0.9rem;
+}
+
+.cost-box {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.cost-summary-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.cost-summary-line.total {
+  padding-top: 8px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  font-size: 1.05rem;
 }
 
 @media (max-width: 1200px) {

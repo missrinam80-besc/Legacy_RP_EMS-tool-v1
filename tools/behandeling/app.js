@@ -1,13 +1,11 @@
 /**
- * EMS Behandeltool v2
+ * EMS Behandeltool v3
  * -------------------
- * Uitbreidingen t.o.v. v1:
- * - meerdere letsels per lichaamsdeel
- * - ernst per letsel
- * - onderzoeken / beeldvorming
- * - afdelingen-tags
- * - stappenplan
- * - uitgebreidere samenvatting
+ * Uitbreidingen:
+ * - afdelingsfilter
+ * - kostenraming
+ * - nazorg / opvolging
+ * - afdeling-specifieke filtering van resultaten
  */
 
 let APP_CONFIG = null;
@@ -27,8 +25,15 @@ const stepsList = document.getElementById("stepsList");
 const actionsList = document.getElementById("actionsList");
 const itemsList = document.getElementById("itemsList");
 const investigationsList = document.getElementById("investigationsList");
+const followUpList = document.getElementById("followUpList");
 const warningsList = document.getElementById("warningsList");
 const reportSummary = document.getElementById("reportSummary");
+
+const costInjuries = document.getElementById("costInjuries");
+const costItems = document.getElementById("costItems");
+const costInvestigations = document.getElementById("costInvestigations");
+const costTotal = document.getElementById("costTotal");
+const costBreakdownList = document.getElementById("costBreakdownList");
 
 const injuryRowTemplate = document.getElementById("injuryRowTemplate");
 
@@ -61,6 +66,7 @@ async function initApp() {
 ========================================================= */
 
 function renderStaticSelects() {
+  renderOptions("departmentFilter", APP_CONFIG.selectOptions.departmentFilter);
   renderOptions("consciousness", APP_CONFIG.selectOptions.consciousness);
   renderOptions("triage", APP_CONFIG.selectOptions.triage);
   renderOptions("pulse", APP_CONFIG.selectOptions.pulse);
@@ -114,7 +120,6 @@ function renderBodyPartInputs() {
     `;
 
     bodypartsContainer.insertAdjacentHTML("beforeend", html);
-
     addInjuryRow(part.key);
   });
 
@@ -193,6 +198,9 @@ function bindEvents() {
 
 function getFormData() {
   return {
+    filter: {
+      department: valueOf("departmentFilter")
+    },
     patient: {
       name: valueOf("patientName"),
       dob: valueOf("patientDob"),
@@ -258,7 +266,15 @@ function buildTreatmentAdvice(formData) {
   const uniqueItems = new Set();
   const uniqueWarnings = new Set();
   const uniqueInvestigations = new Set();
+  const uniqueFollowUp = new Set();
   const departments = new Set();
+
+  const costState = {
+    injuries: 0,
+    items: 0,
+    investigations: 0,
+    breakdown: []
+  };
 
   let severityScore = 0;
   let hasAnyInjury = false;
@@ -271,6 +287,7 @@ function buildTreatmentAdvice(formData) {
     uniqueItems,
     uniqueWarnings,
     uniqueInvestigations,
+    uniqueFollowUp,
     departments
   });
 
@@ -288,13 +305,15 @@ function buildTreatmentAdvice(formData) {
       if (!rule) return;
 
       const severityMultiplier = getSeverityMultiplier(injury.severity);
-      severityScore += (Number(rule.severity || 0) * severityMultiplier);
+      severityScore += Number(rule.severity || 0) * severityMultiplier;
 
-      (rule.steps || []).forEach((step) => uniqueSteps.add(`${part.label}: ${step}`));
-      (rule.actions || []).forEach((action) => uniqueActions.add(`${part.label}: ${action}`));
-      (rule.items || []).forEach((item) => uniqueItems.add(item));
-      (rule.warnings || []).forEach((warning) => uniqueWarnings.add(`${part.label}: ${warning}`));
-      (rule.investigations || []).forEach((investigation) => uniqueInvestigations.add(`${part.label}: ${investigation}`));
+      addTaggedItems(uniqueSteps, part.label, rule.steps || [], rule.departments || [], "step");
+      addTaggedItems(uniqueActions, part.label, rule.actions || [], rule.departments || [], "action");
+      addSimpleTaggedItems(uniqueItems, rule.items || [], rule.departments || []);
+      addTaggedItems(uniqueWarnings, part.label, rule.warnings || [], rule.departments || [], "warning");
+      addTaggedItems(uniqueInvestigations, part.label, rule.investigations || [], rule.departments || [], "investigation");
+      addTaggedItems(uniqueFollowUp, part.label, rule.followUp || [], rule.departments || [], "followup");
+
       (rule.departments || []).forEach((department) => departments.add(department));
 
       applySeveritySpecificLogic(part, injury, {
@@ -303,8 +322,11 @@ function buildTreatmentAdvice(formData) {
         uniqueItems,
         uniqueWarnings,
         uniqueInvestigations,
+        uniqueFollowUp,
         departments
       });
+
+      addInjuryCost(injury.wound, injury.severity, costState);
     });
 
     if (part.fracture) {
@@ -315,8 +337,10 @@ function buildTreatmentAdvice(formData) {
         uniqueItems,
         uniqueWarnings,
         uniqueInvestigations,
+        uniqueFollowUp,
         departments
       });
+      addCostLine(costState, "injuries", `Fractuurverdenking ${part.label}`, APP_CONFIG.costs.fractureSurcharge || 0);
     }
 
     if (part.needsImaging) {
@@ -325,31 +349,51 @@ function buildTreatmentAdvice(formData) {
   });
 
   if (!hasAnyInjury) {
-    uniqueWarnings.add("Geen specifieke letsels geselecteerd");
-    uniqueActions.add("Voer klinische beoordeling uit en vul letsels aan indien nodig");
-    uniqueSteps.add("Start met algemene evaluatie van patiënt en letsels");
+    addTaggedItems(uniqueSteps, "", ["Start met algemene evaluatie van patiënt en letsels"], ["Spoed"], "step");
+    addTaggedItems(uniqueActions, "", ["Voer klinische beoordeling uit en vul letsels aan indien nodig"], ["Spoed"], "action");
+    addTaggedItems(uniqueWarnings, "", ["Geen specifieke letsels geselecteerd"], ["Spoed"], "warning");
   }
+
+  const filteredDepartments = filterDepartments(Array.from(departments), formData.filter.department);
+  const filteredSteps = filterTaggedSet(uniqueSteps, formData.filter.department);
+  const filteredActions = filterTaggedSet(uniqueActions, formData.filter.department);
+  const filteredItems = filterItemsSet(uniqueItems, formData.filter.department);
+  const filteredInvestigations = filterTaggedSet(uniqueInvestigations, formData.filter.department);
+  const filteredFollowUp = filterTaggedSet(uniqueFollowUp, formData.filter.department);
+  const filteredWarnings = filterTaggedSet(uniqueWarnings, formData.filter.department);
+
+  addItemCosts(filteredItems, costState);
+  addInvestigationCosts(filteredInvestigations, costState);
 
   const priority = determinePriority(severityScore, formData.condition);
   const summary = buildReportSummary(
     formData,
     priority,
-    uniqueSteps,
-    uniqueActions,
-    uniqueItems,
-    uniqueInvestigations,
-    departments
+    filteredDepartments,
+    filteredSteps,
+    filteredActions,
+    filteredItems,
+    filteredInvestigations,
+    filteredFollowUp
   );
 
   return {
     priority,
-    departments: Array.from(departments),
-    steps: Array.from(uniqueSteps),
-    actions: Array.from(uniqueActions),
-    items: Array.from(uniqueItems).map((item) => APP_CONFIG.itemLabels[item] || item),
-    investigations: Array.from(uniqueInvestigations),
-    warnings: Array.from(uniqueWarnings),
-    summary
+    departments: filteredDepartments,
+    steps: filteredSteps,
+    actions: filteredActions,
+    items: filteredItems.map((item) => APP_CONFIG.itemLabels[item.code] || item.code),
+    investigations: filteredInvestigations,
+    followUp: filteredFollowUp,
+    warnings: filteredWarnings,
+    summary,
+    costs: {
+      injuries: costState.injuries,
+      items: costState.items,
+      investigations: costState.investigations,
+      total: costState.injuries + costState.items + costState.investigations,
+      breakdown: costState.breakdown
+    }
   };
 }
 
@@ -364,81 +408,80 @@ function applyGeneralConditionLogic(condition, ctx) {
     uniqueItems,
     uniqueWarnings,
     uniqueInvestigations,
+    uniqueFollowUp,
     departments
   } = ctx;
 
   departments.add("Spoed");
 
   if (condition.airwayRisk === "at-risk" || condition.airwayRisk === "critical") {
-    uniqueSteps.add("Beoordeel en beveilig de luchtweg");
-    uniqueActions.add("Voer onmiddellijke controle van de luchtweg uit");
-    uniqueWarnings.add("Luchtweg kan bedreigd zijn");
+    addTaggedItems(uniqueSteps, "", ["Beoordeel en beveilig de luchtweg"], ["Ambulance", "Spoed"], "step");
+    addTaggedItems(uniqueActions, "", ["Voer onmiddellijke controle van de luchtweg uit"], ["Ambulance", "Spoed"], "action");
+    addTaggedItems(uniqueWarnings, "", ["Luchtweg kan bedreigd zijn"], ["Ambulance", "Spoed"], "warning");
     departments.add("Ambulance");
     departments.add("Spoed");
   }
 
   if (condition.airwayRisk === "critical") {
-    uniqueWarnings.add("Kritisch luchtwegprobleem vraagt onmiddellijke interventie");
+    addTaggedItems(uniqueWarnings, "", ["Kritisch luchtwegprobleem vraagt onmiddellijke interventie"], ["Ambulance", "Spoed"], "warning");
   }
 
   if (condition.breathingStatus === "disturbed" || condition.breathingStatus === "severe") {
-    uniqueSteps.add("Beoordeel ademhaling en zuurstofstatus");
-    uniqueActions.add("Controleer ademhaling en ondersteun waar nodig");
-    uniqueWarnings.add("Verstoorde ademhaling aanwezig");
+    addTaggedItems(uniqueSteps, "", ["Beoordeel ademhaling en zuurstofstatus"], ["Ambulance", "Spoed"], "step");
+    addTaggedItems(uniqueActions, "", ["Controleer ademhaling en ondersteun waar nodig"], ["Ambulance", "Spoed"], "action");
+    addTaggedItems(uniqueWarnings, "", ["Verstoorde ademhaling aanwezig"], ["Ambulance", "Spoed"], "warning");
     departments.add("Ambulance");
     departments.add("Spoed");
   }
 
   if (condition.breathingStatus === "severe") {
-    uniqueWarnings.add("Ernstige ademhalingsproblemen vereisen snelle stabilisatie");
+    addTaggedItems(uniqueWarnings, "", ["Ernstige ademhalingsproblemen vereisen snelle stabilisatie"], ["Ambulance", "Spoed"], "warning");
   }
 
   if (condition.consciousness === "unconscious") {
-    uniqueSteps.add("Start ABC-beoordeling met prioriteit");
-    uniqueActions.add("Beveilig de luchtweg en voer onmiddellijke vitale beoordeling uit");
-    uniqueWarnings.add("Bewusteloze patiënt vereist onmiddellijke opvolging");
+    addTaggedItems(uniqueSteps, "", ["Start ABC-beoordeling met prioriteit"], ["Ambulance", "Spoed"], "step");
+    addTaggedItems(uniqueActions, "", ["Beveilig de luchtweg en voer onmiddellijke vitale beoordeling uit"], ["Ambulance", "Spoed"], "action");
+    addTaggedItems(uniqueWarnings, "", ["Bewusteloze patiënt vereist onmiddellijke opvolging"], ["Ambulance", "Spoed"], "warning");
+    addTaggedItems(uniqueFollowUp, "", ["Blijf patiënt continu monitoren tijdens verdere zorg"], ["Ambulance", "Spoed"], "followup");
     departments.add("Ambulance");
     departments.add("Spoed");
   }
 
   if (["high", "extreme"].includes(condition.bleedingLevel)) {
-    uniqueSteps.add("Stop actieve bloeding als eerste behandelstap");
-    uniqueActions.add("Controleer en stop actieve bloeding als prioriteit");
-    uniqueItems.add("tourniquet");
-    uniqueItems.add("quick_clot");
-    uniqueWarnings.add("Ernstig bloedverlies vereist snelle stabilisatie");
+    addTaggedItems(uniqueSteps, "", ["Stop actieve bloeding als eerste behandelstap"], ["Ambulance", "Spoed"], "step");
+    addTaggedItems(uniqueActions, "", ["Controleer en stop actieve bloeding als prioriteit"], ["Ambulance", "Spoed"], "action");
+    addSimpleTaggedItems(uniqueItems, ["tourniquet", "quick_clot"], ["Ambulance", "Spoed"]);
+    addTaggedItems(uniqueWarnings, "", ["Ernstig bloedverlies vereist snelle stabilisatie"], ["Ambulance", "Spoed"], "warning");
     departments.add("Ambulance");
     departments.add("Spoed");
   }
 
   if (condition.bleedingLevel === "extreme") {
-    uniqueSteps.add("Start volume- of bloedresuscitatie indien klinisch nodig");
-    uniqueItems.add("blood500ml");
-    uniqueItems.add("saline500ml");
-    uniqueActions.add("Voorzie volume- of bloedresuscitatie indien nodig");
-    uniqueInvestigations.add("Controle van circulatie en bloedverlies");
+    addTaggedItems(uniqueSteps, "", ["Start volume- of bloedresuscitatie indien klinisch nodig"], ["Spoed"], "step");
+    addSimpleTaggedItems(uniqueItems, ["blood500ml", "saline500ml"], ["Spoed"]);
+    addTaggedItems(uniqueActions, "", ["Voorzie volume- of bloedresuscitatie indien nodig"], ["Spoed"], "action");
+    addTaggedItems(uniqueInvestigations, "", ["Controle van circulatie en bloedverlies"], ["Spoed"], "investigation");
     departments.add("Spoed");
   }
 
   if (["high", "extreme"].includes(condition.painLevel)) {
-    uniqueActions.add("Voorzie adequate pijnstilling");
-    uniqueItems.add("painkillers");
-    uniqueItems.add("morphine");
+    addTaggedItems(uniqueActions, "", ["Voorzie adequate pijnstilling"], ["Spoed"], "action");
+    addSimpleTaggedItems(uniqueItems, ["painkillers", "morphine"], ["Spoed"]);
     departments.add("Spoed");
   }
 
   if (condition.temperature === "elevated") {
-    uniqueWarnings.add("Controleer oorzaak van verhoogde temperatuur");
+    addTaggedItems(uniqueWarnings, "", ["Controleer oorzaak van verhoogde temperatuur"], ["Spoed"], "warning");
   }
 
   if (condition.pulse === "weak") {
-    uniqueWarnings.add("Zwakke pols kan wijzen op instabiliteit of bloedverlies");
+    addTaggedItems(uniqueWarnings, "", ["Zwakke pols kan wijzen op instabiliteit of bloedverlies"], ["Spoed"], "warning");
   }
 
   if (condition.triage === "critical") {
-    uniqueWarnings.add("Patiënt is als kritiek ingeschat");
-    uniqueActions.add("Prioriteer spoedzorg en snelle overdracht");
-    uniqueSteps.add("Bereid snelle overdracht of verdere interventie voor");
+    addTaggedItems(uniqueWarnings, "", ["Patiënt is als kritiek ingeschat"], ["Spoed"], "warning");
+    addTaggedItems(uniqueActions, "", ["Prioriteer spoedzorg en snelle overdracht"], ["Spoed"], "action");
+    addTaggedItems(uniqueSteps, "", ["Bereid snelle overdracht of verdere interventie voor"], ["Spoed"], "step");
     departments.add("Spoed");
   }
 }
@@ -497,38 +540,45 @@ function applySeveritySpecificLogic(part, injury, ctx) {
   const {
     uniqueSteps,
     uniqueActions,
-    uniqueItems,
     uniqueWarnings,
     uniqueInvestigations,
+    uniqueFollowUp,
     departments
   } = ctx;
 
+  const severeDepartments = ["Spoed"];
+
   if (injury.severity === "severe" || injury.severity === "critical") {
-    uniqueWarnings.add(`${part.label}: ernstig letsel vraagt verhoogde opvolging`);
-    uniqueActions.add(`${part.label}: monitor evolutie van het letsel nauwgezet`);
+    addTaggedItems(uniqueWarnings, part.label, ["ernstig letsel vraagt verhoogde opvolging"], severeDepartments, "warning");
+    addTaggedItems(uniqueActions, part.label, ["monitor evolutie van het letsel nauwgezet"], severeDepartments, "action");
+    addTaggedItems(uniqueFollowUp, part.label, ["plan hercontrole van pijn, bloeding en functie"], severeDepartments, "followup");
     departments.add("Spoed");
   }
 
   if (injury.severity === "critical") {
-    uniqueSteps.add(`${part.label}: behandel dit letsel als prioritaire interventie`);
+    addTaggedItems(uniqueSteps, part.label, ["behandel dit letsel als prioritaire interventie"], severeDepartments, "step");
   }
 
   if (part.fractureZone === "leg" && ["mediumvelocitywound", "highvelocitywound", "velocitywound", "crush"].includes(injury.wound)) {
-    uniqueWarnings.add(`${part.label}: verhoogd risico op mobiliteitsproblemen of instabiliteit`);
+    addTaggedItems(uniqueWarnings, part.label, ["verhoogd risico op mobiliteitsproblemen of instabiliteit"], ["Spoed"], "warning");
+    addTaggedItems(uniqueFollowUp, part.label, ["beperk belasting en evalueer mobiliteit opnieuw"], ["Spoed"], "followup");
   }
 
   if (part.fractureZone === "arm" && ["cut", "laceration", "puncturewound", "velocitywound"].includes(injury.wound)) {
-    uniqueWarnings.add(`${part.label}: controleer functie en bewegingsbeperking van de arm`);
+    addTaggedItems(uniqueWarnings, part.label, ["controleer functie en bewegingsbeperking van de arm"], ["Spoed"], "warning");
+    addTaggedItems(uniqueFollowUp, part.label, ["hercontroleer functie van arm en hand"], ["Spoed"], "followup");
   }
 
   if (part.key === "head" && ["burn", "crush", "highvelocitywound", "velocitywound"].includes(injury.wound)) {
-    uniqueInvestigations.add(`${part.label}: overweeg CT of neurologische evaluatie`);
+    addTaggedItems(uniqueInvestigations, part.label, ["overweeg CT of neurologische evaluatie"], ["Spoed"], "investigation");
+    addTaggedItems(uniqueFollowUp, part.label, ["neuro-observatie en hercontrole bewustzijn"], ["Spoed"], "followup");
     departments.add("Spoed");
   }
 
   if (part.key === "torso" && ["puncturewound", "velocitywound", "highvelocitywound", "crush"].includes(injury.wound)) {
-    uniqueWarnings.add(`${part.label}: risico op intern letsel`);
-    uniqueInvestigations.add(`${part.label}: overweeg beeldvorming bij romptrauma`);
+    addTaggedItems(uniqueWarnings, part.label, ["risico op intern letsel"], ["Chirurgie"], "warning");
+    addTaggedItems(uniqueInvestigations, part.label, ["overweeg beeldvorming bij romptrauma"], ["Chirurgie"], "investigation");
+    addTaggedItems(uniqueFollowUp, part.label, ["observeer op verslechtering of interne complicaties"], ["Chirurgie"], "followup");
     departments.add("Chirurgie");
   }
 
@@ -548,53 +598,169 @@ function addFractureAdvice(part, ctx) {
     uniqueItems,
     uniqueWarnings,
     uniqueInvestigations,
+    uniqueFollowUp,
     departments
   } = ctx;
 
-  uniqueSteps.add(`${part.label}: immobiliseer het getroffen lichaamsdeel`);
-  uniqueActions.add(`${part.label}: immobiliseer en beperk beweging`);
-  uniqueWarnings.add(`${part.label}: vermoeden van fractuur, verdere evaluatie aanbevolen`);
-  uniqueInvestigations.add(`${part.label}: RX aanbevolen bij vermoeden van fractuur`);
+  addTaggedItems(uniqueSteps, part.label, ["immobiliseer het getroffen lichaamsdeel"], ["Spoed"], "step");
+  addTaggedItems(uniqueActions, part.label, ["immobiliseer en beperk beweging"], ["Spoed"], "action");
+  addTaggedItems(uniqueWarnings, part.label, ["vermoeden van fractuur, verdere evaluatie aanbevolen"], ["Spoed"], "warning");
+  addTaggedItems(uniqueInvestigations, part.label, ["RX aanbevolen bij vermoeden van fractuur"], ["Spoed"], "investigation");
+  addTaggedItems(uniqueFollowUp, part.label, ["hercontroleer pijn, stand en functie na immobilisatie"], ["Spoed"], "followup");
 
   departments.add("Spoed");
 
   switch (part.fractureZone) {
     case "neck":
-      uniqueItems.add("neckbrace");
-      uniqueActions.add(`${part.label}: stabiliseer hoofd/nek en beperk beweging`);
-      uniqueWarnings.add(`${part.label}: overweeg beeldvorming bij nek- of hoofdletsel`);
-      uniqueInvestigations.add(`${part.label}: CT of RX overwegen afhankelijk van context`);
+      addSimpleTaggedItems(uniqueItems, ["neckbrace"], ["Ambulance", "Spoed"]);
+      addTaggedItems(uniqueActions, part.label, ["stabiliseer hoofd/nek en beperk beweging"], ["Ambulance", "Spoed"], "action");
+      addTaggedItems(uniqueWarnings, part.label, ["overweeg beeldvorming bij nek- of hoofdletsel"], ["Ambulance", "Spoed"], "warning");
+      addTaggedItems(uniqueInvestigations, part.label, ["CT of RX overwegen afhankelijk van context"], ["Ambulance", "Spoed"], "investigation");
       departments.add("Ambulance");
       break;
 
     case "arm":
-      uniqueItems.add("armsplint");
-      uniqueActions.add(`${part.label}: voorzie armspalk`);
-      uniqueWarnings.add(`${part.label}: armfractuur kan mobiliteit en functie beperken`);
+      addSimpleTaggedItems(uniqueItems, ["armsplint"], ["Spoed"]);
+      addTaggedItems(uniqueActions, part.label, ["voorzie armspalk"], ["Spoed"], "action");
+      addTaggedItems(uniqueWarnings, part.label, ["armfractuur kan mobiliteit en functie beperken"], ["Spoed"], "warning");
       break;
 
     case "leg":
-      uniqueItems.add("legsplint");
-      uniqueActions.add(`${part.label}: voorzie beenspalk`);
-      uniqueWarnings.add(`${part.label}: beenfractuur kan instabiliteit en manken veroorzaken`);
+      addSimpleTaggedItems(uniqueItems, ["legsplint"], ["Spoed"]);
+      addTaggedItems(uniqueActions, part.label, ["voorzie beenspalk"], ["Spoed"], "action");
+      addTaggedItems(uniqueWarnings, part.label, ["beenfractuur kan instabiliteit en manken veroorzaken"], ["Spoed"], "warning");
       break;
 
     case "torso":
-      uniqueActions.add(`${part.label}: observeer nauw op intern letsel of bijkomende schade`);
-      uniqueWarnings.add(`${part.label}: romptrauma vraagt extra waakzaamheid`);
-      uniqueInvestigations.add(`${part.label}: overweeg verdere beeldvorming`);
+      addTaggedItems(uniqueActions, part.label, ["observeer nauw op intern letsel of bijkomende schade"], ["Chirurgie"], "action");
+      addTaggedItems(uniqueWarnings, part.label, ["romptrauma vraagt extra waakzaamheid"], ["Chirurgie"], "warning");
+      addTaggedItems(uniqueInvestigations, part.label, ["overweeg verdere beeldvorming"], ["Chirurgie"], "investigation");
       departments.add("Chirurgie");
       break;
   }
 }
 
 function addImagingAdvice(part, investigationsSet, departments) {
-  investigationsSet.add(`${part.label}: beeldvorming overwegen op basis van klinisch beeld`);
+  addTaggedItems(investigationsSet, part.label, ["beeldvorming overwegen op basis van klinisch beeld"], ["Spoed"], "investigation");
   departments.add("Spoed");
 
   if (part.key === "head" || part.key === "torso") {
     departments.add("Chirurgie");
   }
+}
+
+/* =========================================================
+   FILTERING HELPERS
+========================================================= */
+
+function addTaggedItems(targetSet, labelPrefix, items, departments, type) {
+  items.forEach((item) => {
+    const text = labelPrefix ? `${labelPrefix}: ${item}` : item;
+    targetSet.add(JSON.stringify({
+      text,
+      departments: departments && departments.length ? departments : ["Spoed"],
+      type
+    }));
+  });
+}
+
+function addSimpleTaggedItems(targetSet, itemCodes, departments) {
+  itemCodes.forEach((code) => {
+    targetSet.add(JSON.stringify({
+      code,
+      departments: departments && departments.length ? departments : ["Spoed"]
+    }));
+  });
+}
+
+function filterTaggedSet(taggedSet, selectedDepartment) {
+  return Array.from(taggedSet)
+    .map((value) => JSON.parse(value))
+    .filter((entry) => matchesDepartment(entry.departments, selectedDepartment))
+    .map((entry) => entry.text);
+}
+
+function filterItemsSet(taggedSet, selectedDepartment) {
+  const map = new Map();
+
+  Array.from(taggedSet)
+    .map((value) => JSON.parse(value))
+    .filter((entry) => matchesDepartment(entry.departments, selectedDepartment))
+    .forEach((entry) => {
+      if (!map.has(entry.code)) {
+        map.set(entry.code, entry);
+      }
+    });
+
+  return Array.from(map.values());
+}
+
+function filterDepartments(departments, selectedDepartment) {
+  if (!selectedDepartment || selectedDepartment === "all") {
+    return departments.sort();
+  }
+
+  return departments.filter((department) => department === selectedDepartment);
+}
+
+function matchesDepartment(entryDepartments, selectedDepartment) {
+  if (!selectedDepartment || selectedDepartment === "all") {
+    return true;
+  }
+
+  return entryDepartments.includes(selectedDepartment);
+}
+
+/* =========================================================
+   COSTS
+========================================================= */
+
+function addInjuryCost(woundCode, severity, costState) {
+  const woundBaseCost = APP_CONFIG.costs.wounds[woundCode] ?? APP_CONFIG.costs.defaultWound ?? 0;
+  const multiplier = APP_CONFIG.costs.severityMultipliers[severity] ?? 1;
+  const cost = Math.round(woundBaseCost * multiplier);
+
+  addCostLine(costState, "injuries", `${getWoundLabel(woundCode)} (${getSeverityLabel(severity)})`, cost);
+}
+
+function addItemCosts(filteredItems, costState) {
+  const seen = new Set();
+
+  filteredItems.forEach((item) => {
+    if (seen.has(item.code)) return;
+    seen.add(item.code);
+
+    const cost = APP_CONFIG.costs.items[item.code] ?? 0;
+    if (cost > 0) {
+      addCostLine(costState, "items", APP_CONFIG.itemLabels[item.code] || item.code, cost);
+    }
+  });
+}
+
+function addInvestigationCosts(filteredInvestigations, costState) {
+  filteredInvestigations.forEach((investigation) => {
+    const matchKey = Object.keys(APP_CONFIG.costs.investigations).find((key) =>
+      investigation.toLowerCase().includes(key.toLowerCase())
+    );
+
+    if (!matchKey) return;
+
+    const cost = APP_CONFIG.costs.investigations[matchKey] ?? 0;
+    if (cost > 0) {
+      addCostLine(costState, "investigations", investigation, cost);
+    }
+  });
+}
+
+function addCostLine(costState, bucket, label, amount) {
+  if (!amount) return;
+
+  costState[bucket] += amount;
+  costState.breakdown.push({
+    bucket,
+    label,
+    amount
+  });
 }
 
 /* =========================================================
@@ -627,12 +793,14 @@ function determinePriority(score, condition) {
    REPORT BUILDING
 ========================================================= */
 
-function buildReportSummary(formData, priority, stepsSet, actionsSet, itemsSet, investigationsSet, departmentsSet) {
+function buildReportSummary(formData, priority, departments, steps, actions, items, investigations, followUp) {
   const patientName = formData.patient.name || "Onbekende patiënt";
   const locationText = formData.patient.location ? ` ter hoogte van ${formData.patient.location}` : "";
   const medicText = formData.patient.treatingMedic
     ? `De behandeling werd opgestart door ${formData.patient.treatingMedic}.`
     : "";
+
+  const departmentFilterText = getDepartmentFilterLabel(formData.filter.department);
 
   const injuryLines = [];
 
@@ -684,24 +852,30 @@ function buildReportSummary(formData, priority, stepsSet, actionsSet, itemsSet, 
     `Triage-inschatting: ${APP_CONFIG.textMap.triage[formData.condition.triage]}.`
   ].join(" ");
 
-  const departmentText = departmentsSet.size
-    ? `Betrokken afdelingen: ${Array.from(departmentsSet).join(", ")}.`
+  const filterParagraph = `Actieve weergave/filter: ${departmentFilterText}.`;
+
+  const departmentText = departments.length
+    ? `Betrokken afdelingen: ${departments.join(", ")}.`
     : "";
 
-  const stepsText = stepsSet.size
-    ? `Voorstel stappenplan: ${Array.from(stepsSet).join("; ")}.`
+  const stepsText = steps.length
+    ? `Voorstel stappenplan: ${steps.join("; ")}.`
     : "";
 
-  const actionsText = actionsSet.size
-    ? `Aanbevolen handelingen: ${Array.from(actionsSet).join("; ")}.`
+  const actionsText = actions.length
+    ? `Aanbevolen handelingen: ${actions.join("; ")}.`
     : "";
 
-  const itemsText = itemsSet.size
-    ? `Aanbevolen hulpmiddelen/items: ${Array.from(itemsSet).map((item) => APP_CONFIG.itemLabels[item] || item).join(", ")}.`
+  const itemsText = items.length
+    ? `Aanbevolen hulpmiddelen/items: ${items.map((item) => APP_CONFIG.itemLabels[item.code] || item.code).join(", ")}.`
     : "";
 
-  const investigationsText = investigationsSet.size
-    ? `Aanbevolen onderzoeken/beeldvorming: ${Array.from(investigationsSet).join("; ")}.`
+  const investigationsText = investigations.length
+    ? `Aanbevolen onderzoeken/beeldvorming: ${investigations.join("; ")}.`
+    : "";
+
+  const followUpText = followUp.length
+    ? `Nazorg/opvolging: ${followUp.join("; ")}.`
     : "";
 
   const notesText = formData.condition.generalNotes
@@ -710,6 +884,7 @@ function buildReportSummary(formData, priority, stepsSet, actionsSet, itemsSet, 
 
   return [
     `Prioriteit van zorg: ${priority.label}.`,
+    filterParagraph,
     conditionParagraph,
     injuriesParagraph,
     departmentText,
@@ -717,6 +892,7 @@ function buildReportSummary(formData, priority, stepsSet, actionsSet, itemsSet, 
     actionsText,
     itemsText,
     investigationsText,
+    followUpText,
     notesText,
     medicText
   ].filter(Boolean).join("\n\n");
@@ -732,6 +908,11 @@ function getSeverityLabel(severityValue) {
   return found ? found.label : severityValue;
 }
 
+function getDepartmentFilterLabel(filterValue) {
+  const found = APP_CONFIG.selectOptions.departmentFilter.find((option) => option.value === filterValue);
+  return found ? found.label : filterValue;
+}
+
 /* =========================================================
    RENDER RESULT
 ========================================================= */
@@ -745,9 +926,37 @@ function renderResult(result) {
   renderList(actionsList, result.actions, "Geen specifieke handelingen.");
   renderList(itemsList, result.items, "Geen specifieke items.");
   renderList(investigationsList, result.investigations, "Geen onderzoeken voorgesteld.");
+  renderList(followUpList, result.followUp, "Geen nazorg voorgesteld.");
   renderList(warningsList, result.warnings, "Geen extra aandachtspunten.");
 
+  renderCosts(result.costs);
   reportSummary.value = result.summary;
+}
+
+function renderCosts(costs) {
+  costInjuries.textContent = formatCurrency(costs.injuries);
+  costItems.textContent = formatCurrency(costs.items);
+  costInvestigations.textContent = formatCurrency(costs.investigations);
+  costTotal.textContent = formatCurrency(costs.total);
+
+  costBreakdownList.innerHTML = "";
+
+  if (!costs.breakdown.length) {
+    const li = document.createElement("li");
+    li.textContent = "Nog geen kostenraming.";
+    costBreakdownList.appendChild(li);
+    return;
+  }
+
+  costs.breakdown.forEach((entry) => {
+    const li = document.createElement("li");
+    li.textContent = `${entry.label}: ${formatCurrency(entry.amount)}`;
+    costBreakdownList.appendChild(li);
+  });
+}
+
+function formatCurrency(amount) {
+  return `€ ${Number(amount || 0).toLocaleString("nl-BE")}`;
 }
 
 function renderList(target, items, emptyText) {
@@ -811,7 +1020,9 @@ function handleReset() {
   renderList(actionsList, [], "Vul de gegevens in en genereer het behandeladvies.");
   renderList(itemsList, [], "Nog geen items geselecteerd.");
   renderList(investigationsList, [], "Nog geen onderzoeken voorgesteld.");
+  renderList(followUpList, [], "Nog geen nazorg voorgesteld.");
   renderList(warningsList, [], "Nog geen aandachtspunten.");
+  renderCosts({ injuries: 0, items: 0, investigations: 0, total: 0, breakdown: [] });
 
   reportSummary.value = "";
 }

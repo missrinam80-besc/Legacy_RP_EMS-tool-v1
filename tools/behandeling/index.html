@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EMS Behandeltool v2</title>
+  <title>EMS Behandeltool v3</title>
 
   <link rel="stylesheet" href="../../assets/styles/base.css" />
   <link rel="stylesheet" href="../../assets/styles/components.css" />
@@ -16,9 +16,9 @@
   <div class="app-shell behandeltool-app">
     <header class="site-header behandeltool-header">
       <div>
-        <h1>EMS Behandeltool v2</h1>
+        <h1>EMS Behandeltool v3</h1>
         <p class="subtitle">
-          Beslissingshulp voor letsels, ernst, breuken, bloedverlies, beeldvorming en behandelvolgorde.
+          Beslissingshulp met afdelingsfilter, meerdere letsels, onderzoeken, nazorg en kostenraming.
         </p>
       </div>
 
@@ -30,9 +30,8 @@
 
     <section class="intro-card">
       <p>
-        Deze tool helpt medewerkers om op basis van de algemene toestand en meerdere letsels per
-        lichaamsdeel een logisch behandeladvies op te bouwen. De tool is ondersteunend en vervangt
-        geen eigen klinisch redeneren of RP-inschatting.
+        Deze tool helpt medewerkers om letsels, ernst, fracturen, beeldvorming, behandeling,
+        afdelingen en een eenvoudige kostenraming logisch samen te brengen. De tool is ondersteunend.
       </p>
     </section>
 
@@ -70,13 +69,18 @@
           <div class="section-content">
             <div class="grid-2">
               <div class="form-group">
-                <label for="consciousness">Bewustzijn</label>
-                <select id="consciousness"></select>
+                <label for="departmentFilter">Afdelingsfilter</label>
+                <select id="departmentFilter"></select>
               </div>
 
               <div class="form-group">
                 <label for="triage">Triage-inschatting</label>
                 <select id="triage"></select>
+              </div>
+
+              <div class="form-group">
+                <label for="consciousness">Bewustzijn</label>
+                <select id="consciousness"></select>
               </div>
 
               <div class="form-group">
@@ -98,9 +102,7 @@
                 <label for="bleedingLevel">Bloedverlies</label>
                 <select id="bleedingLevel"></select>
               </div>
-            </div>
 
-            <div class="grid-2">
               <div class="form-group">
                 <label for="airwayRisk">Luchtwegrisico</label>
                 <select id="airwayRisk"></select>
@@ -125,9 +127,7 @@
 
         <details class="tool-section" open>
           <summary>Letsels per lichaamsdeel</summary>
-          <div class="section-content bodyparts-wrap" id="bodypartsContainer">
-            <!-- Dynamisch gevuld -->
-          </div>
+          <div class="section-content bodyparts-wrap" id="bodypartsContainer"></div>
         </details>
       </section>
 
@@ -179,6 +179,39 @@
           </div>
 
           <div class="result-block">
+            <h3>Nazorg / opvolging</h3>
+            <ul id="followUpList" class="result-list">
+              <li>Nog geen nazorg voorgesteld.</li>
+            </ul>
+          </div>
+
+          <div class="result-block">
+            <h3>Kostenoverzicht</h3>
+            <div class="cost-box">
+              <div class="cost-summary-line">
+                <span>Letsels</span>
+                <strong id="costInjuries">€ 0</strong>
+              </div>
+              <div class="cost-summary-line">
+                <span>Items / behandelingen</span>
+                <strong id="costItems">€ 0</strong>
+              </div>
+              <div class="cost-summary-line">
+                <span>Onderzoeken</span>
+                <strong id="costInvestigations">€ 0</strong>
+              </div>
+              <div class="cost-summary-line total">
+                <span>Totaal</span>
+                <strong id="costTotal">€ 0</strong>
+              </div>
+            </div>
+
+            <ul id="costBreakdownList" class="result-list compact-list">
+              <li>Nog geen kostenraming.</li>
+            </ul>
+          </div>
+
+          <div class="result-block">
             <h3>Aandachtspunten</h3>
             <ul id="warningsList" class="result-list">
               <li>Nog geen aandachtspunten.</li>
@@ -189,7 +222,7 @@
             <h3>Korte rapportsamenvatting</h3>
             <textarea
               id="reportSummary"
-              rows="16"
+              rows="18"
               readonly
               placeholder="De samenvatting verschijnt hier..."
             ></textarea>

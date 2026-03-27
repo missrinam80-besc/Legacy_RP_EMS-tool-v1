@@ -1,14 +1,19 @@
-# EMS Behandeltool v2
+# EMS Behandeltool v3
 
-## Nieuw in v2
+## Nieuw in v3
 
-- meerdere letsels per lichaamsdeel
-- ernst per letsel
-- luchtweg en ademhaling toegevoegd
-- beeldvorming / onderzoeken
-- afdelingen-tags
-- stappenplan
-- uitgebreidere rapportsamenvatting
+- afdelingsfilter:
+  - Alles
+  - Ambulance
+  - Spoed
+  - Chirurgie
+- kostenraming:
+  - letsels
+  - items
+  - onderzoeken
+  - totaal
+- nazorg / opvolging
+- afdeling-specifieke filtering van advies
 
 ## Structuur
 
@@ -30,17 +35,19 @@
 
 1. Vul patiëntgegevens in
 2. Kies algemene toestand
-3. Voeg per lichaamsdeel één of meerdere letsels toe
-4. Duid fractuur en/of beeldvorming aan indien nodig
-5. Genereer advies
-6. Lees:
+3. Kies eventueel een afdelingsfilter
+4. Voeg per lichaamsdeel één of meerdere letsels toe
+5. Duid fractuur en/of beeldvorming aan
+6. Genereer advies
+7. Lees:
    - prioriteit
    - afdelingen
    - stappenplan
    - handelingen
    - items
    - onderzoeken
-   - aandachtspunten
+   - nazorg
+   - kosten
    - rapportsamenvatting
 
 ## Config
@@ -50,14 +57,20 @@ De meeste inhoud zit in `config.json`:
 - wondtypes
 - selecties
 - letselregels
+- follow-up
 - itemlabels
 - tekstmapping
+- kosten
 
-## Volgende versie
+## Belangrijke noot
 
-Mogelijke uitbreidingen voor v3:
-- kostberekening
-- export naar rapportmodule
-- filters per afdeling
-- standaardprocedures per letseltype
-- opvolg-/nazorgadvies
+De kosten zijn een eenvoudige raming voor RP-gebruik.
+Je kan ze volledig aanpassen in `config.json`.
+
+## Mogelijke uitbreidingen voor v4
+
+- export richting rapportmodule
+- aparte views per afdeling
+- checkboxen voor uitgevoerde behandelingen
+- status "behandeling voltooid / in uitvoering"
+- automatische samenvatting per afdeling
