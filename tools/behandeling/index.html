@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EMS Behandeltool v1</title>
+  <title>EMS Behandeltool v2</title>
 
   <link rel="stylesheet" href="../../assets/styles/base.css" />
   <link rel="stylesheet" href="../../assets/styles/components.css" />
@@ -16,9 +16,9 @@
   <div class="app-shell behandeltool-app">
     <header class="site-header behandeltool-header">
       <div>
-        <h1>EMS Behandeltool v1</h1>
+        <h1>EMS Behandeltool v2</h1>
         <p class="subtitle">
-          Beslissingshulp voor letsels, bloedverlies, breuken en basisbehandeling.
+          Beslissingshulp voor letsels, ernst, breuken, bloedverlies, beeldvorming en behandelvolgorde.
         </p>
       </div>
 
@@ -30,9 +30,9 @@
 
     <section class="intro-card">
       <p>
-        Deze tool helpt medewerkers om op basis van letsels, vitale functies, pijn en bloedverlies
-        een logisch behandeladvies op te bouwen. De tool is ondersteunend en vervangt geen eigen
-        klinisch redeneren of RP-inschatting.
+        Deze tool helpt medewerkers om op basis van de algemene toestand en meerdere letsels per
+        lichaamsdeel een logisch behandeladvies op te bouwen. De tool is ondersteunend en vervangt
+        geen eigen klinisch redeneren of RP-inschatting.
       </p>
     </section>
 
@@ -100,6 +100,18 @@
               </div>
             </div>
 
+            <div class="grid-2">
+              <div class="form-group">
+                <label for="airwayRisk">Luchtwegrisico</label>
+                <select id="airwayRisk"></select>
+              </div>
+
+              <div class="form-group">
+                <label for="breathingStatus">Ademhaling</label>
+                <select id="breathingStatus"></select>
+              </div>
+            </div>
+
             <div class="form-group">
               <label for="generalNotes">Algemene observaties</label>
               <textarea
@@ -114,7 +126,7 @@
         <details class="tool-section" open>
           <summary>Letsels per lichaamsdeel</summary>
           <div class="section-content bodyparts-wrap" id="bodypartsContainer">
-            <!-- Wordt dynamisch gevuld -->
+            <!-- Dynamisch gevuld -->
           </div>
         </details>
       </section>
@@ -132,6 +144,20 @@
           </div>
 
           <div class="result-block">
+            <h3>Afdelingen</h3>
+            <div id="departmentTags" class="tag-list">
+              <span class="tag">Nog geen advies</span>
+            </div>
+          </div>
+
+          <div class="result-block">
+            <h3>Stappenplan</h3>
+            <ol id="stepsList" class="result-list">
+              <li>Vul de gegevens in en genereer het behandeladvies.</li>
+            </ol>
+          </div>
+
+          <div class="result-block">
             <h3>Aanbevolen handelingen</h3>
             <ul id="actionsList" class="result-list">
               <li>Vul de gegevens in en genereer het behandeladvies.</li>
@@ -146,6 +172,13 @@
           </div>
 
           <div class="result-block">
+            <h3>Onderzoeken / beeldvorming</h3>
+            <ul id="investigationsList" class="result-list">
+              <li>Nog geen onderzoeken voorgesteld.</li>
+            </ul>
+          </div>
+
+          <div class="result-block">
             <h3>Aandachtspunten</h3>
             <ul id="warningsList" class="result-list">
               <li>Nog geen aandachtspunten.</li>
@@ -156,7 +189,7 @@
             <h3>Korte rapportsamenvatting</h3>
             <textarea
               id="reportSummary"
-              rows="14"
+              rows="16"
               readonly
               placeholder="De samenvatting verschijnt hier..."
             ></textarea>
@@ -165,6 +198,31 @@
       </section>
     </main>
   </div>
+
+  <template id="injuryRowTemplate">
+    <div class="injury-row">
+      <div class="grid-3 injury-grid">
+        <div class="form-group">
+          <label>Wondtype</label>
+          <select data-field="woundType"></select>
+        </div>
+
+        <div class="form-group">
+          <label>Ernst</label>
+          <select data-field="severity"></select>
+        </div>
+
+        <div class="form-group">
+          <label>Opmerking</label>
+          <input type="text" data-field="note" placeholder="Bijv. diepe wond, zwelling, verbrande huid..." />
+        </div>
+      </div>
+
+      <div class="injury-row-actions">
+        <button type="button" class="btn btn-secondary btn-remove-injury">Verwijder letsel</button>
+      </div>
+    </div>
+  </template>
 
   <script src="app.js"></script>
 </body>

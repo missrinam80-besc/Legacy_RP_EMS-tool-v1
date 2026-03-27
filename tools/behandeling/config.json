@@ -57,128 +57,226 @@
       { "value": "moderate", "label": "Gemiddeld" },
       { "value": "high", "label": "Hoog" },
       { "value": "extreme", "label": "Extreem" }
+    ],
+    "airwayRisk": [
+      { "value": "stable", "label": "Stabiel" },
+      { "value": "at-risk", "label": "Bedreigd" },
+      { "value": "critical", "label": "Kritiek" }
+    ],
+    "breathingStatus": [
+      { "value": "normal", "label": "Normaal" },
+      { "value": "disturbed", "label": "Verstoord" },
+      { "value": "severe", "label": "Ernstig verstoord" }
+    ],
+    "injurySeverity": [
+      { "value": "light", "label": "Licht" },
+      { "value": "moderate", "label": "Gemiddeld" },
+      { "value": "severe", "label": "Ernstig" },
+      { "value": "critical", "label": "Kritiek" }
     ]
   },
   "woundRules": {
     "abrasion": {
       "severity": 1,
+      "steps": [
+        "Reinig het letsel",
+        "Dek de wonde af"
+      ],
       "actions": [
         "Reinig de schaafwonde",
         "Ontsmet de huid",
         "Dek de wonde af met een basisverband"
       ],
       "items": ["field_dressing"],
-      "warnings": ["Controleer op vervuiling van de wonde"]
+      "warnings": ["Controleer op vervuiling van de wonde"],
+      "investigations": [],
+      "departments": ["Spoed"]
     },
     "avulsion": {
       "severity": 3,
+      "steps": [
+        "Stop bloeding",
+        "Dek steriel af",
+        "Bereid verdere wondsluiting voor"
+      ],
       "actions": [
         "Controleer actief bloedverlies",
         "Dek beschadigd weefsel steriel af",
         "Voorzie wondsluiting of chirurgische opvolging"
       ],
       "items": ["quick_clot", "packing_bandage", "sewing_kit"],
-      "warnings": ["Hoge kans op complex weefselletsel", "Overweeg snelle doorverwijzing"]
+      "warnings": ["Hoge kans op complex weefselletsel", "Overweeg snelle doorverwijzing"],
+      "investigations": [],
+      "departments": ["Spoed", "Chirurgie"]
     },
     "contusion": {
       "severity": 1,
+      "steps": [
+        "Observeer het letsel",
+        "Controleer functie en pijn"
+      ],
       "actions": [
         "Observeer de kneuzing",
         "Controleer pijn en mobiliteit",
         "Voorzie ondersteuning of rustmaatregelen"
       ],
       "items": ["elastic_bandage", "painkillers"],
-      "warnings": ["Let op onderliggende breuk of intern letsel bij zware impact"]
+      "warnings": ["Let op onderliggende breuk of intern letsel bij zware impact"],
+      "investigations": [],
+      "departments": ["Spoed"]
     },
     "crush": {
       "severity": 3,
+      "steps": [
+        "Stabiliseer het getroffen gebied",
+        "Controleer intern letsel",
+        "Overweeg verdere beeldvorming"
+      ],
       "actions": [
         "Controleer op verpletteringsletsel en bijkomende schade",
         "Stabiliseer het getroffen lichaamsdeel",
         "Voorzie snelle evaluatie op intern letsel"
       ],
       "items": ["elastic_bandage", "painkillers", "saline500ml"],
-      "warnings": ["Verhoogd risico op inwendig letsel", "Controleer beweging en pijn nauwgezet"]
+      "warnings": ["Verhoogd risico op inwendig letsel", "Controleer beweging en pijn nauwgezet"],
+      "investigations": ["RX of bijkomende beeldvorming overwegen"],
+      "departments": ["Spoed", "Chirurgie"]
     },
     "cut": {
       "severity": 2,
+      "steps": [
+        "Reinig de wond",
+        "Controleer bloeding",
+        "Sluit de wond indien nodig"
+      ],
       "actions": [
         "Reinig de snijwonde",
         "Controleer de bloeding",
         "Hecht de wonde indien nodig"
       ],
       "items": ["field_dressing", "sewing_kit"],
-      "warnings": ["Controleer diepte en wondranden"]
+      "warnings": ["Controleer diepte en wondranden"],
+      "investigations": [],
+      "departments": ["Spoed"]
     },
     "laceration": {
       "severity": 3,
+      "steps": [
+        "Stelp bloeding",
+        "Reinig de wond",
+        "Voorzie wondsluiting"
+      ],
       "actions": [
         "Reinig de scheurwonde",
         "Stelp de bloeding",
         "Voorzie wondsluiting"
       ],
       "items": ["quick_clot", "field_dressing", "sewing_kit"],
-      "warnings": ["Onregelmatige wondranden, grotere kans op complexe wondzorg"]
+      "warnings": ["Onregelmatige wondranden, grotere kans op complexe wondzorg"],
+      "investigations": [],
+      "departments": ["Spoed"]
     },
     "puncturewound": {
       "severity": 3,
+      "steps": [
+        "Controleer diepte en bloeding",
+        "Stabiliseer het letsel",
+        "Beoordeel interne schade"
+      ],
       "actions": [
         "Beoordeel de diepte van de steekwonde",
         "Controleer actief bloedverlies",
         "Overweeg interne schade"
       ],
       "items": ["packing_bandage", "quick_clot", "sewing_kit"],
-      "warnings": ["Diepe penetrerende letsels kunnen verborgen schade geven"]
+      "warnings": ["Diepe penetrerende letsels kunnen verborgen schade geven"],
+      "investigations": ["Overweeg beeldvorming bij diepe penetratie"],
+      "departments": ["Spoed", "Chirurgie"]
     },
     "lowvelocitywound": {
       "severity": 3,
+      "steps": [
+        "Stelp bloeding",
+        "Dek de wond af",
+        "Voorzie verdere evaluatie"
+      ],
       "actions": [
         "Controleer de schotwonde",
         "Stelp bloeding",
         "Voorzie verdere evaluatie en opvolging"
       ],
       "items": ["quick_clot", "packing_bandage", "field_dressing"],
-      "warnings": ["Overweeg RX of verdere beeldvorming"]
+      "warnings": ["Overweeg RX of verdere beeldvorming"],
+      "investigations": ["RX aanbevolen"],
+      "departments": ["Ambulance", "Spoed", "Chirurgie"]
     },
     "mediumvelocitywound": {
       "severity": 4,
+      "steps": [
+        "Stop bloeding onmiddellijk",
+        "Stabiliseer de patiënt",
+        "Bereid overdracht of chirurgie voor"
+      ],
       "actions": [
         "Stelp bloeding onmiddellijk",
         "Dek de wonde af en stabiliseer",
         "Bereid snelle overdracht of chirurgie voor"
       ],
       "items": ["tourniquet", "quick_clot", "packing_bandage", "blood250ml"],
-      "warnings": ["Hoger risico op ernstig weefselletsel", "Overweeg transfusie bij bloedverlies"]
+      "warnings": ["Hoger risico op ernstig weefselletsel", "Overweeg transfusie bij bloedverlies"],
+      "investigations": ["RX aanbevolen", "Verdiepend onderzoek overwegen"],
+      "departments": ["Ambulance", "Spoed", "Chirurgie"]
     },
     "highvelocitywound": {
       "severity": 5,
+      "steps": [
+        "Behandel als kritiek trauma",
+        "Stop bloeding onmiddellijk",
+        "Bereid spoedtransport of operatie voor"
+      ],
       "actions": [
         "Pak de schotwonde als kritiek letsel aan",
         "Controleer zware bloeding onmiddellijk",
         "Bereid spoedtransport of operatie voor"
       ],
       "items": ["tourniquet", "quick_clot", "packing_bandage", "blood500ml"],
-      "warnings": ["Zeer hoog risico op ernstig trauma", "Onmiddellijke verdere medische opvolging aanbevolen"]
+      "warnings": ["Zeer hoog risico op ernstig trauma", "Onmiddellijke verdere medische opvolging aanbevolen"],
+      "investigations": ["Spoedbeeldvorming overwegen"],
+      "departments": ["Ambulance", "Spoed", "Chirurgie"]
     },
     "velocitywound": {
       "severity": 4,
+      "steps": [
+        "Stop bloeding",
+        "Stabiliseer de patiënt",
+        "Bereid transport of chirurgie voor"
+      ],
       "actions": [
         "Controleer schot- of shotgunletsel",
         "Stop actieve bloeding",
         "Stabiliseer de patiënt en bereid transport voor"
       ],
       "items": ["tourniquet", "quick_clot", "packing_bandage"],
-      "warnings": ["Kan uitgebreide weefselschade geven"]
+      "warnings": ["Kan uitgebreide weefselschade geven"],
+      "investigations": ["Beeldvorming overwegen"],
+      "departments": ["Ambulance", "Spoed", "Chirurgie"]
     },
     "burn": {
       "severity": 3,
+      "steps": [
+        "Stop de hittebron",
+        "Koel de brandwonde",
+        "Dek steriel af"
+      ],
       "actions": [
         "Stop de blootstelling aan hitte of vuur",
         "Koel de brandwonde",
         "Dek de wonde steriel af"
       ],
       "items": ["field_dressing", "saline250ml", "painkillers"],
-      "warnings": ["Controleer temperatuur en algemene toestand"]
+      "warnings": ["Controleer temperatuur en algemene toestand"],
+      "investigations": [],
+      "departments": ["Spoed"]
     }
   },
   "itemLabels": {
@@ -236,6 +334,16 @@
       "non-urgent": "niet urgent",
       "urgent": "urgent",
       "critical": "kritiek"
+    },
+    "airwayRisk": {
+      "stable": "stabiel",
+      "at-risk": "bedreigd",
+      "critical": "kritiek"
+    },
+    "breathingStatus": {
+      "normal": "normaal",
+      "disturbed": "verstoord",
+      "severe": "ernstig verstoord"
     }
   }
 }
