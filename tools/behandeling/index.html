@@ -54,30 +54,34 @@
         </details>
       </section>
 
+      <div class="tool-nav">
+        <a href="../../index.html">← Terug naar EMS Tools Hub</a>
+      </div>
+
       <section class="patient-section">
         <h2>Patiënt / betrokkene</h2>
 
         <div class="patient-grid patient-grid-2">
-          <div class="form-group">
+          <div class="form-field">
             <label for="patientName">Naam betrokkene</label>
-            <input type="text" id="patientName" placeholder="Voornaam Achternaam" />
+            <input type="text" id="patientName" class="form-input" placeholder="Voornaam Achternaam" />
           </div>
 
-          <div class="form-group">
+          <div class="form-field">
             <label for="patientDob">Geboortedatum</label>
-            <input type="date" id="patientDob" />
+            <input type="date" id="patientDob" class="form-input" />
           </div>
         </div>
 
         <div class="patient-grid patient-grid-2 patient-grid-spacing">
-          <div class="form-group">
+          <div class="form-field">
             <label for="incidentLocation">Locatie</label>
-            <input type="text" id="incidentLocation" placeholder="Bijv. Vespucci Boulevard" />
+            <input type="text" id="incidentLocation" class="form-input" placeholder="Bijv. Vespucci Boulevard" />
           </div>
 
-          <div class="form-group">
+          <div class="form-field">
             <label for="treatingMedic">Behandelaar</label>
-            <input type="text" id="treatingMedic" placeholder="Naam EMS-medewerker" />
+            <input type="text" id="treatingMedic" class="form-input" placeholder="Naam EMS-medewerker" />
           </div>
         </div>
       </section>
@@ -88,66 +92,67 @@
             <summary>Algemene toestand</summary>
             <div class="accordion-content">
               <div class="grid-2">
-                <div class="form-group">
+                <div class="form-field">
                   <label for="departmentFilter">Afdelingsview</label>
-                  <select id="departmentFilter"></select>
+                  <select id="departmentFilter" class="form-select"></select>
                 </div>
 
-                <div class="form-group">
+                <div class="form-field">
                   <label for="displayFilter">Toon alleen relevante info</label>
-                  <select id="displayFilter"></select>
+                  <select id="displayFilter" class="form-select"></select>
                 </div>
 
-                <div class="form-group">
+                <div class="form-field">
                   <label for="viewMode">Weergavemodus</label>
-                  <select id="viewMode"></select>
+                  <select id="viewMode" class="form-select"></select>
                 </div>
 
-                <div class="form-group">
+                <div class="form-field">
                   <label for="triage">Triage-inschatting</label>
-                  <select id="triage"></select>
+                  <select id="triage" class="form-select"></select>
                 </div>
 
-                <div class="form-group">
+                <div class="form-field">
                   <label for="consciousness">Bewustzijn</label>
-                  <select id="consciousness"></select>
+                  <select id="consciousness" class="form-select"></select>
                 </div>
 
-                <div class="form-group">
+                <div class="form-field">
                   <label for="pulse">Pols</label>
-                  <select id="pulse"></select>
+                  <select id="pulse" class="form-select"></select>
                 </div>
 
-                <div class="form-group">
+                <div class="form-field">
                   <label for="temperature">Lichaamstemperatuur</label>
-                  <select id="temperature"></select>
+                  <select id="temperature" class="form-select"></select>
                 </div>
 
-                <div class="form-group">
+                <div class="form-field">
                   <label for="painLevel">Pijnniveau</label>
-                  <select id="painLevel"></select>
+                  <select id="painLevel" class="form-select"></select>
                 </div>
 
-                <div class="form-group">
+                <div class="form-field">
                   <label for="bleedingLevel">Bloedverlies</label>
-                  <select id="bleedingLevel"></select>
+                  <select id="bleedingLevel" class="form-select"></select>
                 </div>
 
-                <div class="form-group">
+                <div class="form-field">
                   <label for="airwayRisk">Luchtwegrisico</label>
-                  <select id="airwayRisk"></select>
+                  <select id="airwayRisk" class="form-select"></select>
                 </div>
 
-                <div class="form-group">
+                <div class="form-field">
                   <label for="breathingStatus">Ademhaling</label>
-                  <select id="breathingStatus"></select>
+                  <select id="breathingStatus" class="form-select"></select>
                 </div>
               </div>
 
-              <div class="form-group mt-16">
+              <div class="form-field mt-16">
                 <label for="generalNotes">Algemene observaties</label>
                 <textarea
                   id="generalNotes"
+                  class="form-textarea"
                   rows="4"
                   placeholder="Vrije observaties, symptomen of context..."
                 ></textarea>
@@ -337,6 +342,7 @@
             <div class="accordion-content">
               <textarea
                 id="reportSummary"
+                class="form-textarea"
                 rows="18"
                 readonly
                 placeholder="De samenvatting verschijnt hier..."
@@ -351,19 +357,24 @@
   <template id="injuryRowTemplate">
     <div class="injury-row">
       <div class="grid-3 injury-grid">
-        <div class="form-group">
+        <div class="form-field">
           <label>Wondtype</label>
-          <select data-field="woundType"></select>
+          <select data-field="woundType" class="form-select"></select>
         </div>
 
-        <div class="form-group">
+        <div class="form-field">
           <label>Ernst</label>
-          <select data-field="severity"></select>
+          <select data-field="severity" class="form-select"></select>
         </div>
 
-        <div class="form-group">
+        <div class="form-field">
           <label>Opmerking</label>
-          <input type="text" data-field="note" placeholder="Bijv. diepe wond, zwelling, verbrande huid..." />
+          <input
+            type="text"
+            data-field="note"
+            class="form-input"
+            placeholder="Bijv. diepe wond, zwelling, verbrande huid..."
+          />
         </div>
       </div>
 
