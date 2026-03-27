@@ -1,21 +1,88 @@
-## Nieuw uitgangspunt
+# EMS Behandeltool v5
 
-Binnen EMS worden Ambulance en Spoed als één gecombineerde afdeling behandeld.
-De medewerkers zijn opgeleid om beide rollen uit te voeren, waardoor er geen interne overdracht tussen ambulance en spoed nodig is.
+## Locatie
 
-De tool werkt daarom met 2 afdelingsviews:
-- Spoed/Ambulance
-- Chirurgie
+- `tools/behandeling/index.html`
+- `tools/behandeling/app.js`
+- `tools/behandeling/config.json`
+- `tools/behandeling/README.md`
 
-## Medische opdeling in de tool
+## Gebruikte styles
 
-Basis wondzorg en eenvoudige wondsluiting, zoals bij gewone snijwonden en kleinere scheurwonden, vallen onder Spoed/Ambulance.
+- `../../assets/styles/base.css`
+- `../../assets/styles/components.css`
+- `../../assets/styles/layout.css`
+- `../../assets/styles/theme.css`
+- `../../assets/styles/utilities.css`
+- `../../assets/styles/behandeling.css`
 
-Chirurgie wordt vooral betrokken bij:
+## Nieuw in v5
+
+- banner-header bovenaan
+- titel onder de banner
+- toelichting in een uitklapbaar veld
+- 2 afdelingsviews:
+  - Spoed/Ambulance
+  - Chirurgie
+- waarschuwingsblok bovenaan
+- operatie-indicatie
+- klinische indruk / vitals-interpretatie
+- beeldvorming apart gestructureerd
+- patiëntgerichte nazorg
+- afsluitstatus patiënt
+- compacte modus
+- filter “toon alleen relevante info”
+
+## Medische logica
+
+### Spoed/Ambulance
+Voor:
+- basis wondzorg
+- stabilisatie
+- immobilisatie
+- pijnstilling
+- beeldvorming aanvragen
+- eenvoudige wondsluiting
+
+### Chirurgie
+Voor:
 - schotwonden
 - ernstige penetrerende letsels
 - complexe avulsies
 - verpletteringsletsels
-- ernstig hoofd- of romptrauma
+- ernstig romptrauma
 - intern letsel
-- operatieve wondzorg
+- duidelijke operatie-indicatie
+
+## Werking
+
+1. Vul patiëntgegevens in
+2. Kies de afdelingsview
+3. Kies eventueel een display-filter
+4. Kies volledige of compacte modus
+5. Voeg letsels toe per lichaamsdeel
+6. Duid fractuur en/of beeldvorming aan
+7. Genereer advies
+8. Lees:
+   - waarschuwingen
+   - prioriteit
+   - operatie-indicatie
+   - klinische indruk
+   - afdelingen
+   - stappenplan
+   - handelingen
+   - items
+   - beeldvorming
+   - nazorg
+   - afsluitstatus
+   - kosten
+   - rapportsamenvatting
+
+## Toekomstige nice to have
+
+- exportprofielen
+  - korte RP-samenvatting
+  - medisch verslag
+  - chirurgische samenvatting
+  - opnameadvies
+  - ontslagadvies

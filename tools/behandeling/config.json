@@ -28,6 +28,18 @@
       { "value": "Spoed/Ambulance", "label": "Spoed/Ambulance" },
       { "value": "Chirurgie", "label": "Chirurgie" }
     ],
+    "displayFilter": [
+      { "value": "all", "label": "Alles tonen" },
+      { "value": "acute", "label": "Alleen acute acties" },
+      { "value": "imaging", "label": "Alleen beeldvorming" },
+      { "value": "followup", "label": "Alleen nazorg" },
+      { "value": "surgery", "label": "Alleen chirurgie-relevant" },
+      { "value": "warnings", "label": "Alleen waarschuwingen" }
+    ],
+    "viewMode": [
+      { "value": "full", "label": "Volledige modus" },
+      { "value": "compact", "label": "Compacte modus" }
+    ],
     "consciousness": [
       { "value": "alert", "label": "Bij bewustzijn" },
       { "value": "reduced", "label": "Verminderd bewustzijn" },
@@ -117,8 +129,8 @@
       "actions": ["Controleer op verpletteringsletsel en bijkomende schade", "Stabiliseer het getroffen lichaamsdeel", "Voorzie snelle evaluatie op intern letsel"],
       "items": ["elastic_bandage", "painkillers", "saline500ml"],
       "warnings": ["Verhoogd risico op inwendig letsel"],
-      "investigations": ["RX of bijkomende beeldvorming overwegen"],
-      "followUp": ["Observeer op toename van pijn, zwelling of functieverlies"],
+      "investigations": ["beeldvorming overwegen", "RX overwegen"],
+      "followUp": ["Observeer op toename van pijn, zwelling of functieverlies", "Gebruik krukken, wandelstok of rolstoel indien mobiliteit beperkt blijft"],
       "departments": ["Spoed/Ambulance", "Chirurgie"]
     },
     "cut": {
@@ -147,7 +159,7 @@
       "actions": ["Beoordeel de diepte van de steekwonde", "Controleer actief bloedverlies", "Overweeg interne schade of chirurgische opvolging bij ernstige penetratie"],
       "items": ["packing_bandage", "quick_clot", "sewing_kit"],
       "warnings": ["Diepe penetrerende letsels kunnen verborgen schade geven"],
-      "investigations": ["Overweeg beeldvorming bij diepe penetratie"],
+      "investigations": ["beeldvorming overwegen"],
       "followUp": ["Observeer op interne complicaties en aanhoudende pijn"],
       "departments": ["Spoed/Ambulance", "Chirurgie"]
     },
@@ -167,7 +179,7 @@
       "actions": ["Stelp bloeding onmiddellijk", "Dek de wonde af en stabiliseer", "Voorzie snelle chirurgische opvolging"],
       "items": ["tourniquet", "quick_clot", "packing_bandage", "blood250ml"],
       "warnings": ["Hoger risico op ernstig weefselletsel"],
-      "investigations": ["RX aanbevolen", "Verdiepend onderzoek overwegen"],
+      "investigations": ["RX aanbevolen", "beeldvorming overwegen"],
       "followUp": ["Observeer nauw op verslechtering en bloedverlies"],
       "departments": ["Spoed/Ambulance", "Chirurgie"]
     },
@@ -177,7 +189,7 @@
       "actions": ["Pak de schotwonde als kritiek letsel aan", "Controleer zware bloeding onmiddellijk", "Voorzie dringende chirurgische opvolging"],
       "items": ["tourniquet", "quick_clot", "packing_bandage", "blood500ml"],
       "warnings": ["Zeer hoog risico op ernstig trauma"],
-      "investigations": ["Spoedbeeldvorming overwegen"],
+      "investigations": ["CT overwegen", "beeldvorming overwegen"],
       "followUp": ["Continue monitoring en snelle herbeoordeling vereist"],
       "departments": ["Spoed/Ambulance", "Chirurgie"]
     },
@@ -187,7 +199,7 @@
       "actions": ["Controleer schot- of shotgunletsel", "Stop actieve bloeding", "Stabiliseer de patiënt en beoordeel nood aan ingreep"],
       "items": ["tourniquet", "quick_clot", "packing_bandage"],
       "warnings": ["Kan uitgebreide weefselschade geven"],
-      "investigations": ["Beeldvorming overwegen"],
+      "investigations": ["beeldvorming overwegen"],
       "followUp": ["Herbeoordeel bloeding, pijn en algemene toestand"],
       "departments": ["Spoed/Ambulance", "Chirurgie"]
     },
@@ -220,7 +232,10 @@
     "armsplint": "Armspalk",
     "legsplint": "Beenspalk",
     "armcast": "Armgips",
-    "legcast": "Beengips"
+    "legcast": "Beengips",
+    "crutch": "Krukken",
+    "cane": "Wandelstok",
+    "wheelchair": "Rolstoel"
   },
   "textMap": {
     "consciousness": {
@@ -310,13 +325,16 @@
       "armsplint": 25,
       "legsplint": 25,
       "armcast": 45,
-      "legcast": 45
+      "legcast": 45,
+      "crutch": 20,
+      "cane": 15,
+      "wheelchair": 60
     },
     "investigations": {
-      "RX": 35,
-      "CT": 120,
+      "rx": 35,
+      "ct": 120,
       "beeldvorming": 50,
-      "neurologische evaluatie": 40,
+      "observatie": 20,
       "circulatie": 20
     }
   }

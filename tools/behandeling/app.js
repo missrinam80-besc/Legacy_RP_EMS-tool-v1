@@ -1,13 +1,3 @@
-/**
- * EMS Behandeltool v3
- * -------------------
- * Uitbreidingen:
- * - afdelingsfilter
- * - kostenraming
- * - nazorg / opvolging
- * - afdeling-specifieke filtering van resultaten
- */
-
 let APP_CONFIG = null;
 
 /* =========================================================
@@ -19,13 +9,24 @@ const generateBtn = document.getElementById("generateBtn");
 const resetBtn = document.getElementById("resetBtn");
 const copyReportBtn = document.getElementById("copyReportBtn");
 
+const alertsList = document.getElementById("alertsList");
 const priorityBadge = document.getElementById("priorityBadge");
+const operationBadge = document.getElementById("operationBadge");
+const operationReason = document.getElementById("operationReason");
+const clinicalImpressionList = document.getElementById("clinicalImpressionList");
 const departmentTags = document.getElementById("departmentTags");
 const stepsList = document.getElementById("stepsList");
 const actionsList = document.getElementById("actionsList");
 const itemsList = document.getElementById("itemsList");
-const investigationsList = document.getElementById("investigationsList");
+
+const imagingNoneList = document.getElementById("imagingNoneList");
+const imagingRxList = document.getElementById("imagingRxList");
+const imagingCtList = document.getElementById("imagingCtList");
+const imagingObserveList = document.getElementById("imagingObserveList");
+
 const followUpList = document.getElementById("followUpList");
+const closingStatusBadge = document.getElementById("closingStatusBadge");
+const closingStatusText = document.getElementById("closingStatusText");
 const warningsList = document.getElementById("warningsList");
 const reportSummary = document.getElementById("reportSummary");
 
@@ -36,6 +37,24 @@ const costTotal = document.getElementById("costTotal");
 const costBreakdownList = document.getElementById("costBreakdownList");
 
 const injuryRowTemplate = document.getElementById("injuryRowTemplate");
+
+/* blocks for filter/compact */
+const BLOCKS = {
+  alerts: document.getElementById("alertsBlock"),
+  priority: document.getElementById("priorityBlock"),
+  operation: document.getElementById("operationBlock"),
+  clinical: document.getElementById("clinicalBlock"),
+  department: document.getElementById("departmentBlock"),
+  steps: document.getElementById("stepsBlock"),
+  actions: document.getElementById("actionsBlock"),
+  items: document.getElementById("itemsBlock"),
+  imaging: document.getElementById("imagingBlock"),
+  followUp: document.getElementById("followUpBlock"),
+  closing: document.getElementById("closingBlock"),
+  costs: document.getElementById("costBlock"),
+  warnings: document.getElementById("warningsBlock"),
+  report: document.getElementById("reportBlock")
+};
 
 /* =========================================================
    INIT
@@ -55,6 +74,7 @@ async function initApp() {
     renderStaticSelects();
     renderBodyPartInputs();
     bindEvents();
+    applyDisplayMode();
   } catch (error) {
     console.error("Fout bij laden van de behandeltool:", error);
     alert("Fout bij laden van de behandeltool. Controleer config.json en het pad.");
@@ -67,6 +87,8 @@ async function initApp() {
 
 function renderStaticSelects() {
   renderOptions("departmentFilter", APP_CONFIG.selectOptions.departmentFilter);
+  renderOptions("displayFilter", APP_CONFIG.selectOptions.displayFilter);
+  renderOptions("viewMode", APP_CONFIG.selectOptions.viewMode);
   renderOptions("consciousness", APP_CONFIG.selectOptions.consciousness);
   renderOptions("triage", APP_CONFIG.selectOptions.triage);
   renderOptions("pulse", APP_CONFIG.selectOptions.pulse);
@@ -105,12 +127,12 @@ function renderBodyPartInputs() {
 
         <div class="checkbox-row bodypart-checkboxes">
           <label class="checkbox-inline">
-            <input type="checkbox" id="fracture-${escapeAttr(part.key)}" data-role="fracture" />
+            <input type="checkbox" id="fracture-${escapeAttr(part.key)}" />
             Vermoeden van breuk / fractuur
           </label>
 
           <label class="checkbox-inline">
-            <input type="checkbox" id="needsImaging-${escapeAttr(part.key)}" data-role="needsImaging" />
+            <input type="checkbox" id="needsImaging-${escapeAttr(part.key)}" />
             Beeldvorming overwegen
           </label>
         </div>
@@ -128,9 +150,7 @@ function renderBodyPartInputs() {
 
 function bindDynamicEvents() {
   document.querySelectorAll(".btn-add-injury").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      addInjuryRow(btn.dataset.bodypart);
-    });
+    btn.addEventListener("click", () => addInjuryRow(btn.dataset.bodypart));
   });
 
   bodypartsContainer.addEventListener("click", (event) => {
@@ -158,14 +178,11 @@ function addInjuryRow(bodyPartKey) {
   const clone = injuryRowTemplate.content.cloneNode(true);
   const row = clone.querySelector(".injury-row");
 
-  const woundSelect = row.querySelector('[data-field="woundType"]');
-  const severitySelect = row.querySelector('[data-field="severity"]');
-
-  woundSelect.innerHTML = APP_CONFIG.woundOptions
+  row.querySelector('[data-field="woundType"]').innerHTML = APP_CONFIG.woundOptions
     .map((option) => `<option value="${escapeAttr(option.value)}">${escapeHtml(option.label)}</option>`)
     .join("");
 
-  severitySelect.innerHTML = APP_CONFIG.selectOptions.injurySeverity
+  row.querySelector('[data-field="severity"]').innerHTML = APP_CONFIG.selectOptions.injurySeverity
     .map((option) => `<option value="${escapeAttr(option.value)}">${escapeHtml(option.label)}</option>`)
     .join("");
 
@@ -190,6 +207,9 @@ function bindEvents() {
   generateBtn.addEventListener("click", handleGenerateAdvice);
   resetBtn.addEventListener("click", handleReset);
   copyReportBtn.addEventListener("click", handleCopySummary);
+
+  document.getElementById("displayFilter").addEventListener("change", applyDisplayMode);
+  document.getElementById("viewMode").addEventListener("change", applyDisplayMode);
 }
 
 /* =========================================================
@@ -199,7 +219,9 @@ function bindEvents() {
 function getFormData() {
   return {
     filter: {
-      department: valueOf("departmentFilter")
+      department: valueOf("departmentFilter"),
+      display: valueOf("displayFilter"),
+      viewMode: valueOf("viewMode")
     },
     patient: {
       name: valueOf("patientName"),
@@ -258,6 +280,7 @@ function handleGenerateAdvice() {
   const formData = getFormData();
   const result = buildTreatmentAdvice(formData);
   renderResult(result);
+  applyDisplayMode();
 }
 
 function buildTreatmentAdvice(formData) {
@@ -265,9 +288,17 @@ function buildTreatmentAdvice(formData) {
   const uniqueActions = new Set();
   const uniqueItems = new Set();
   const uniqueWarnings = new Set();
-  const uniqueInvestigations = new Set();
   const uniqueFollowUp = new Set();
   const departments = new Set();
+  const priorityAlerts = new Set();
+  const clinicalImpressions = new Set();
+
+  const imaging = {
+    none: new Set(),
+    rx: new Set(),
+    ct: new Set(),
+    observe: new Set()
+  };
 
   const costState = {
     injuries: 0,
@@ -286,17 +317,16 @@ function buildTreatmentAdvice(formData) {
     uniqueActions,
     uniqueItems,
     uniqueWarnings,
-    uniqueInvestigations,
     uniqueFollowUp,
-    departments
+    departments,
+    priorityAlerts,
+    clinicalImpressions,
+    imaging
   });
 
   formData.injuries.forEach((part) => {
     const hasPartInjury = part.injuries.length > 0 || part.fracture || part.needsImaging;
-
-    if (hasPartInjury) {
-      hasAnyInjury = true;
-    }
+    if (hasPartInjury) hasAnyInjury = true;
 
     part.injuries.forEach((injury) => {
       if (!injury.wound) return;
@@ -304,29 +334,31 @@ function buildTreatmentAdvice(formData) {
       const rule = APP_CONFIG.woundRules[injury.wound];
       if (!rule) return;
 
-      const severityMultiplier = getSeverityMultiplier(injury.severity);
-      severityScore += Number(rule.severity || 0) * severityMultiplier;
+      const multiplier = getSeverityMultiplier(injury.severity);
+      severityScore += Number(rule.severity || 0) * multiplier;
 
-      addTaggedItems(uniqueSteps, part.label, rule.steps || [], rule.departments || [], "step");
-      addTaggedItems(uniqueActions, part.label, rule.actions || [], rule.departments || [], "action");
-      addSimpleTaggedItems(uniqueItems, rule.items || [], rule.departments || []);
-      addTaggedItems(uniqueWarnings, part.label, rule.warnings || [], rule.departments || [], "warning");
-      addTaggedItems(uniqueInvestigations, part.label, rule.investigations || [], rule.departments || [], "investigation");
-      addTaggedItems(uniqueFollowUp, part.label, rule.followUp || [], rule.departments || [], "followup");
+      addTaggedText(uniqueSteps, part.label, rule.steps || [], rule.departments || []);
+      addTaggedText(uniqueActions, part.label, rule.actions || [], rule.departments || []);
+      addTaggedItems(uniqueItems, rule.items || [], rule.departments || []);
+      addTaggedText(uniqueWarnings, part.label, rule.warnings || [], rule.departments || []);
+      addTaggedText(uniqueFollowUp, part.label, rule.followUp || [], rule.departments || []);
+      (rule.departments || []).forEach((d) => departments.add(d));
 
-      (rule.departments || []).forEach((department) => departments.add(department));
-
+      addImagingRules(imaging, part.label, rule.investigations || [], rule.departments || []);
       applySeveritySpecificLogic(part, injury, {
         uniqueSteps,
         uniqueActions,
-        uniqueItems,
         uniqueWarnings,
-        uniqueInvestigations,
         uniqueFollowUp,
-        departments
+        departments,
+        priorityAlerts,
+        clinicalImpressions,
+        imaging
       });
 
       addInjuryCost(injury.wound, injury.severity, costState);
+      addClinicalFromInjury(part, injury, clinicalImpressions);
+      addOperationFromInjury(part, injury, priorityAlerts);
     });
 
     if (part.fracture) {
@@ -336,54 +368,75 @@ function buildTreatmentAdvice(formData) {
         uniqueActions,
         uniqueItems,
         uniqueWarnings,
-        uniqueInvestigations,
         uniqueFollowUp,
-        departments
+        departments,
+        imaging,
+        priorityAlerts
       });
       addCostLine(costState, "injuries", `Fractuurverdenking ${part.label}`, APP_CONFIG.costs.fractureSurcharge || 0);
     }
 
     if (part.needsImaging) {
-      addImagingAdvice(part, uniqueInvestigations, departments);
+      addTaggedImaging(imaging.observe, `${part.label}: beeldvorming overwegen op basis van klinisch beeld`, ["Spoed/Ambulance"]);
     }
   });
 
   if (!hasAnyInjury) {
-    addTaggedItems(uniqueSteps, "", ["Start met algemene evaluatie van patiënt en letsels"], ["Spoed"], "step");
-    addTaggedItems(uniqueActions, "", ["Voer klinische beoordeling uit en vul letsels aan indien nodig"], ["Spoed"], "action");
-    addTaggedItems(uniqueWarnings, "", ["Geen specifieke letsels geselecteerd"], ["Spoed"], "warning");
+    addTaggedText(uniqueSteps, "", ["Start met algemene evaluatie van patiënt en letsels"], ["Spoed/Ambulance"]);
+    addTaggedText(uniqueActions, "", ["Voer klinische beoordeling uit en vul letsels aan indien nodig"], ["Spoed/Ambulance"]);
+    addTaggedText(uniqueWarnings, "", ["Geen specifieke letsels geselecteerd"], ["Spoed/Ambulance"]);
+    clinicalImpressions.add("Er zijn momenteel geen specifieke letsels geregistreerd.");
+  }
+
+  if (clinicalImpressions.size === 0) {
+    clinicalImpressions.add("Huidige gegevens geven nog geen duidelijke klinische indruk.");
   }
 
   const filteredDepartments = filterDepartments(Array.from(departments), formData.filter.department);
   const filteredSteps = filterTaggedSet(uniqueSteps, formData.filter.department);
   const filteredActions = filterTaggedSet(uniqueActions, formData.filter.department);
   const filteredItems = filterItemsSet(uniqueItems, formData.filter.department);
-  const filteredInvestigations = filterTaggedSet(uniqueInvestigations, formData.filter.department);
-  const filteredFollowUp = filterTaggedSet(uniqueFollowUp, formData.filter.department);
   const filteredWarnings = filterTaggedSet(uniqueWarnings, formData.filter.department);
+  const filteredFollowUp = filterTaggedSet(uniqueFollowUp, formData.filter.department);
+
+  const filteredImaging = {
+    none: filterImagingSet(imaging.none, formData.filter.department),
+    rx: filterImagingSet(imaging.rx, formData.filter.department),
+    ct: filterImagingSet(imaging.ct, formData.filter.department),
+    observe: filterImagingSet(imaging.observe, formData.filter.department)
+  };
 
   addItemCosts(filteredItems, costState);
-  addInvestigationCosts(filteredInvestigations, costState);
+  addInvestigationCosts(filteredImaging, costState);
 
   const priority = determinePriority(severityScore, formData.condition);
+  const operation = determineOperationIndication(formData);
+  const closing = determineClosingStatus(formData, priority, operation, filteredImaging, hasAnyInjury);
   const summary = buildReportSummary(
     formData,
     priority,
+    operation,
+    closing,
     filteredDepartments,
     filteredSteps,
     filteredActions,
     filteredItems,
-    filteredInvestigations,
-    filteredFollowUp
+    filteredImaging,
+    filteredFollowUp,
+    Array.from(clinicalImpressions)
   );
 
   return {
     priority,
+    operation,
+    closing,
+    priorityAlerts: normalizePriorityAlerts(Array.from(priorityAlerts)),
+    clinicalImpressions: Array.from(clinicalImpressions),
     departments: filteredDepartments,
     steps: filteredSteps,
     actions: filteredActions,
     items: filteredItems.map((item) => APP_CONFIG.itemLabels[item.code] || item.code),
-    investigations: filteredInvestigations,
+    imaging: filteredImaging,
     followUp: filteredFollowUp,
     warnings: filteredWarnings,
     summary,
@@ -398,7 +451,7 @@ function buildTreatmentAdvice(formData) {
 }
 
 /* =========================================================
-   GENERAL CONDITION LOGIC
+   GENERAL LOGIC
 ========================================================= */
 
 function applyGeneralConditionLogic(condition, ctx) {
@@ -407,78 +460,83 @@ function applyGeneralConditionLogic(condition, ctx) {
     uniqueActions,
     uniqueItems,
     uniqueWarnings,
-    uniqueInvestigations,
     uniqueFollowUp,
-    departments
+    departments,
+    priorityAlerts,
+    clinicalImpressions,
+    imaging
   } = ctx;
 
-  departments.add("Spoed");
+  departments.add("Spoed/Ambulance");
 
   if (condition.airwayRisk === "at-risk" || condition.airwayRisk === "critical") {
-    addTaggedItems(uniqueSteps, "", ["Beoordeel en beveilig de luchtweg"], ["Spoed/Ambulance"], "step");
-    addTaggedItems(uniqueActions, "", ["Voer onmiddellijke controle van de luchtweg uit"], ["Spoed/Ambulance"], "action");
-    addTaggedItems(uniqueWarnings, "", ["Luchtweg kan bedreigd zijn"], ["Spoed/Ambulance"], "warning");
-    departments.add("Spoed/Ambulance");
+    addTaggedText(uniqueSteps, "", ["Beoordeel en beveilig de luchtweg"], ["Spoed/Ambulance"]);
+    addTaggedText(uniqueActions, "", ["Voer onmiddellijke controle van de luchtweg uit"], ["Spoed/Ambulance"]);
+    addTaggedText(uniqueWarnings, "", ["Luchtweg kan bedreigd zijn"], ["Spoed/Ambulance"]);
+    priorityAlerts.add("Bedreigde luchtweg");
+    clinicalImpressions.add("Bewustzijn en luchtweg vragen verhoogde waakzaamheid.");
   }
 
   if (condition.airwayRisk === "critical") {
-    addTaggedItems(uniqueWarnings, "", ["Kritisch luchtwegprobleem vraagt onmiddellijke interventie"], ["Spoed/Ambulance"], "warning");
+    priorityAlerts.add("Kritisch luchtwegprobleem");
   }
 
   if (condition.breathingStatus === "disturbed" || condition.breathingStatus === "severe") {
-    addTaggedItems(uniqueSteps, "", ["Beoordeel ademhaling en zuurstofstatus"], ["Spoed/Ambulance"], "step");
-    addTaggedItems(uniqueActions, "", ["Controleer ademhaling en ondersteun waar nodig"], ["Spoed/Ambulance"], "action");
-    addTaggedItems(uniqueWarnings, "", ["Verstoorde ademhaling aanwezig"], ["Spoed/Ambulance"], "warning");
-    departments.add("Spoed/Ambulance");
+    addTaggedText(uniqueSteps, "", ["Beoordeel ademhaling en zuurstofstatus"], ["Spoed/Ambulance"]);
+    addTaggedText(uniqueActions, "", ["Controleer ademhaling en ondersteun waar nodig"], ["Spoed/Ambulance"]);
+    addTaggedText(uniqueWarnings, "", ["Verstoorde ademhaling aanwezig"], ["Spoed/Ambulance"]);
+    clinicalImpressions.add("Ademhaling vraagt verhoogde aandacht.");
   }
 
   if (condition.breathingStatus === "severe") {
-    addTaggedItems(uniqueWarnings, "", ["Ernstige ademhalingsproblemen vereisen snelle stabilisatie"], ["Spoed/Ambulance"], "warning");
+    priorityAlerts.add("Ernstig verstoorde ademhaling");
   }
 
   if (condition.consciousness === "unconscious") {
-    addTaggedItems(uniqueSteps, "", ["Start ABC-beoordeling met prioriteit"], ["Spoed/Ambulance"], "step");
-    addTaggedItems(uniqueActions, "", ["Beveilig de luchtweg en voer onmiddellijke vitale beoordeling uit"], ["Spoed/Ambulance"], "action");
-    addTaggedItems(uniqueWarnings, "", ["Bewusteloze patiënt vereist onmiddellijke opvolging"], ["Spoed/Ambulance"], "warning");
-    addTaggedItems(uniqueFollowUp, "", ["Blijf patiënt continu monitoren tijdens verdere zorg"], ["Spoed/Ambulance"], "followup");
-    departments.add("Spoed/Ambulance");
+    addTaggedText(uniqueSteps, "", ["Start ABC-beoordeling met prioriteit"], ["Spoed/Ambulance"]);
+    addTaggedText(uniqueActions, "", ["Beveilig de luchtweg en voer onmiddellijke vitale beoordeling uit"], ["Spoed/Ambulance"]);
+    addTaggedText(uniqueWarnings, "", ["Bewusteloze patiënt vereist onmiddellijke opvolging"], ["Spoed/Ambulance"]);
+    addTaggedText(uniqueFollowUp, "", ["Blijf patiënt continu monitoren tijdens verdere zorg"], ["Spoed/Ambulance"]);
+    priorityAlerts.add("Bewusteloze patiënt");
+    clinicalImpressions.add("Patiënt vertoont ernstige instabiliteit op basis van bewustzijn.");
   }
 
   if (["high", "extreme"].includes(condition.bleedingLevel)) {
-    addTaggedItems(uniqueSteps, "", ["Stop actieve bloeding als eerste behandelstap"], ["Spoed/Ambulance"], "step");
-    addTaggedItems(uniqueActions, "", ["Controleer en stop actieve bloeding als prioriteit"], ["Spoed/Ambulance"], "action");
-    addSimpleTaggedItems(uniqueItems, ["tourniquet", "quick_clot"], ["Spoed/Ambulance"]);
-    addTaggedItems(uniqueWarnings, "", ["Ernstig bloedverlies vereist snelle stabilisatie"], ["Spoed/Ambulance"], "warning");
-    departments.add("Spoed/Ambulance");
+    addTaggedText(uniqueSteps, "", ["Stop actieve bloeding als eerste behandelstap"], ["Spoed/Ambulance"]);
+    addTaggedText(uniqueActions, "", ["Controleer en stop actieve bloeding als prioriteit"], ["Spoed/Ambulance"]);
+    addTaggedItems(uniqueItems, ["tourniquet", "quick_clot"], ["Spoed/Ambulance"]);
+    addTaggedText(uniqueWarnings, "", ["Ernstig bloedverlies vereist snelle stabilisatie"], ["Spoed/Ambulance"]);
+    priorityAlerts.add(condition.bleedingLevel === "extreme" ? "Extreem bloedverlies" : "Ernstig bloedverlies");
+    clinicalImpressions.add("Patroon past bij mogelijk relevant bloedverlies.");
   }
 
   if (condition.bleedingLevel === "extreme") {
-    addTaggedItems(uniqueSteps, "", ["Start volume- of bloedresuscitatie indien klinisch nodig"], ["Spoed/Ambulance"], "step");
-    addSimpleTaggedItems(uniqueItems, ["blood500ml", "saline500ml"], ["Spoed/Ambulance"]);
-    addTaggedItems(uniqueActions, "", ["Voorzie volume- of bloedresuscitatie indien nodig"], ["Spoed/Ambulance"], "action");
-    addTaggedItems(uniqueInvestigations, "", ["Controle van circulatie en bloedverlies"], ["Spoed/Ambulance"], "investigation");
-    departments.add("Spoed/Ambulance");
+    addTaggedText(uniqueSteps, "", ["Start volume- of bloedresuscitatie indien klinisch nodig"], ["Spoed/Ambulance"]);
+    addTaggedItems(uniqueItems, ["blood500ml", "saline500ml"], ["Spoed/Ambulance"]);
+    addTaggedText(uniqueActions, "", ["Voorzie volume- of bloedresuscitatie indien nodig"], ["Spoed/Ambulance"]);
+    addTaggedImaging(imaging.observe, "Controle van circulatie en bloedverlies", ["Spoed/Ambulance"]);
   }
 
   if (["high", "extreme"].includes(condition.painLevel)) {
-    addTaggedItems(uniqueActions, "", ["Voorzie adequate pijnstilling"], ["Spoed/Ambulance"], "action");
-    addSimpleTaggedItems(uniqueItems, ["painkillers", "morphine"], ["Spoed/Ambulance"]);
-    departments.add("Spoed/Ambulance");
-  }
-
-  if (condition.temperature === "elevated") {
-    addTaggedItems(uniqueWarnings, "", ["Controleer oorzaak van verhoogde temperatuur"], ["Spoed/Ambulance"], "warning");
+    addTaggedText(uniqueActions, "", ["Voorzie adequate pijnstilling"], ["Spoed/Ambulance"]);
+    addTaggedItems(uniqueItems, ["painkillers", "morphine"], ["Spoed/Ambulance"]);
   }
 
   if (condition.pulse === "weak") {
-    addTaggedItems(uniqueWarnings, "", ["Zwakke pols kan wijzen op instabiliteit of bloedverlies"], ["Spoed"], "warning");
+    clinicalImpressions.add("Patiënt vertoont tekenen van mogelijke circulatoire instabiliteit.");
   }
 
   if (condition.triage === "critical") {
-    addTaggedItems(uniqueWarnings, "", ["Patiënt is als kritiek ingeschat"], ["Spoed/Ambulance"], "warning");
-    addTaggedItems(uniqueActions, "", ["Prioriteer spoedzorg en snelle overdracht"], ["Spoed/Ambulance"], "action");
-    addTaggedItems(uniqueSteps, "", ["Bereid snelle overdracht of verdere interventie voor"], ["Spoed/Ambulance"], "step");
-    departments.add("Spoed/Ambulance");
+    priorityAlerts.add("Kritieke triage-inschatting");
+  }
+
+  if (
+    condition.consciousness === "alert" &&
+    condition.airwayRisk === "stable" &&
+    condition.breathingStatus === "normal" &&
+    condition.bleedingLevel === "none"
+  ) {
+    clinicalImpressions.add("Huidige parameters ogen relatief stabiel.");
   }
 }
 
@@ -514,21 +572,16 @@ function getGeneralSeverityScore(condition) {
 }
 
 /* =========================================================
-   INJURY LOGIC
+   INJURY / FRACTURE / CLINICAL
 ========================================================= */
 
 function getSeverityMultiplier(severity) {
   switch (severity) {
-    case "light":
-      return 0.8;
-    case "moderate":
-      return 1;
-    case "severe":
-      return 1.35;
-    case "critical":
-      return 1.75;
-    default:
-      return 1;
+    case "light": return 0.8;
+    case "moderate": return 1;
+    case "severe": return 1.35;
+    case "critical": return 1.75;
+    default: return 1;
   }
 }
 
@@ -537,55 +590,44 @@ function applySeveritySpecificLogic(part, injury, ctx) {
     uniqueSteps,
     uniqueActions,
     uniqueWarnings,
-    uniqueInvestigations,
     uniqueFollowUp,
-    departments
+    departments,
+    priorityAlerts,
+    clinicalImpressions,
+    imaging
   } = ctx;
 
-  const severeDepartments = ["Spoed/Ambulance"];
+  const urgentDept = ["Spoed/Ambulance"];
 
   if (injury.severity === "severe" || injury.severity === "critical") {
-    addTaggedItems(uniqueWarnings, part.label, ["ernstig letsel vraagt verhoogde opvolging"], severeDepartments, "warning");
-    addTaggedItems(uniqueActions, part.label, ["monitor evolutie van het letsel nauwgezet"], severeDepartments, "action");
-    addTaggedItems(uniqueFollowUp, part.label, ["plan hercontrole van pijn, bloeding en functie"], severeDepartments, "followup");
-    departments.add("Spoed/Ambulance");
+    addTaggedText(uniqueWarnings, part.label, ["ernstig letsel vraagt verhoogde opvolging"], urgentDept);
+    addTaggedText(uniqueActions, part.label, ["monitor evolutie van het letsel nauwgezet"], urgentDept);
+    addTaggedText(uniqueFollowUp, part.label, ["plan hercontrole van pijn, bloeding en functie"], urgentDept);
   }
 
   if (injury.severity === "critical") {
-    addTaggedItems(uniqueSteps, part.label, ["behandel dit letsel als prioritaire interventie"], severeDepartments, "step");
+    addTaggedText(uniqueSteps, part.label, ["behandel dit letsel als prioritaire interventie"], urgentDept);
+    priorityAlerts.add(`${part.label}: kritiek letsel`);
   }
 
-  if (part.fractureZone === "leg" && ["mediumvelocitywound", "highvelocitywound", "velocitywound", "crush"].includes(injury.wound)) {
-    addTaggedItems(uniqueWarnings, part.label, ["verhoogd risico op mobiliteitsproblemen of instabiliteit"], ["Spoed/Ambulance"], "warning");
-    addTaggedItems(uniqueFollowUp, part.label, ["beperk belasting en evalueer mobiliteit opnieuw"], ["Spoed"], "followup");
-  }
-
-  if (part.fractureZone === "arm" && ["cut", "laceration", "puncturewound", "velocitywound"].includes(injury.wound)) {
-    addTaggedItems(uniqueWarnings, part.label, ["controleer functie en bewegingsbeperking van de arm"], ["Spoed/Ambulance"], "warning");
-    addTaggedItems(uniqueFollowUp, part.label, ["hercontroleer functie van arm en hand"], ["Spoed/Ambulance"], "followup");
+  if (part.fractureZone === "leg" && ["crush", "mediumvelocitywound", "highvelocitywound", "velocitywound"].includes(injury.wound)) {
+    addTaggedText(uniqueFollowUp, part.label, ["gebruik krukken of rolstoel afhankelijk van mobiliteit"], ["Spoed/Ambulance"]);
   }
 
   if (part.key === "head" && ["burn", "crush", "highvelocitywound", "velocitywound"].includes(injury.wound)) {
-    addTaggedItems(uniqueInvestigations, part.label, ["overweeg CT of neurologische evaluatie"], ["Spoed/Ambulance"], "investigation");
-    addTaggedItems(uniqueFollowUp, part.label, ["neuro-observatie en hercontrole bewustzijn"], ["Spoed/Ambulance"], "followup");
-    departments.add("Spoed/Ambulance");
+    addTaggedImaging(imaging.ct, `${part.label}: CT aanbevolen of sterk overwegen`, ["Spoed/Ambulance", "Chirurgie"]);
+    clinicalImpressions.add("Hoofd/nekletsel vraagt verhoogde neurologische waakzaamheid.");
+    priorityAlerts.add("Ernstig hoofd- of nektrauma");
   }
 
-  if (part.key === "torso" && ["puncturewound", "velocitywound", "highvelocitywound", "crush"].includes(injury.wound)) {
-    addTaggedItems(uniqueWarnings, part.label, ["risico op intern letsel"], ["Chirurgie"], "warning");
-    addTaggedItems(uniqueInvestigations, part.label, ["overweeg beeldvorming bij romptrauma"], ["Chirurgie"], "investigation");
-    addTaggedItems(uniqueFollowUp, part.label, ["observeer op verslechtering of interne complicaties"], ["Chirurgie"], "followup");
-    departments.add("Chirurgie");
-  }
-
-  if (["mediumvelocitywound", "highvelocitywound", "velocitywound", "puncturewound"].includes(injury.wound)) {
+  if (part.key === "torso" && ["puncturewound", "velocitywound", "highvelocitywound", "crush", "mediumvelocitywound"].includes(injury.wound)) {
+    addTaggedText(uniqueWarnings, part.label, ["risico op intern letsel"], ["Chirurgie"]);
+    addTaggedImaging(imaging.observe, `${part.label}: beeldvorming overwegen bij romptrauma`, ["Chirurgie"]);
+    clinicalImpressions.add("Romptrauma met penetrerend of zwaar letsel: intern letsel niet uit te sluiten.");
+    priorityAlerts.add("Mogelijk intern letsel");
     departments.add("Chirurgie");
   }
 }
-
-/* =========================================================
-   FRACTURES / IMAGING
-========================================================= */
 
 function addFractureAdvice(part, ctx) {
   const {
@@ -593,74 +635,246 @@ function addFractureAdvice(part, ctx) {
     uniqueActions,
     uniqueItems,
     uniqueWarnings,
-    uniqueInvestigations,
     uniqueFollowUp,
-    departments
+    departments,
+    imaging,
+    priorityAlerts
   } = ctx;
 
-  addTaggedItems(uniqueSteps, part.label, ["immobiliseer het getroffen lichaamsdeel"], ["Spoed/Ambulance"], "step");
-  addTaggedItems(uniqueActions, part.label, ["immobiliseer en beperk beweging"], ["Spoed/Ambulance"], "action");
-  addTaggedItems(uniqueWarnings, part.label, ["vermoeden van fractuur, verdere evaluatie aanbevolen"], ["Spoed/Ambulance"], "warning");
-  addTaggedItems(uniqueInvestigations, part.label, ["RX aanbevolen bij vermoeden van fractuur"], ["Spoed/Ambulance"], "investigation");
-  addTaggedItems(uniqueFollowUp, part.label, ["hercontroleer pijn, stand en functie na immobilisatie"], ["Spoed/Ambulance"], "followup");
-
-  departments.add("Spoed");
+  addTaggedText(uniqueSteps, part.label, ["immobiliseer het getroffen lichaamsdeel"], ["Spoed/Ambulance"]);
+  addTaggedText(uniqueActions, part.label, ["immobiliseer en beperk beweging"], ["Spoed/Ambulance"]);
+  addTaggedText(uniqueWarnings, part.label, ["vermoeden van fractuur, verdere evaluatie aanbevolen"], ["Spoed/Ambulance"]);
+  addTaggedText(uniqueFollowUp, part.label, ["mobiliteit herbeoordelen na stabilisatie"], ["Spoed/Ambulance"]);
+  addTaggedImaging(imaging.rx, `${part.label}: RX aanbevolen bij vermoeden van fractuur`, ["Spoed/Ambulance"]);
+  departments.add("Spoed/Ambulance");
 
   switch (part.fractureZone) {
     case "neck":
-      addSimpleTaggedItems(uniqueItems, ["neckbrace"], ["Spoed/Ambulance"]);
-      addTaggedItems(uniqueActions, part.label, ["stabiliseer hoofd/nek en beperk beweging"], ["Spoed/Ambulance"], "action");
-      addTaggedItems(uniqueWarnings, part.label, ["overweeg beeldvorming bij nek- of hoofdletsel"], ["Spoed/Ambulance"], "warning");
-      addTaggedItems(uniqueInvestigations, part.label, ["CT of RX overwegen afhankelijk van context"], ["Spoed/Ambulance"], "investigation");
-      departments.add("Spoed/Ambulance");
+      addTaggedItems(uniqueItems, ["neckbrace"], ["Spoed/Ambulance"]);
+      addTaggedText(uniqueActions, part.label, ["stabiliseer hoofd/nek en beperk beweging"], ["Spoed/Ambulance"]);
+      addTaggedImaging(imaging.ct, `${part.label}: CT of RX overwegen afhankelijk van context`, ["Spoed/Ambulance", "Chirurgie"]);
+      priorityAlerts.add("Nekletsel stabiliseren");
       break;
 
     case "arm":
-      addSimpleTaggedItems(uniqueItems, ["armsplint"], ["Spoed/Ambulance"]);
-      addTaggedItems(uniqueActions, part.label, ["voorzie armspalk"], ["Spoed/Ambulance"], "action");
-      addTaggedItems(uniqueWarnings, part.label, ["armfractuur kan mobiliteit en functie beperken"], ["Spoed/Ambulance"], "warning");
+      addTaggedItems(uniqueItems, ["armsplint"], ["Spoed/Ambulance"]);
+      addTaggedText(uniqueActions, part.label, ["voorzie armspalk"], ["Spoed/Ambulance"]);
       break;
 
     case "leg":
-      addSimpleTaggedItems(uniqueItems, ["legsplint"], ["Spoed/Ambulance"]);
-      addTaggedItems(uniqueActions, part.label, ["voorzie beenspalk"], ["Spoed/Ambulance"], "action");
-      addTaggedItems(uniqueWarnings, part.label, ["beenfractuur kan instabiliteit en manken veroorzaken"], ["Spoed/Ambulance"], "warning");
+      addTaggedItems(uniqueItems, ["legsplint"], ["Spoed/Ambulance"]);
+      addTaggedText(uniqueActions, part.label, ["voorzie beenspalk"], ["Spoed/Ambulance"]);
+      addTaggedText(uniqueFollowUp, part.label, ["overweeg krukken, wandelstok of rolstoel bij ontslag/verdere opvolging"], ["Spoed/Ambulance"]);
       break;
 
     case "torso":
-      addTaggedItems(uniqueActions, part.label, ["observeer nauw op intern letsel of bijkomende schade"], ["Chirurgie"], "action");
-      addTaggedItems(uniqueWarnings, part.label, ["romptrauma vraagt extra waakzaamheid"], ["Chirurgie"], "warning");
-      addTaggedItems(uniqueInvestigations, part.label, ["overweeg verdere beeldvorming"], ["Chirurgie"], "investigation");
+      addTaggedImaging(imaging.observe, `${part.label}: verdere beeldvorming overwegen`, ["Chirurgie"]);
       departments.add("Chirurgie");
       break;
   }
 }
 
-function addImagingAdvice(part, investigationsSet, departments) {
-  addTaggedItems(investigationsSet, part.label, ["beeldvorming overwegen op basis van klinisch beeld"], ["Spoed/Ambulance"], "investigation");
-  departments.add("Spoed/Ambulance");
+function addClinicalFromInjury(part, injury, clinicalImpressions) {
+  const severe = injury.severity === "severe" || injury.severity === "critical";
 
-  if (part.key === "head" || part.key === "torso") {
-    departments.add("Chirurgie");
+  if (["lowvelocitywound", "mediumvelocitywound", "highvelocitywound", "velocitywound"].includes(injury.wound)) {
+    clinicalImpressions.add("Schotwonde aanwezig met verhoogd risico op diepe weefselschade.");
+  }
+
+  if (injury.wound === "puncturewound" && severe) {
+    clinicalImpressions.add("Ernstige penetrerende wonde: interne schade niet uit te sluiten.");
+  }
+
+  if (injury.wound === "crush") {
+    clinicalImpressions.add("Verpletteringsletsel kan gepaard gaan met bijkomende interne schade.");
+  }
+
+  if (["cut", "laceration"].includes(injury.wound) && !severe) {
+    clinicalImpressions.add("Letsel lijkt mogelijk geschikt voor basis wondzorg of eenvoudige wondsluiting.");
+  }
+
+  if (part.fractureZone === "leg" && severe) {
+    clinicalImpressions.add("Mobiliteit van de patiënt kan relevant beperkt zijn.");
+  }
+}
+
+function addOperationFromInjury(part, injury, priorityAlerts) {
+  if (
+    ["lowvelocitywound", "mediumvelocitywound", "highvelocitywound", "velocitywound"].includes(injury.wound) ||
+    (injury.wound === "puncturewound" && ["severe", "critical"].includes(injury.severity)) ||
+    (injury.wound === "avulsion" && ["severe", "critical"].includes(injury.severity)) ||
+    injury.wound === "crush" ||
+    (part.key === "torso" && ["puncturewound", "mediumvelocitywound", "highvelocitywound", "velocitywound", "crush"].includes(injury.wound))
+  ) {
+    priorityAlerts.add("Chirurgische evaluatie aanbevolen");
   }
 }
 
 /* =========================================================
-   FILTERING HELPERS
+   OPERATION / CLOSING
 ========================================================= */
 
-function addTaggedItems(targetSet, labelPrefix, items, departments, type) {
+function determineOperationIndication(formData) {
+  let level = "none";
+  const reasons = [];
+
+  formData.injuries.forEach((part) => {
+    part.injuries.forEach((injury) => {
+      const severe = ["severe", "critical"].includes(injury.severity);
+
+      if (["cut", "laceration"].includes(injury.wound) && !severe) {
+        // basis wondsluiting, geen operatie-indicatie
+      }
+
+      if (injury.wound === "avulsion" && severe) {
+        level = maxOpLevel(level, "possible");
+        reasons.push(`${part.label}: ernstige avulsiewonde met kans op complexe wondzorg`);
+      }
+
+      if (injury.wound === "puncturewound" && severe) {
+        level = maxOpLevel(level, "recommended");
+        reasons.push(`${part.label}: ernstige penetrerende wonde met risico op diepe schade`);
+      }
+
+      if (injury.wound === "crush") {
+        level = maxOpLevel(level, "recommended");
+        reasons.push(`${part.label}: verpletteringsletsel met risico op bijkomende schade`);
+      }
+
+      if (["lowvelocitywound", "velocitywound"].includes(injury.wound)) {
+        level = maxOpLevel(level, "recommended");
+        reasons.push(`${part.label}: schotwonde vraagt meestal chirurgische beoordeling`);
+      }
+
+      if (["mediumvelocitywound", "highvelocitywound"].includes(injury.wound)) {
+        level = maxOpLevel(level, "urgent");
+        reasons.push(`${part.label}: ernstige schotwonde met grote kans op diepe weefselschade`);
+      }
+
+      if (part.key === "torso" && ["puncturewound", "crush", "velocitywound", "mediumvelocitywound", "highvelocitywound"].includes(injury.wound)) {
+        level = maxOpLevel(level, "urgent");
+        reasons.push(`${part.label}: romptrauma met vermoeden van intern letsel`);
+      }
+    });
+  });
+
+  const textMap = {
+    none: { label: "Geen indicatie", className: "neutral" },
+    possible: { label: "Mogelijk operatief", className: "medium" },
+    recommended: { label: "Operatief aangewezen", className: "high" },
+    urgent: { label: "Dringend operatief", className: "critical" }
+  };
+
+  return {
+    level,
+    label: textMap[level].label,
+    className: textMap[level].className,
+    reason: reasons.length ? reasons[0] : "Geen duidelijke operatie-indicatie op basis van huidige input."
+  };
+}
+
+function maxOpLevel(current, next) {
+  const order = ["none", "possible", "recommended", "urgent"];
+  return order.indexOf(next) > order.indexOf(current) ? next : current;
+}
+
+function determineClosingStatus(formData, priority, operation, imaging, hasAnyInjury) {
+  if (
+    formData.condition.consciousness === "unconscious" ||
+    formData.condition.airwayRisk === "critical" ||
+    formData.condition.breathingStatus === "severe"
+  ) {
+    return {
+      label: "Verdere observatie nodig",
+      className: "high",
+      text: "Patiënt vereist verdere observatie en intensieve opvolging."
+    };
+  }
+
+  if (operation.level === "urgent" || operation.level === "recommended") {
+    return {
+      label: "Chirurgische evaluatie nodig",
+      className: "critical",
+      text: "Patiënt moet verder beoordeeld worden door chirurgie."
+    };
+  }
+
+  if (imaging.rx.length || imaging.ct.length || imaging.observe.length) {
+    return {
+      label: "Beeldvorming nodig",
+      className: "medium",
+      text: "Patiënt heeft verdere beeldvorming of observatie nodig."
+    };
+  }
+
+  if (priority.label === "Hoog") {
+    return {
+      label: "Opname aanbevolen",
+      className: "high",
+      text: "Opname of langere observatie is aangewezen op basis van huidige toestand."
+    };
+  }
+
+  if (hasAnyInjury) {
+    return {
+      label: "Gestabiliseerd",
+      className: "low",
+      text: "Patiënt lijkt voorlopig gestabiliseerd, met verdere nazorg volgens advies."
+    };
+  }
+
+  return {
+    label: "Klaar voor ontslag",
+    className: "low",
+    text: "Er zijn geen duidelijke aanwijzingen voor verdere intensieve opvolging op basis van de ingegeven gegevens."
+  };
+}
+
+/* =========================================================
+   IMAGING
+========================================================= */
+
+function addImagingRules(imaging, label, investigations, departments) {
+  if (!investigations.length) {
+    addTaggedImaging(imaging.none, `${label}: geen specifieke beeldvorming vanuit wondregel`, departments);
+    return;
+  }
+
+  investigations.forEach((investigation) => {
+    const lower = investigation.toLowerCase();
+
+    if (lower.includes("ct")) {
+      addTaggedImaging(imaging.ct, `${label}: ${investigation}`, departments);
+    } else if (lower.includes("rx")) {
+      addTaggedImaging(imaging.rx, `${label}: ${investigation}`, departments);
+    } else {
+      addTaggedImaging(imaging.observe, `${label}: ${investigation}`, departments);
+    }
+  });
+}
+
+function addTaggedImaging(targetSet, text, departments) {
+  targetSet.add(JSON.stringify({
+    text,
+    departments: departments && departments.length ? departments : ["Spoed/Ambulance"]
+  }));
+}
+
+/* =========================================================
+   TAGGED HELPERS / FILTERS
+========================================================= */
+
+function addTaggedText(targetSet, labelPrefix, items, departments) {
   items.forEach((item) => {
     const text = labelPrefix ? `${labelPrefix}: ${item}` : item;
     targetSet.add(JSON.stringify({
       text,
-      departments: departments && departments.length ? departments : ["Spoed/Ambulance"],
-      type
+      departments: departments && departments.length ? departments : ["Spoed/Ambulance"]
     }));
   });
 }
 
-function addSimpleTaggedItems(targetSet, itemCodes, departments) {
+function addTaggedItems(targetSet, itemCodes, departments) {
   itemCodes.forEach((code) => {
     targetSet.add(JSON.stringify({
       code,
@@ -683,19 +897,29 @@ function filterItemsSet(taggedSet, selectedDepartment) {
     .map((value) => JSON.parse(value))
     .filter((entry) => matchesDepartment(entry.departments, selectedDepartment))
     .forEach((entry) => {
-      if (!map.has(entry.code)) {
-        map.set(entry.code, entry);
-      }
+      if (!map.has(entry.code)) map.set(entry.code, entry);
     });
 
   return Array.from(map.values());
+}
+
+function filterImagingSet(taggedSet, selectedDepartment) {
+  const seen = new Set();
+  return Array.from(taggedSet)
+    .map((value) => JSON.parse(value))
+    .filter((entry) => matchesDepartment(entry.departments, selectedDepartment))
+    .map((entry) => entry.text)
+    .filter((text) => {
+      if (seen.has(text)) return false;
+      seen.add(text);
+      return true;
+    });
 }
 
 function filterDepartments(departments, selectedDepartment) {
   if (!selectedDepartment || selectedDepartment === "all") {
     return departments.sort();
   }
-
   return departments.filter((department) => department === selectedDepartment);
 }
 
@@ -703,7 +927,6 @@ function matchesDepartment(entryDepartments, selectedDepartment) {
   if (!selectedDepartment || selectedDepartment === "all") {
     return true;
   }
-
   return entryDepartments.includes(selectedDepartment);
 }
 
@@ -733,8 +956,8 @@ function addItemCosts(filteredItems, costState) {
   });
 }
 
-function addInvestigationCosts(filteredInvestigations, costState) {
-  filteredInvestigations.forEach((investigation) => {
+function addInvestigationCosts(filteredImaging, costState) {
+  [...filteredImaging.rx, ...filteredImaging.ct, ...filteredImaging.observe].forEach((investigation) => {
     const matchKey = Object.keys(APP_CONFIG.costs.investigations).find((key) =>
       investigation.toLowerCase().includes(key.toLowerCase())
     );
@@ -750,17 +973,12 @@ function addInvestigationCosts(filteredInvestigations, costState) {
 
 function addCostLine(costState, bucket, label, amount) {
   if (!amount) return;
-
   costState[bucket] += amount;
-  costState.breakdown.push({
-    bucket,
-    label,
-    amount
-  });
+  costState.breakdown.push({ bucket, label, amount });
 }
 
 /* =========================================================
-   PRIORITY
+   PRIORITY / ALERTS
 ========================================================= */
 
 function determinePriority(score, condition) {
@@ -774,29 +992,33 @@ function determinePriority(score, condition) {
     return { label: "Kritiek", className: "critical" };
   }
 
-  if (score >= 16) {
-    return { label: "Hoog", className: "high" };
-  }
-
-  if (score >= 8) {
-    return { label: "Matig", className: "medium" };
-  }
-
+  if (score >= 16) return { label: "Hoog", className: "high" };
+  if (score >= 8) return { label: "Matig", className: "medium" };
   return { label: "Laag", className: "low" };
+}
+
+function normalizePriorityAlerts(alerts) {
+  const seen = new Set();
+  return alerts.filter((alert) => {
+    if (seen.has(alert)) return false;
+    seen.add(alert);
+    return true;
+  }).slice(0, 5);
 }
 
 /* =========================================================
    REPORT BUILDING
 ========================================================= */
 
-function buildReportSummary(formData, priority, departments, steps, actions, items, investigations, followUp) {
+function buildReportSummary(formData, priority, operation, closing, departments, steps, actions, items, imaging, followUp, clinicalImpressions) {
   const patientName = formData.patient.name || "Onbekende patiënt";
   const locationText = formData.patient.location ? ` ter hoogte van ${formData.patient.location}` : "";
   const medicText = formData.patient.treatingMedic
     ? `De behandeling werd opgestart door ${formData.patient.treatingMedic}.`
     : "";
 
-  const departmentFilterText = getDepartmentFilterLabel(formData.filter.department);
+  const filterLabel = getSelectLabel("departmentFilter", formData.filter.department);
+  const viewModeLabel = getSelectLabel("viewMode", formData.filter.viewMode);
 
   const injuryLines = [];
 
@@ -804,92 +1026,45 @@ function buildReportSummary(formData, priority, departments, steps, actions, ite
     const detailParts = [];
 
     part.injuries.forEach((injury) => {
-      const subParts = [];
-
-      if (injury.wound) {
-        subParts.push(getWoundLabel(injury.wound).toLowerCase());
-      }
-
-      if (injury.severity) {
-        subParts.push(`ernst: ${getSeverityLabel(injury.severity).toLowerCase()}`);
-      }
-
-      if (injury.note) {
-        subParts.push(injury.note);
-      }
-
-      if (subParts.length) {
-        detailParts.push(subParts.join(", "));
-      }
+      const sub = [];
+      if (injury.wound) sub.push(getWoundLabel(injury.wound).toLowerCase());
+      if (injury.severity) sub.push(`ernst: ${getSeverityLabel(injury.severity).toLowerCase()}`);
+      if (injury.note) sub.push(injury.note);
+      if (sub.length) detailParts.push(sub.join(", "));
     });
 
-    if (part.fracture) {
-      detailParts.push("vermoeden van fractuur");
-    }
-
-    if (part.needsImaging) {
-      detailParts.push("beeldvorming te overwegen");
-    }
+    if (part.fracture) detailParts.push("vermoeden van fractuur");
+    if (part.needsImaging) detailParts.push("beeldvorming te overwegen");
 
     if (detailParts.length) {
       injuryLines.push(`${part.label}: ${detailParts.join(" | ")}`);
     }
   });
 
-  const injuriesParagraph = injuryLines.length
-    ? `Vastgestelde letsels: ${injuryLines.join(" || ")}.`
-    : "Er werden geen specifieke letsels geregistreerd in de tool.";
-
-  const conditionParagraph = [
-    `${patientName} werd beoordeeld${locationText}.`,
-    `Patiënt was ${APP_CONFIG.textMap.consciousness[formData.condition.consciousness]}, had ${APP_CONFIG.textMap.pulse[formData.condition.pulse]}, ${APP_CONFIG.textMap.temperature[formData.condition.temperature]}, ${APP_CONFIG.textMap.painLevel[formData.condition.painLevel]} en ${APP_CONFIG.textMap.bleedingLevel[formData.condition.bleedingLevel]}.`,
-    `Luchtweg: ${APP_CONFIG.textMap.airwayRisk[formData.condition.airwayRisk]}.`,
-    `Ademhaling: ${APP_CONFIG.textMap.breathingStatus[formData.condition.breathingStatus]}.`,
-    `Triage-inschatting: ${APP_CONFIG.textMap.triage[formData.condition.triage]}.`
-  ].join(" ");
-
-  const filterParagraph = `Actieve weergave/filter: ${departmentFilterText}.`;
-
-  const departmentText = departments.length
-    ? `Betrokken afdelingen: ${departments.join(", ")}.`
-    : "";
-
-  const stepsText = steps.length
-    ? `Voorstel stappenplan: ${steps.join("; ")}.`
-    : "";
-
-  const actionsText = actions.length
-    ? `Aanbevolen handelingen: ${actions.join("; ")}.`
-    : "";
-
-  const itemsText = items.length
-    ? `Aanbevolen hulpmiddelen/items: ${items.map((item) => APP_CONFIG.itemLabels[item.code] || item.code).join(", ")}.`
-    : "";
-
-  const investigationsText = investigations.length
-    ? `Aanbevolen onderzoeken/beeldvorming: ${investigations.join("; ")}.`
-    : "";
-
-  const followUpText = followUp.length
-    ? `Nazorg/opvolging: ${followUp.join("; ")}.`
-    : "";
-
-  const notesText = formData.condition.generalNotes
-    ? `Algemene observaties: ${formData.condition.generalNotes}.`
-    : "";
+  const imagingFlat = [
+    ...imaging.rx.map((x) => `RX: ${x}`),
+    ...imaging.ct.map((x) => `CT: ${x}`),
+    ...imaging.observe.map((x) => `Observatie/evaluatie: ${x}`)
+  ];
 
   return [
     `Prioriteit van zorg: ${priority.label}.`,
-    filterParagraph,
-    conditionParagraph,
-    injuriesParagraph,
-    departmentText,
-    stepsText,
-    actionsText,
-    itemsText,
-    investigationsText,
-    followUpText,
-    notesText,
+    `Actieve afdelingsview: ${filterLabel}.`,
+    `Weergavemodus: ${viewModeLabel}.`,
+    `${patientName} werd beoordeeld${locationText}.`,
+    `Patiënt was ${APP_CONFIG.textMap.consciousness[formData.condition.consciousness]}, had ${APP_CONFIG.textMap.pulse[formData.condition.pulse]}, ${APP_CONFIG.textMap.temperature[formData.condition.temperature]}, ${APP_CONFIG.textMap.painLevel[formData.condition.painLevel]} en ${APP_CONFIG.textMap.bleedingLevel[formData.condition.bleedingLevel]}.`,
+    `Luchtweg: ${APP_CONFIG.textMap.airwayRisk[formData.condition.airwayRisk]}. Ademhaling: ${APP_CONFIG.textMap.breathingStatus[formData.condition.breathingStatus]}. Triage: ${APP_CONFIG.textMap.triage[formData.condition.triage]}.`,
+    injuryLines.length ? `Vastgestelde letsels: ${injuryLines.join(" || ")}.` : "Er werden geen specifieke letsels geregistreerd in de tool.",
+    clinicalImpressions.length ? `Klinische indruk: ${clinicalImpressions.join("; ")}.` : "",
+    departments.length ? `Betrokken afdelingen: ${departments.join(", ")}.` : "",
+    `Operatie-indicatie: ${operation.label}. Reden: ${operation.reason}`,
+    steps.length ? `Stappenplan: ${steps.join("; ")}.` : "",
+    actions.length ? `Aanbevolen handelingen: ${actions.join("; ")}.` : "",
+    items.length ? `Aanbevolen items: ${items.map((item) => APP_CONFIG.itemLabels[item.code] || item.code).join(", ")}.` : "",
+    imagingFlat.length ? `Beeldvorming/onderzoek: ${imagingFlat.join("; ")}.` : "",
+    followUp.length ? `Nazorg patiënt: ${followUp.join("; ")}.` : "",
+    `Afsluitstatus: ${closing.label}. ${closing.text}`,
+    formData.condition.generalNotes ? `Algemene observaties: ${formData.condition.generalNotes}.` : "",
     medicText
   ].filter(Boolean).join("\n\n");
 }
@@ -900,32 +1075,46 @@ function getWoundLabel(woundValue) {
 }
 
 function getSeverityLabel(severityValue) {
-  const found = APP_CONFIG.selectOptions.injurySeverity.find((option) => option.value === severityValue);
-  return found ? found.label : severityValue;
+  return getSelectLabel("injurySeverity", severityValue);
 }
 
-function getDepartmentFilterLabel(filterValue) {
-  const found = APP_CONFIG.selectOptions.departmentFilter.find((option) => option.value === filterValue);
-  return found ? found.label : filterValue;
+function getSelectLabel(group, value) {
+  const found = APP_CONFIG.selectOptions[group].find((option) => option.value === value);
+  return found ? found.label : value;
 }
 
 /* =========================================================
-   RENDER RESULT
+   RENDER
 ========================================================= */
 
 function renderResult(result) {
   priorityBadge.className = `priority-badge ${result.priority.className}`;
   priorityBadge.textContent = result.priority.label;
 
+  operationBadge.className = `operation-badge ${result.operation.className}`;
+  operationBadge.textContent = result.operation.label;
+  operationReason.textContent = result.operation.reason;
+
+  closingStatusBadge.className = `closing-badge ${result.closing.className}`;
+  closingStatusBadge.textContent = result.closing.label;
+  closingStatusText.textContent = result.closing.text;
+
+  renderList(alertsList, result.priorityAlerts, "Nog geen prioritaire waarschuwingen.");
+  renderList(clinicalImpressionList, result.clinicalImpressions, "Nog geen klinische indruk.");
   renderTagList(departmentTags, result.departments, "Nog geen advies");
   renderList(stepsList, result.steps, "Geen stappenplan gegenereerd.");
   renderList(actionsList, result.actions, "Geen specifieke handelingen.");
   renderList(itemsList, result.items, "Geen specifieke items.");
-  renderList(investigationsList, result.investigations, "Geen onderzoeken voorgesteld.");
+
+  renderList(imagingNoneList, result.imaging.none, "Geen specifieke beoordeling.");
+  renderList(imagingRxList, result.imaging.rx, "Nog geen RX-advies.");
+  renderList(imagingCtList, result.imaging.ct, "Nog geen CT-advies.");
+  renderList(imagingObserveList, result.imaging.observe, "Nog geen observatie-advies.");
+
   renderList(followUpList, result.followUp, "Geen nazorg voorgesteld.");
   renderList(warningsList, result.warnings, "Geen extra aandachtspunten.");
-
   renderCosts(result.costs);
+
   reportSummary.value = result.summary;
 }
 
@@ -992,6 +1181,52 @@ function renderTagList(target, tags, emptyText) {
 }
 
 /* =========================================================
+   DISPLAY MODE / FILTER
+========================================================= */
+
+function applyDisplayMode() {
+  const displayFilter = valueOf("displayFilter") || "all";
+  const viewMode = valueOf("viewMode") || "full";
+
+  Object.values(BLOCKS).forEach((block) => {
+    block.classList.remove("is-hidden");
+  });
+
+  if (viewMode === "compact") {
+    hideBlocks(["department", "steps", "costs", "warnings", "report"]);
+  }
+
+  switch (displayFilter) {
+    case "acute":
+      hideBlocks(["clinical", "department", "followUp", "costs", "warnings", "report"]);
+      break;
+    case "imaging":
+      hideBlocks(["clinical", "department", "steps", "actions", "items", "followUp", "costs", "warnings", "report"]);
+      break;
+    case "followup":
+      hideBlocks(["clinical", "department", "steps", "actions", "items", "imaging", "costs", "warnings", "report"]);
+      break;
+    case "surgery":
+      hideBlocks(["department", "costs", "report"]);
+      break;
+    case "warnings":
+      hideBlocks(["clinical", "department", "steps", "actions", "items", "imaging", "followUp", "costs", "warnings", "report"]);
+      BLOCKS.alerts.classList.remove("is-hidden");
+      BLOCKS.priority.classList.remove("is-hidden");
+      BLOCKS.operation.classList.remove("is-hidden");
+      break;
+    default:
+      break;
+  }
+}
+
+function hideBlocks(keys) {
+  keys.forEach((key) => {
+    if (BLOCKS[key]) BLOCKS[key].classList.add("is-hidden");
+  });
+}
+
+/* =========================================================
    RESET / COPY
 ========================================================= */
 
@@ -1011,16 +1246,30 @@ function handleReset() {
   priorityBadge.className = "priority-badge neutral";
   priorityBadge.textContent = "Nog niet berekend";
 
+  operationBadge.className = "operation-badge neutral";
+  operationBadge.textContent = "Nog niet berekend";
+  operationReason.textContent = "Nog geen reden bepaald.";
+
+  closingStatusBadge.className = "closing-badge neutral";
+  closingStatusBadge.textContent = "Nog niet bepaald";
+  closingStatusText.textContent = "Nog geen afsluitstatus voorgesteld.";
+
+  renderList(alertsList, [], "Nog geen prioritaire waarschuwingen.");
+  renderList(clinicalImpressionList, [], "Nog geen klinische indruk.");
   renderTagList(departmentTags, [], "Nog geen advies");
   renderList(stepsList, [], "Vul de gegevens in en genereer het behandeladvies.");
   renderList(actionsList, [], "Vul de gegevens in en genereer het behandeladvies.");
   renderList(itemsList, [], "Nog geen items geselecteerd.");
-  renderList(investigationsList, [], "Nog geen onderzoeken voorgesteld.");
+  renderList(imagingNoneList, [], "Nog geen beoordeling.");
+  renderList(imagingRxList, [], "Nog geen RX-advies.");
+  renderList(imagingCtList, [], "Nog geen CT-advies.");
+  renderList(imagingObserveList, [], "Nog geen observatie-advies.");
   renderList(followUpList, [], "Nog geen nazorg voorgesteld.");
   renderList(warningsList, [], "Nog geen aandachtspunten.");
   renderCosts({ injuries: 0, items: 0, investigations: 0, total: 0, breakdown: [] });
 
   reportSummary.value = "";
+  applyDisplayMode();
 }
 
 function handleCopySummary() {
@@ -1032,12 +1281,8 @@ function handleCopySummary() {
   }
 
   navigator.clipboard.writeText(text)
-    .then(() => {
-      alert("Samenvatting gekopieerd.");
-    })
-    .catch(() => {
-      alert("Kopiëren is niet gelukt.");
-    });
+    .then(() => alert("Samenvatting gekopieerd."))
+    .catch(() => alert("Kopiëren is niet gelukt."));
 }
 
 /* =========================================================
