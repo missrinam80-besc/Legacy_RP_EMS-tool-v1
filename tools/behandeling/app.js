@@ -38,6 +38,9 @@ const costBreakdownList = document.getElementById("costBreakdownList");
 
 const injuryRowTemplate = document.getElementById("injuryRowTemplate");
 
+const copyReportBtnTop = document.getElementById("copyReportBtnTop");
+const resetBtnTop = document.getElementById("resetBtnTop");
+
 /* blocks for filter/compact */
 const BLOCKS = {
   alerts: document.getElementById("alertsBlock"),
@@ -207,6 +210,14 @@ function bindEvents() {
   generateBtn.addEventListener("click", handleGenerateAdvice);
   resetBtn.addEventListener("click", handleReset);
   copyReportBtn.addEventListener("click", handleCopySummary);
+
+  if (resetBtnTop) {
+    resetBtnTop.addEventListener("click", handleReset);
+  }
+
+  if (copyReportBtnTop) {
+    copyReportBtnTop.addEventListener("click", handleCopySummary);
+  }
 
   document.getElementById("displayFilter").addEventListener("change", applyDisplayMode);
   document.getElementById("viewMode").addEventListener("change", applyDisplayMode);

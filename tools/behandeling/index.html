@@ -13,299 +13,336 @@
   <link rel="stylesheet" href="../../assets/styles/behandeling.css" />
 </head>
 <body>
-  <div class="app-shell behandeltool-app">
-    <header class="site-header">
-      <img src="../../assets/images/Banner.png" alt="EMS Tools Hub banner" class="site-banner" />
+  <div class="behandeltool-page">
+    <header class="site-header full-bleed-header">
+      <img src="../../assets/images/Banner.png" alt="EMS Tools Hub banner" class="site-banner full-bleed-banner" />
     </header>
 
-    <section class="page-title-section">
-      <div class="page-title-row">
-        <div>
-          <h1>EMS Behandeltool v5</h1>
-          <p class="subtitle">
-            Klinische beslissingshulp voor letsels, onderzoeken, operatie-indicatie, nazorg en afsluitstatus.
-          </p>
-        </div>
-
-        <div class="header-actions">
-          <button id="resetBtn" class="btn btn-secondary" type="button">Reset</button>
-          <button id="copyReportBtn" class="btn btn-primary" type="button">Kopieer samenvatting</button>
-        </div>
-      </div>
-
-      <details class="tool-intro" open>
-        <summary>Toelichting van de tool</summary>
-        <div class="tool-intro-content">
-          <p>
-            Deze tool helpt EMS-medewerkers om letsels, algemene toestand, beeldvorming, mogelijke
-            operatie-indicatie en nazorg logisch te bundelen in één werkflow.
-          </p>
-          <p>
-            De tool ondersteunt de gecombineerde afdeling <strong>Spoed/Ambulance</strong> en de aparte
-            view <strong>Chirurgie</strong>. Basis wondzorg en eenvoudige wondsluiting vallen onder
-            Spoed/Ambulance. Chirurgie wordt vooral betrokken bij schotwonden, ernstige penetrerende
-            letsels, complexe wondzorg, intern letsel en duidelijke operatie-indicaties.
-          </p>
-          <p>
-            De output is ondersteunend en vervangt geen eigen klinisch redeneren of RP-inschatting.
-          </p>
-        </div>
-      </details>
-    </section>
-
-    <section class="patient-section">
-      <h2>Patiëntgegevens</h2>
-
-      <div class="patient-grid">
-        <div class="form-group">
-          <label for="patientName">Naam patiënt</label>
-          <input type="text" id="patientName" placeholder="Bijv. John Doe" />
-        </div>
-
-        <div class="form-group">
-          <label for="patientDob">Geboortedatum</label>
-          <input type="text" id="patientDob" placeholder="Bijv. 01/01/1990" />
-        </div>
-
-        <div class="form-group">
-          <label for="incidentLocation">Locatie</label>
-          <input type="text" id="incidentLocation" placeholder="Bijv. Vespucci Boulevard" />
-        </div>
-
-        <div class="form-group">
-          <label for="treatingMedic">Behandelaar</label>
-          <input type="text" id="treatingMedic" placeholder="Naam EMS-medewerker" />
-        </div>
-      </div>
-    </section>
-
-    <main class="layout behandeltool-layout">
-      <section class="left-column">
-        <details class="tool-section" open>
-          <summary>Algemene toestand</summary>
-
-          <div class="section-content">
-            <div class="grid-2">
-              <div class="form-group">
-                <label for="departmentFilter">Afdelingsview</label>
-                <select id="departmentFilter"></select>
-              </div>
-
-              <div class="form-group">
-                <label for="displayFilter">Toon alleen relevante info</label>
-                <select id="displayFilter"></select>
-              </div>
-
-              <div class="form-group">
-                <label for="viewMode">Weergavemodus</label>
-                <select id="viewMode"></select>
-              </div>
-
-              <div class="form-group">
-                <label for="triage">Triage-inschatting</label>
-                <select id="triage"></select>
-              </div>
-
-              <div class="form-group">
-                <label for="consciousness">Bewustzijn</label>
-                <select id="consciousness"></select>
-              </div>
-
-              <div class="form-group">
-                <label for="pulse">Pols</label>
-                <select id="pulse"></select>
-              </div>
-
-              <div class="form-group">
-                <label for="temperature">Lichaamstemperatuur</label>
-                <select id="temperature"></select>
-              </div>
-
-              <div class="form-group">
-                <label for="painLevel">Pijnniveau</label>
-                <select id="painLevel"></select>
-              </div>
-
-              <div class="form-group">
-                <label for="bleedingLevel">Bloedverlies</label>
-                <select id="bleedingLevel"></select>
-              </div>
-
-              <div class="form-group">
-                <label for="airwayRisk">Luchtwegrisico</label>
-                <select id="airwayRisk"></select>
-              </div>
-
-              <div class="form-group">
-                <label for="breathingStatus">Ademhaling</label>
-                <select id="breathingStatus"></select>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="generalNotes">Algemene observaties</label>
-              <textarea
-                id="generalNotes"
-                rows="4"
-                placeholder="Vrije observaties, symptomen of context..."
-              ></textarea>
-            </div>
+    <main class="app-shell behandeltool-app">
+      <section class="page-title-section">
+        <div class="page-title-row">
+          <div>
+            <h1>EMS Behandeltool v5</h1>
+            <p class="subtitle">
+              Klinische beslissingshulp voor letsels, onderzoeken, operatie-indicatie, nazorg en afsluitstatus.
+            </p>
           </div>
-        </details>
 
-        <details class="tool-section" open>
-          <summary>Letsels per lichaamsdeel</summary>
-          <div class="section-content bodyparts-wrap" id="bodypartsContainer"></div>
+          <div class="header-actions">
+            <button id="resetBtn" class="btn btn-secondary" type="button">Reset</button>
+            <button id="copyReportBtn" class="btn btn-primary" type="button">Kopieer samenvatting</button>
+          </div>
+        </div>
+
+        <details class="tool-intro">
+          <summary>Toelichting van de tool</summary>
+          <div class="tool-intro-content">
+            <p>
+              Deze tool helpt EMS-medewerkers om letsels, algemene toestand, beeldvorming, mogelijke
+              operatie-indicatie en nazorg logisch te bundelen in één werkflow.
+            </p>
+            <p>
+              De tool ondersteunt de gecombineerde afdeling <strong>Spoed/Ambulance</strong> en de aparte
+              view <strong>Chirurgie</strong>. Basis wondzorg en eenvoudige wondsluiting vallen onder
+              Spoed/Ambulance. Chirurgie wordt vooral betrokken bij schotwonden, ernstige penetrerende
+              letsels, complexe wondzorg, intern letsel en duidelijke operatie-indicaties.
+            </p>
+            <p>
+              De output is ondersteunend en vervangt geen eigen klinisch redeneren of RP-inschatting.
+            </p>
+          </div>
         </details>
       </section>
 
-      <section class="right-column">
-        <div class="result-card">
-          <div class="result-header">
-            <h2>Behandeladvies</h2>
-            <button id="generateBtn" class="btn btn-primary" type="button">Genereer advies</button>
+      <section class="patient-section">
+        <h2>Patiënt / betrokkene</h2>
+
+        <div class="patient-grid patient-grid-2">
+          <div class="form-group">
+            <label for="patientName">Naam betrokkene</label>
+            <input type="text" id="patientName" placeholder="Voornaam Achternaam" />
           </div>
 
-          <section id="alertsBlock" class="result-block alert-block">
-            <h3>Waarschuwingen met prioriteit</h3>
-            <ul id="alertsList" class="result-list">
-              <li>Nog geen prioritaire waarschuwingen.</li>
-            </ul>
-          </section>
+          <div class="form-group">
+            <label for="patientDob">Geboortedatum</label>
+            <input type="date" id="patientDob" />
+          </div>
+        </div>
 
-          <section id="priorityBlock" class="result-block">
-            <h3>Prioriteit</h3>
-            <div id="priorityBadge" class="priority-badge neutral">Nog niet berekend</div>
-          </section>
+        <div class="patient-grid patient-grid-2 patient-grid-spacing">
+          <div class="form-group">
+            <label for="incidentLocation">Locatie</label>
+            <input type="text" id="incidentLocation" placeholder="Bijv. Vespucci Boulevard" />
+          </div>
 
-          <section id="operationBlock" class="result-block">
-            <h3>Operatie-indicatie</h3>
-            <div id="operationBadge" class="operation-badge neutral">Nog niet berekend</div>
-            <p id="operationReason" class="help-text">Nog geen reden bepaald.</p>
-          </section>
+          <div class="form-group">
+            <label for="treatingMedic">Behandelaar</label>
+            <input type="text" id="treatingMedic" placeholder="Naam EMS-medewerker" />
+          </div>
+        </div>
+      </section>
 
-          <section id="clinicalBlock" class="result-block">
-            <h3>Klinische indruk</h3>
-            <ul id="clinicalImpressionList" class="result-list">
-              <li>Nog geen klinische indruk.</li>
-            </ul>
-          </section>
+      <section class="two-column-layout">
+        <div class="left-column">
+          <details class="tool-accordion" open>
+            <summary>Algemene toestand</summary>
+            <div class="accordion-content">
+              <div class="grid-2">
+                <div class="form-group">
+                  <label for="departmentFilter">Afdelingsview</label>
+                  <select id="departmentFilter"></select>
+                </div>
 
-          <section id="departmentBlock" class="result-block">
-            <h3>Afdelingen</h3>
-            <div id="departmentTags" class="tag-list">
-              <span class="tag">Nog geen advies</span>
-            </div>
-          </section>
+                <div class="form-group">
+                  <label for="displayFilter">Toon alleen relevante info</label>
+                  <select id="displayFilter"></select>
+                </div>
 
-          <section id="stepsBlock" class="result-block">
-            <h3>Stappenplan</h3>
-            <ol id="stepsList" class="result-list">
-              <li>Vul de gegevens in en genereer het behandeladvies.</li>
-            </ol>
-          </section>
+                <div class="form-group">
+                  <label for="viewMode">Weergavemodus</label>
+                  <select id="viewMode"></select>
+                </div>
 
-          <section id="actionsBlock" class="result-block">
-            <h3>Aanbevolen handelingen</h3>
-            <ul id="actionsList" class="result-list">
-              <li>Vul de gegevens in en genereer het behandeladvies.</li>
-            </ul>
-          </section>
+                <div class="form-group">
+                  <label for="triage">Triage-inschatting</label>
+                  <select id="triage"></select>
+                </div>
 
-          <section id="itemsBlock" class="result-block">
-            <h3>Aanbevolen items</h3>
-            <ul id="itemsList" class="result-list">
-              <li>Nog geen items geselecteerd.</li>
-            </ul>
-          </section>
+                <div class="form-group">
+                  <label for="consciousness">Bewustzijn</label>
+                  <select id="consciousness"></select>
+                </div>
 
-          <section id="imagingBlock" class="result-block">
-            <h3>Beeldvorming / onderzoeken</h3>
+                <div class="form-group">
+                  <label for="pulse">Pols</label>
+                  <select id="pulse"></select>
+                </div>
 
-            <div class="imaging-subblock">
-              <h4>Geen beeldvorming nodig</h4>
-              <ul id="imagingNoneList" class="result-list compact-list">
-                <li>Nog geen beoordeling.</li>
-              </ul>
-            </div>
+                <div class="form-group">
+                  <label for="temperature">Lichaamstemperatuur</label>
+                  <select id="temperature"></select>
+                </div>
 
-            <div class="imaging-subblock">
-              <h4>RX aanbevolen</h4>
-              <ul id="imagingRxList" class="result-list compact-list">
-                <li>Nog geen RX-advies.</li>
-              </ul>
-            </div>
+                <div class="form-group">
+                  <label for="painLevel">Pijnniveau</label>
+                  <select id="painLevel"></select>
+                </div>
 
-            <div class="imaging-subblock">
-              <h4>CT aanbevolen / overwegen</h4>
-              <ul id="imagingCtList" class="result-list compact-list">
-                <li>Nog geen CT-advies.</li>
-              </ul>
-            </div>
+                <div class="form-group">
+                  <label for="bleedingLevel">Bloedverlies</label>
+                  <select id="bleedingLevel"></select>
+                </div>
 
-            <div class="imaging-subblock">
-              <h4>Observatie / verdere evaluatie</h4>
-              <ul id="imagingObserveList" class="result-list compact-list">
-                <li>Nog geen observatie-advies.</li>
-              </ul>
-            </div>
-          </section>
+                <div class="form-group">
+                  <label for="airwayRisk">Luchtwegrisico</label>
+                  <select id="airwayRisk"></select>
+                </div>
 
-          <section id="followUpBlock" class="result-block">
-            <h3>Nazorg voor patiënt</h3>
-            <ul id="followUpList" class="result-list">
-              <li>Nog geen nazorg voorgesteld.</li>
-            </ul>
-          </section>
-
-          <section id="closingBlock" class="result-block">
-            <h3>Afsluitstatus patiënt</h3>
-            <div id="closingStatusBadge" class="closing-badge neutral">Nog niet bepaald</div>
-            <p id="closingStatusText" class="help-text">Nog geen afsluitstatus voorgesteld.</p>
-          </section>
-
-          <section id="costBlock" class="result-block">
-            <h3>Kostenoverzicht</h3>
-            <div class="cost-box">
-              <div class="cost-summary-line">
-                <span>Letsels</span>
-                <strong id="costInjuries">€ 0</strong>
+                <div class="form-group">
+                  <label for="breathingStatus">Ademhaling</label>
+                  <select id="breathingStatus"></select>
+                </div>
               </div>
-              <div class="cost-summary-line">
-                <span>Items / behandelingen</span>
-                <strong id="costItems">€ 0</strong>
-              </div>
-              <div class="cost-summary-line">
-                <span>Onderzoeken</span>
-                <strong id="costInvestigations">€ 0</strong>
-              </div>
-              <div class="cost-summary-line total">
-                <span>Totaal</span>
-                <strong id="costTotal">€ 0</strong>
+
+              <div class="form-group mt-16">
+                <label for="generalNotes">Algemene observaties</label>
+                <textarea
+                  id="generalNotes"
+                  rows="4"
+                  placeholder="Vrije observaties, symptomen of context..."
+                ></textarea>
               </div>
             </div>
+          </details>
 
-            <ul id="costBreakdownList" class="result-list compact-list">
-              <li>Nog geen kostenraming.</li>
-            </ul>
+          <details class="tool-accordion" open>
+            <summary>Letsels per lichaamsdeel</summary>
+            <div class="accordion-content">
+              <div class="bodyparts-wrap" id="bodypartsContainer"></div>
+            </div>
+          </details>
+        </div>
+
+        <div class="right-column">
+          <section class="status-card">
+            <div class="header-actions status-actions">
+              <button id="generateBtn" class="btn btn-primary" type="button">Bouw rapport</button>
+              <button id="copyReportBtnTop" class="btn btn-primary" type="button">Kopieer</button>
+              <button id="resetBtnTop" class="btn btn-secondary" type="button">Reset</button>
+            </div>
+
+            <div class="status-message">
+              Klaar. Je kunt gegevens invoeren, het rapport opbouwen of kopiëren.
+            </div>
           </section>
 
-          <section id="warningsBlock" class="result-block">
-            <h3>Overige aandachtspunten</h3>
-            <ul id="warningsList" class="result-list">
-              <li>Nog geen aandachtspunten.</li>
-            </ul>
-          </section>
+          <details id="alertsBlock" class="tool-accordion right-accordion" open>
+            <summary>Waarschuwingen met prioriteit</summary>
+            <div class="accordion-content">
+              <ul id="alertsList" class="result-list">
+                <li>Nog geen prioritaire waarschuwingen.</li>
+              </ul>
+            </div>
+          </details>
 
-          <section id="reportBlock" class="result-block">
-            <h3>Korte rapportsamenvatting</h3>
-            <textarea
-              id="reportSummary"
-              rows="18"
-              readonly
-              placeholder="De samenvatting verschijnt hier..."
-            ></textarea>
-          </section>
+          <details id="priorityBlock" class="tool-accordion right-accordion" open>
+            <summary>Prioriteit</summary>
+            <div class="accordion-content">
+              <div id="priorityBadge" class="priority-badge neutral">Nog niet berekend</div>
+            </div>
+          </details>
+
+          <details id="operationBlock" class="tool-accordion right-accordion">
+            <summary>Operatie-indicatie</summary>
+            <div class="accordion-content">
+              <div id="operationBadge" class="operation-badge neutral">Nog niet berekend</div>
+              <p id="operationReason" class="help-text">Nog geen reden bepaald.</p>
+            </div>
+          </details>
+
+          <details id="clinicalBlock" class="tool-accordion right-accordion">
+            <summary>Klinische indruk</summary>
+            <div class="accordion-content">
+              <ul id="clinicalImpressionList" class="result-list">
+                <li>Nog geen klinische indruk.</li>
+              </ul>
+            </div>
+          </details>
+
+          <details id="departmentBlock" class="tool-accordion right-accordion">
+            <summary>Afdelingen</summary>
+            <div class="accordion-content">
+              <div id="departmentTags" class="tag-list">
+                <span class="tag">Nog geen advies</span>
+              </div>
+            </div>
+          </details>
+
+          <details id="stepsBlock" class="tool-accordion right-accordion">
+            <summary>Stappenplan</summary>
+            <div class="accordion-content">
+              <ol id="stepsList" class="result-list">
+                <li>Vul de gegevens in en genereer het behandeladvies.</li>
+              </ol>
+            </div>
+          </details>
+
+          <details id="actionsBlock" class="tool-accordion right-accordion">
+            <summary>Aanbevolen handelingen</summary>
+            <div class="accordion-content">
+              <ul id="actionsList" class="result-list">
+                <li>Vul de gegevens in en genereer het behandeladvies.</li>
+              </ul>
+            </div>
+          </details>
+
+          <details id="itemsBlock" class="tool-accordion right-accordion">
+            <summary>Aanbevolen items</summary>
+            <div class="accordion-content">
+              <ul id="itemsList" class="result-list">
+                <li>Nog geen items geselecteerd.</li>
+              </ul>
+            </div>
+          </details>
+
+          <details id="imagingBlock" class="tool-accordion right-accordion">
+            <summary>Beeldvorming / onderzoeken</summary>
+            <div class="accordion-content">
+              <div class="imaging-subblock">
+                <h4>Geen beeldvorming nodig</h4>
+                <ul id="imagingNoneList" class="result-list compact-list">
+                  <li>Nog geen beoordeling.</li>
+                </ul>
+              </div>
+
+              <div class="imaging-subblock">
+                <h4>RX aanbevolen</h4>
+                <ul id="imagingRxList" class="result-list compact-list">
+                  <li>Nog geen RX-advies.</li>
+                </ul>
+              </div>
+
+              <div class="imaging-subblock">
+                <h4>CT aanbevolen / overwegen</h4>
+                <ul id="imagingCtList" class="result-list compact-list">
+                  <li>Nog geen CT-advies.</li>
+                </ul>
+              </div>
+
+              <div class="imaging-subblock">
+                <h4>Observatie / verdere evaluatie</h4>
+                <ul id="imagingObserveList" class="result-list compact-list">
+                  <li>Nog geen observatie-advies.</li>
+                </ul>
+              </div>
+            </div>
+          </details>
+
+          <details id="followUpBlock" class="tool-accordion right-accordion">
+            <summary>Nazorg voor patiënt</summary>
+            <div class="accordion-content">
+              <ul id="followUpList" class="result-list">
+                <li>Nog geen nazorg voorgesteld.</li>
+              </ul>
+            </div>
+          </details>
+
+          <details id="closingBlock" class="tool-accordion right-accordion">
+            <summary>Afsluitstatus patiënt</summary>
+            <div class="accordion-content">
+              <div id="closingStatusBadge" class="closing-badge neutral">Nog niet bepaald</div>
+              <p id="closingStatusText" class="help-text">Nog geen afsluitstatus voorgesteld.</p>
+            </div>
+          </details>
+
+          <details id="costBlock" class="tool-accordion right-accordion">
+            <summary>Kostenoverzicht</summary>
+            <div class="accordion-content">
+              <div class="cost-box">
+                <div class="cost-summary-line">
+                  <span>Letsels</span>
+                  <strong id="costInjuries">€ 0</strong>
+                </div>
+                <div class="cost-summary-line">
+                  <span>Items / behandelingen</span>
+                  <strong id="costItems">€ 0</strong>
+                </div>
+                <div class="cost-summary-line">
+                  <span>Onderzoeken</span>
+                  <strong id="costInvestigations">€ 0</strong>
+                </div>
+                <div class="cost-summary-line total">
+                  <span>Totaal</span>
+                  <strong id="costTotal">€ 0</strong>
+                </div>
+              </div>
+
+              <ul id="costBreakdownList" class="result-list compact-list">
+                <li>Nog geen kostenraming.</li>
+              </ul>
+            </div>
+          </details>
+
+          <details id="warningsBlock" class="tool-accordion right-accordion">
+            <summary>Overige aandachtspunten</summary>
+            <div class="accordion-content">
+              <ul id="warningsList" class="result-list">
+                <li>Nog geen aandachtspunten.</li>
+              </ul>
+            </div>
+          </details>
+
+          <details id="reportBlock" class="tool-accordion right-accordion" open>
+            <summary>Gegenereerd rapport</summary>
+            <div class="accordion-content">
+              <textarea
+                id="reportSummary"
+                rows="18"
+                readonly
+                placeholder="De samenvatting verschijnt hier..."
+              ></textarea>
+            </div>
+          </details>
         </div>
       </section>
     </main>
