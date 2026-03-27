@@ -3,64 +3,230 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kostencalculator</title>
+  <title>EMS Kostencalculator</title>
 
-  <link rel="stylesheet" href="../../assets/styles/theme.css" />
+  
   <link rel="stylesheet" href="../../assets/styles/base.css" />
-  <link rel="stylesheet" href="../../assets/styles/layout.css" />
   <link rel="stylesheet" href="../../assets/styles/components.css" />
+  <link rel="stylesheet" href="../../assets/styles/layout.css" />
+  <link rel="stylesheet" href="../../assets/styles/theme.css" />
   <link rel="stylesheet" href="../../assets/styles/utilities.css" />
+  <link rel="stylesheet" href="../../assets/styles/kostenmodule.css" />
+  
 </head>
 <body>
-  <main class="page-container">
-    <section class="panel">
-      <h1 id="toolTitle">Kostencalculator</h1>
-      <p id="toolDescription" class="text-soft"></p>
-    </section>
-
-    <section class="panel mt-2">
-      <form id="costForm">
-        <div class="form-grid">
-          <div class="form-field">
-            <label for="patientName">Patiënt</label>
-            <input class="form-input" id="patientName" type="text" />
+  <div class="costtool-page">
+    <main class="app-shell costtool-app">
+      <section class="page-title-section">
+        <div class="page-title-row">
+          <div>
+            <h1>EMS Kostencalculator</h1>
+            <p class="subtitle">
+              Aparte module voor letsels, onderzoeken, items en extra behandelkosten per afdeling.
+            </p>
           </div>
 
-          <div class="form-field">
-            <label for="staffName">Behandelaar</label>
-            <input class="form-input" id="staffName" type="text" />
+          <div class="header-actions">
+            <button id="resetBtn" class="btn btn-secondary" type="button">Reset</button>
+            <button id="copySummaryBtn" class="btn btn-primary" type="button">Kopieer overzicht</button>
           </div>
         </div>
 
-        <div class="mt-2">
-          <h2 class="mt-0">Selecteer behandelingen</h2>
-          <p class="text-soft">
-            Vink één of meerdere onderdelen aan. De tool berekent automatisch het totaal.
-          </p>
+        <details class="tool-intro">
+          <summary>Toelichting van de tool</summary>
+          <div class="tool-intro-content">
+            <p>
+              Deze module berekent kosten los van de behandeltool of rapportmodules. Zo kun je de tarieven
+              centraal beheren en later makkelijk uitbreiden per afdeling.
+            </p>
+            <p>
+              De output bestaat uit een opgesplitst kostenoverzicht, totaalbedrag en een compacte samenvatting
+              die je kunt kopiëren naar andere tools of rapporten.
+            </p>
+          </div>
+        </details>
+      </section>
+
+      <section class="two-column-layout">
+        <div class="left-column">
+          <details class="tool-accordion" open>
+            <summary>Algemene instellingen</summary>
+            <div class="accordion-content">
+              <div class="grid-2">
+                <div class="form-field">
+                  <label for="departmentSelect">Afdeling</label>
+                  <select id="departmentSelect" class="form-select"></select>
+                </div>
+
+                <div class="form-field">
+                  <label for="priceMode">Weergave</label>
+                  <select id="priceMode" class="form-select">
+                    <option value="full">Volledig overzicht</option>
+                    <option value="compact">Compact overzicht</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <details class="tool-accordion" open>
+            <summary>Letsels</summary>
+            <div class="accordion-content">
+              <div id="injuryRows"></div>
+              <div class="section-actions">
+                <button id="addInjuryBtn" class="btn btn-primary" type="button">Voeg letsel toe</button>
+              </div>
+            </div>
+          </details>
+
+          <details class="tool-accordion" open>
+            <summary>Items en onderzoeken</summary>
+            <div class="accordion-content">
+              <div class="grid-2 checkbox-columns">
+                <div>
+                  <h3>Items / behandelingen</h3>
+                  <div id="itemOptions" class="checkbox-list"></div>
+                </div>
+
+                <div>
+                  <h3>Onderzoeken</h3>
+                  <div id="investigationOptions" class="checkbox-list"></div>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <details class="tool-accordion" open>
+            <summary>Afdelingskosten</summary>
+            <div class="accordion-content">
+              <p class="help-text">
+                Kies hieronder extra handelingen die specifiek voor de geselecteerde afdeling meetellen.
+              </p>
+              <div id="departmentExtras" class="checkbox-list"></div>
+            </div>
+          </details>
+
+          <details class="tool-accordion" open>
+            <summary>Vrije extra kosten</summary>
+            <div class="accordion-content">
+              <div id="customRows"></div>
+              <div class="section-actions">
+                <button id="addCustomBtn" class="btn btn-secondary" type="button">Voeg vrije kost toe</button>
+              </div>
+            </div>
+          </details>
         </div>
 
-        <div id="itemsContainer" class="mt-2"></div>
+        <div class="right-column">
+          <section class="status-card">
+            <div class="header-actions status-actions">
+              <button id="calculateBtn" class="btn btn-primary" type="button">Bereken kosten</button>
+            </div>
+            <div class="status-message">
+              Vul de gegevens in en bereken het overzicht.
+            </div>
+          </section>
 
-        <div class="button-row">
-          <button type="submit" class="btn btn-primary">Bereken totaal</button>
-          <button type="button" class="btn btn-secondary" id="resetBtn">Leegmaken</button>
-          <button type="button" class="btn btn-secondary" id="copyBtn">Kopieer samenvatting</button>
-          <button type="button" class="btn btn-secondary" id="downloadBtn">Download .txt</button>
+          <details class="tool-accordion right-accordion" open>
+            <summary>Kostenoverzicht</summary>
+            <div class="accordion-content">
+              <div class="cost-box">
+                <div class="cost-summary-line">
+                  <span>Letsels</span>
+                  <strong id="costInjuries">€ 0</strong>
+                </div>
+                <div class="cost-summary-line">
+                  <span>Items / behandelingen</span>
+                  <strong id="costItems">€ 0</strong>
+                </div>
+                <div class="cost-summary-line">
+                  <span>Onderzoeken</span>
+                  <strong id="costInvestigations">€ 0</strong>
+                </div>
+                <div class="cost-summary-line">
+                  <span>Afdelingskosten</span>
+                  <strong id="costDepartmentExtras">€ 0</strong>
+                </div>
+                <div class="cost-summary-line">
+                  <span>Vrije extra kosten</span>
+                  <strong id="costCustom">€ 0</strong>
+                </div>
+                <div class="cost-summary-line total">
+                  <span>Totaal</span>
+                  <strong id="costTotal">€ 0</strong>
+                </div>
+              </div>
+
+              <ul id="costBreakdownList" class="result-list compact-list">
+                <li>Nog geen kostenraming.</li>
+              </ul>
+            </div>
+          </details>
+
+          <details class="tool-accordion right-accordion" open>
+            <summary>Samenvatting</summary>
+            <div class="accordion-content">
+              <textarea
+                id="summaryOutput"
+                class="form-textarea"
+                rows="16"
+                readonly
+                placeholder="De samenvatting verschijnt hier..."
+              ></textarea>
+            </div>
+          </details>
         </div>
-      </form>
+      </section>
+    </main>
+  </div>
 
-      <div id="statusBox" class="status-box hidden mt-2"></div>
-    </section>
+  <template id="injuryRowTemplate">
+    <div class="dynamic-row injury-row">
+      <div class="grid-3">
+        <div class="form-field">
+          <label>Wondtype</label>
+          <select data-field="woundType" class="form-select"></select>
+        </div>
 
-    <section class="output-card mt-2">
-      <h2>Kostensamenvatting</h2>
-      <textarea id="output" class="form-textarea" readonly></textarea>
-    </section>
-  </main>
+        <div class="form-field">
+          <label>Ernst</label>
+          <select data-field="severity" class="form-select"></select>
+        </div>
 
-  <script src="../../assets/scripts/core.js"></script>
-  <script src="../../assets/scripts/ui.js"></script>
-  <script src="../../assets/scripts/export.js"></script>
+        <div class="form-field checkbox-field">
+          <label>
+            <input type="checkbox" data-field="fracture" />
+            Fractuurtoeslag toepassen
+          </label>
+        </div>
+      </div>
+
+      <div class="row-actions">
+        <button type="button" class="btn btn-secondary btn-remove-row">Verwijder</button>
+      </div>
+    </div>
+  </template>
+
+  <template id="customRowTemplate">
+    <div class="dynamic-row custom-row">
+      <div class="grid-2">
+        <div class="form-field">
+          <label>Omschrijving</label>
+          <input type="text" data-field="label" class="form-input" placeholder="Bijv. Extra consult, verbandwissel..." />
+        </div>
+
+        <div class="form-field">
+          <label>Bedrag</label>
+          <input type="number" min="0" step="1" data-field="amount" class="form-input" placeholder="0" />
+        </div>
+      </div>
+
+      <div class="row-actions">
+        <button type="button" class="btn btn-secondary btn-remove-row">Verwijder</button>
+      </div>
+    </div>
+  </template>
+
   <script src="app.js"></script>
 </body>
 </html>

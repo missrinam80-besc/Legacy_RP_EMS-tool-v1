@@ -1,46 +1,135 @@
 {
-  "toolTitle": "Kostencalculator",
-  "toolDescription": "Bereken snel de kostprijs van een behandeling, opname of medische interventie.",
-  "items": [
-    {
-      "id": "checkin",
-      "label": "Standaard check-in / basisbehandeling",
-      "price": 500
+  "selectOptions": {
+    "departments": [
+      { "value": "general", "label": "Algemeen" },
+      { "value": "spoed", "label": "Spoed / Ambulance" },
+      { "value": "chirurgie", "label": "Chirurgie" },
+      { "value": "psychologie", "label": "Psychologie" },
+      { "value": "ortho", "label": "Ortho / Revalidatie" }
+    ],
+    "injurySeverity": [
+      { "value": "light", "label": "Licht" },
+      { "value": "moderate", "label": "Gemiddeld" },
+      { "value": "severe", "label": "Ernstig" },
+      { "value": "critical", "label": "Kritiek" }
+    ]
+  },
+  "woundOptions": [
+    { "value": "", "label": "Geen wond" },
+    { "value": "abrasion", "label": "Schaafwonde" },
+    { "value": "avulsion", "label": "Avulsiewonde / afgescheurd weefsel" },
+    { "value": "contusion", "label": "Kneuzing" },
+    { "value": "crush", "label": "Verpletteringsletsel" },
+    { "value": "cut", "label": "Snijwonde" },
+    { "value": "laceration", "label": "Scheurwonde" },
+    { "value": "puncturewound", "label": "Steekwonde" },
+    { "value": "lowvelocitywound", "label": "Lichte schotwonde" },
+    { "value": "mediumvelocitywound", "label": "Matige schotwonde" },
+    { "value": "highvelocitywound", "label": "Ernstige schotwonde" },
+    { "value": "velocitywound", "label": "Schotwonde / shotgunwonde" },
+    { "value": "burn", "label": "Brandwonde" }
+  ],
+  "itemLabels": {
+    "tourniquet": "Tourniquet",
+    "field_dressing": "Veldverband",
+    "elastic_bandage": "Elastisch verband",
+    "quick_clot": "Hemostatisch verband / Quick Clot",
+    "packing_bandage": "Packing bandage / opvulverband",
+    "sewing_kit": "Hechtset",
+    "painkillers": "Pijnstillers",
+    "morphine": "Morfine",
+    "epinephrine": "Epinefrine / adrenaline",
+    "blood250ml": "Bloed 250 ml",
+    "blood500ml": "Bloed 500 ml",
+    "saline250ml": "Saline 250 ml",
+    "saline500ml": "Saline 500 ml",
+    "neckbrace": "Nekbrace",
+    "armsplint": "Armspalk",
+    "legsplint": "Beenspalk",
+    "armcast": "Armgips",
+    "legcast": "Beengips",
+    "crutch": "Krukken",
+    "cane": "Wandelstok",
+    "wheelchair": "Rolstoel"
+  },
+  "costs": {
+    "defaultWound": 50,
+    "fractureSurcharge": 75,
+    "severityMultipliers": {
+      "light": 1,
+      "moderate": 1.25,
+      "severe": 1.6,
+      "critical": 2
     },
-    {
-      "id": "woundcare",
-      "label": "Wondzorg / hechting",
-      "price": 350
+    "wounds": {
+      "abrasion": 15,
+      "avulsion": 80,
+      "contusion": 20,
+      "crush": 65,
+      "cut": 25,
+      "laceration": 45,
+      "puncturewound": 75,
+      "lowvelocitywound": 90,
+      "mediumvelocitywound": 120,
+      "highvelocitywound": 180,
+      "velocitywound": 140,
+      "burn": 70
     },
-    {
-      "id": "fracture",
-      "label": "Breukbehandeling / gips / immobilisatie",
-      "price": 750
+    "items": {
+      "tourniquet": 30,
+      "field_dressing": 10,
+      "elastic_bandage": 12,
+      "quick_clot": 22,
+      "packing_bandage": 20,
+      "sewing_kit": 35,
+      "painkillers": 8,
+      "morphine": 25,
+      "epinephrine": 25,
+      "blood250ml": 40,
+      "blood500ml": 75,
+      "saline250ml": 15,
+      "saline500ml": 25,
+      "neckbrace": 35,
+      "armsplint": 25,
+      "legsplint": 25,
+      "armcast": 45,
+      "legcast": 45,
+      "crutch": 20,
+      "cane": 15,
+      "wheelchair": 60
     },
-    {
-      "id": "burncare",
-      "label": "Brandwondzorg",
-      "price": 600
-    },
-    {
-      "id": "surgery",
-      "label": "Operatieve ingreep",
-      "price": 1500
-    },
-    {
-      "id": "admission",
-      "label": "Opname / observatie",
-      "price": 800
-    },
-    {
-      "id": "lab",
-      "label": "Labo / onderzoek",
-      "price": 400
-    },
-    {
-      "id": "death",
-      "label": "Overlijdensafhandeling",
-      "price": 300
+    "investigations": {
+      "rx": 35,
+      "ct": 120,
+      "beeldvorming": 50,
+      "observatie": 20,
+      "circulatie": 20
     }
-  ]
+  },
+  "departmentExtras": {
+    "general": [
+      { "code": "admin_fee", "label": "Algemene administratiekost", "amount": 15 },
+      { "code": "followup_consult", "label": "Nazorgconsult", "amount": 25 }
+    ],
+    "spoed": [
+      { "code": "spoed_intake", "label": "Spoedintake", "amount": 35 },
+      { "code": "stabilisatie", "label": "Acute stabilisatie", "amount": 55 },
+      { "code": "wondzorg", "label": "Uitgebreide wondzorg", "amount": 40 }
+    ],
+    "chirurgie": [
+      { "code": "preop", "label": "Pre-operatieve voorbereiding", "amount": 60 },
+      { "code": "ingreep_klein", "label": "Kleine chirurgische ingreep", "amount": 140 },
+      { "code": "ingreep_groot", "label": "Grote chirurgische ingreep", "amount": 280 }
+    ],
+    "psychologie": [
+      { "code": "intake_psy", "label": "Psychologische intake", "amount": 45 },
+      { "code": "sessie_kort", "label": "Korte sessie", "amount": 35 },
+      { "code": "sessie_lang", "label": "Uitgebreide sessie", "amount": 70 }
+    ],
+    "ortho": [
+      { "code": "mobiliteit_screen", "label": "Mobiliteitsscreening", "amount": 30 },
+      { "code": "gipscontrole", "label": "Gipscontrole of spalknazicht", "amount": 25 },
+      { "code": "revalidatie_sessie", "label": "Revalidatiesessie", "amount": 55 }
+    ]
+  }
 }
