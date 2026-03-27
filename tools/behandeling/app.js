@@ -415,63 +415,59 @@ function applyGeneralConditionLogic(condition, ctx) {
   departments.add("Spoed");
 
   if (condition.airwayRisk === "at-risk" || condition.airwayRisk === "critical") {
-    addTaggedItems(uniqueSteps, "", ["Beoordeel en beveilig de luchtweg"], ["Ambulance", "Spoed"], "step");
-    addTaggedItems(uniqueActions, "", ["Voer onmiddellijke controle van de luchtweg uit"], ["Ambulance", "Spoed"], "action");
-    addTaggedItems(uniqueWarnings, "", ["Luchtweg kan bedreigd zijn"], ["Ambulance", "Spoed"], "warning");
-    departments.add("Ambulance");
-    departments.add("Spoed");
+    addTaggedItems(uniqueSteps, "", ["Beoordeel en beveilig de luchtweg"], ["Spoed/Ambulance"], "step");
+    addTaggedItems(uniqueActions, "", ["Voer onmiddellijke controle van de luchtweg uit"], ["Spoed/Ambulance"], "action");
+    addTaggedItems(uniqueWarnings, "", ["Luchtweg kan bedreigd zijn"], ["Spoed/Ambulance"], "warning");
+    departments.add("Spoed/Ambulance");
   }
 
   if (condition.airwayRisk === "critical") {
-    addTaggedItems(uniqueWarnings, "", ["Kritisch luchtwegprobleem vraagt onmiddellijke interventie"], ["Ambulance", "Spoed"], "warning");
+    addTaggedItems(uniqueWarnings, "", ["Kritisch luchtwegprobleem vraagt onmiddellijke interventie"], ["Spoed/Ambulance"], "warning");
   }
 
   if (condition.breathingStatus === "disturbed" || condition.breathingStatus === "severe") {
-    addTaggedItems(uniqueSteps, "", ["Beoordeel ademhaling en zuurstofstatus"], ["Ambulance", "Spoed"], "step");
-    addTaggedItems(uniqueActions, "", ["Controleer ademhaling en ondersteun waar nodig"], ["Ambulance", "Spoed"], "action");
-    addTaggedItems(uniqueWarnings, "", ["Verstoorde ademhaling aanwezig"], ["Ambulance", "Spoed"], "warning");
-    departments.add("Ambulance");
-    departments.add("Spoed");
+    addTaggedItems(uniqueSteps, "", ["Beoordeel ademhaling en zuurstofstatus"], ["Spoed/Ambulance"], "step");
+    addTaggedItems(uniqueActions, "", ["Controleer ademhaling en ondersteun waar nodig"], ["Spoed/Ambulance"], "action");
+    addTaggedItems(uniqueWarnings, "", ["Verstoorde ademhaling aanwezig"], ["Spoed/Ambulance"], "warning");
+    departments.add("Spoed/Ambulance");
   }
 
   if (condition.breathingStatus === "severe") {
-    addTaggedItems(uniqueWarnings, "", ["Ernstige ademhalingsproblemen vereisen snelle stabilisatie"], ["Ambulance", "Spoed"], "warning");
+    addTaggedItems(uniqueWarnings, "", ["Ernstige ademhalingsproblemen vereisen snelle stabilisatie"], ["Spoed/Ambulance"], "warning");
   }
 
   if (condition.consciousness === "unconscious") {
-    addTaggedItems(uniqueSteps, "", ["Start ABC-beoordeling met prioriteit"], ["Ambulance", "Spoed"], "step");
-    addTaggedItems(uniqueActions, "", ["Beveilig de luchtweg en voer onmiddellijke vitale beoordeling uit"], ["Ambulance", "Spoed"], "action");
-    addTaggedItems(uniqueWarnings, "", ["Bewusteloze patiënt vereist onmiddellijke opvolging"], ["Ambulance", "Spoed"], "warning");
-    addTaggedItems(uniqueFollowUp, "", ["Blijf patiënt continu monitoren tijdens verdere zorg"], ["Ambulance", "Spoed"], "followup");
-    departments.add("Ambulance");
-    departments.add("Spoed");
+    addTaggedItems(uniqueSteps, "", ["Start ABC-beoordeling met prioriteit"], ["Spoed/Ambulance"], "step");
+    addTaggedItems(uniqueActions, "", ["Beveilig de luchtweg en voer onmiddellijke vitale beoordeling uit"], ["Spoed/Ambulance"], "action");
+    addTaggedItems(uniqueWarnings, "", ["Bewusteloze patiënt vereist onmiddellijke opvolging"], ["Spoed/Ambulance"], "warning");
+    addTaggedItems(uniqueFollowUp, "", ["Blijf patiënt continu monitoren tijdens verdere zorg"], ["Spoed/Ambulance"], "followup");
+    departments.add("Spoed/Ambulance");
   }
 
   if (["high", "extreme"].includes(condition.bleedingLevel)) {
-    addTaggedItems(uniqueSteps, "", ["Stop actieve bloeding als eerste behandelstap"], ["Ambulance", "Spoed"], "step");
-    addTaggedItems(uniqueActions, "", ["Controleer en stop actieve bloeding als prioriteit"], ["Ambulance", "Spoed"], "action");
-    addSimpleTaggedItems(uniqueItems, ["tourniquet", "quick_clot"], ["Ambulance", "Spoed"]);
-    addTaggedItems(uniqueWarnings, "", ["Ernstig bloedverlies vereist snelle stabilisatie"], ["Ambulance", "Spoed"], "warning");
-    departments.add("Ambulance");
-    departments.add("Spoed");
+    addTaggedItems(uniqueSteps, "", ["Stop actieve bloeding als eerste behandelstap"], ["Spoed/Ambulance"], "step");
+    addTaggedItems(uniqueActions, "", ["Controleer en stop actieve bloeding als prioriteit"], ["Spoed/Ambulance"], "action");
+    addSimpleTaggedItems(uniqueItems, ["tourniquet", "quick_clot"], ["Spoed/Ambulance"]);
+    addTaggedItems(uniqueWarnings, "", ["Ernstig bloedverlies vereist snelle stabilisatie"], ["Spoed/Ambulance"], "warning");
+    departments.add("Spoed/Ambulance");
   }
 
   if (condition.bleedingLevel === "extreme") {
-    addTaggedItems(uniqueSteps, "", ["Start volume- of bloedresuscitatie indien klinisch nodig"], ["Spoed"], "step");
-    addSimpleTaggedItems(uniqueItems, ["blood500ml", "saline500ml"], ["Spoed"]);
-    addTaggedItems(uniqueActions, "", ["Voorzie volume- of bloedresuscitatie indien nodig"], ["Spoed"], "action");
-    addTaggedItems(uniqueInvestigations, "", ["Controle van circulatie en bloedverlies"], ["Spoed"], "investigation");
-    departments.add("Spoed");
+    addTaggedItems(uniqueSteps, "", ["Start volume- of bloedresuscitatie indien klinisch nodig"], ["Spoed/Ambulance"], "step");
+    addSimpleTaggedItems(uniqueItems, ["blood500ml", "saline500ml"], ["Spoed/Ambulance"]);
+    addTaggedItems(uniqueActions, "", ["Voorzie volume- of bloedresuscitatie indien nodig"], ["Spoed/Ambulance"], "action");
+    addTaggedItems(uniqueInvestigations, "", ["Controle van circulatie en bloedverlies"], ["Spoed/Ambulance"], "investigation");
+    departments.add("Spoed/Ambulance");
   }
 
   if (["high", "extreme"].includes(condition.painLevel)) {
-    addTaggedItems(uniqueActions, "", ["Voorzie adequate pijnstilling"], ["Spoed"], "action");
-    addSimpleTaggedItems(uniqueItems, ["painkillers", "morphine"], ["Spoed"]);
-    departments.add("Spoed");
+    addTaggedItems(uniqueActions, "", ["Voorzie adequate pijnstilling"], ["Spoed/Ambulance"], "action");
+    addSimpleTaggedItems(uniqueItems, ["painkillers", "morphine"], ["Spoed/Ambulance"]);
+    departments.add("Spoed/Ambulance");
   }
 
   if (condition.temperature === "elevated") {
-    addTaggedItems(uniqueWarnings, "", ["Controleer oorzaak van verhoogde temperatuur"], ["Spoed"], "warning");
+    addTaggedItems(uniqueWarnings, "", ["Controleer oorzaak van verhoogde temperatuur"], ["Spoed/Ambulance"], "warning");
   }
 
   if (condition.pulse === "weak") {
@@ -479,10 +475,10 @@ function applyGeneralConditionLogic(condition, ctx) {
   }
 
   if (condition.triage === "critical") {
-    addTaggedItems(uniqueWarnings, "", ["Patiënt is als kritiek ingeschat"], ["Spoed"], "warning");
-    addTaggedItems(uniqueActions, "", ["Prioriteer spoedzorg en snelle overdracht"], ["Spoed"], "action");
-    addTaggedItems(uniqueSteps, "", ["Bereid snelle overdracht of verdere interventie voor"], ["Spoed"], "step");
-    departments.add("Spoed");
+    addTaggedItems(uniqueWarnings, "", ["Patiënt is als kritiek ingeschat"], ["Spoed/Ambulance"], "warning");
+    addTaggedItems(uniqueActions, "", ["Prioriteer spoedzorg en snelle overdracht"], ["Spoed/Ambulance"], "action");
+    addTaggedItems(uniqueSteps, "", ["Bereid snelle overdracht of verdere interventie voor"], ["Spoed/Ambulance"], "step");
+    departments.add("Spoed/Ambulance");
   }
 }
 
@@ -546,13 +542,13 @@ function applySeveritySpecificLogic(part, injury, ctx) {
     departments
   } = ctx;
 
-  const severeDepartments = ["Spoed"];
+  const severeDepartments = ["Spoed/Ambulance"];
 
   if (injury.severity === "severe" || injury.severity === "critical") {
     addTaggedItems(uniqueWarnings, part.label, ["ernstig letsel vraagt verhoogde opvolging"], severeDepartments, "warning");
     addTaggedItems(uniqueActions, part.label, ["monitor evolutie van het letsel nauwgezet"], severeDepartments, "action");
     addTaggedItems(uniqueFollowUp, part.label, ["plan hercontrole van pijn, bloeding en functie"], severeDepartments, "followup");
-    departments.add("Spoed");
+    departments.add("Spoed/Ambulance");
   }
 
   if (injury.severity === "critical") {
@@ -560,19 +556,19 @@ function applySeveritySpecificLogic(part, injury, ctx) {
   }
 
   if (part.fractureZone === "leg" && ["mediumvelocitywound", "highvelocitywound", "velocitywound", "crush"].includes(injury.wound)) {
-    addTaggedItems(uniqueWarnings, part.label, ["verhoogd risico op mobiliteitsproblemen of instabiliteit"], ["Spoed"], "warning");
+    addTaggedItems(uniqueWarnings, part.label, ["verhoogd risico op mobiliteitsproblemen of instabiliteit"], ["Spoed/Ambulance"], "warning");
     addTaggedItems(uniqueFollowUp, part.label, ["beperk belasting en evalueer mobiliteit opnieuw"], ["Spoed"], "followup");
   }
 
   if (part.fractureZone === "arm" && ["cut", "laceration", "puncturewound", "velocitywound"].includes(injury.wound)) {
-    addTaggedItems(uniqueWarnings, part.label, ["controleer functie en bewegingsbeperking van de arm"], ["Spoed"], "warning");
-    addTaggedItems(uniqueFollowUp, part.label, ["hercontroleer functie van arm en hand"], ["Spoed"], "followup");
+    addTaggedItems(uniqueWarnings, part.label, ["controleer functie en bewegingsbeperking van de arm"], ["Spoed/Ambulance"], "warning");
+    addTaggedItems(uniqueFollowUp, part.label, ["hercontroleer functie van arm en hand"], ["Spoed/Ambulance"], "followup");
   }
 
   if (part.key === "head" && ["burn", "crush", "highvelocitywound", "velocitywound"].includes(injury.wound)) {
-    addTaggedItems(uniqueInvestigations, part.label, ["overweeg CT of neurologische evaluatie"], ["Spoed"], "investigation");
-    addTaggedItems(uniqueFollowUp, part.label, ["neuro-observatie en hercontrole bewustzijn"], ["Spoed"], "followup");
-    departments.add("Spoed");
+    addTaggedItems(uniqueInvestigations, part.label, ["overweeg CT of neurologische evaluatie"], ["Spoed/Ambulance"], "investigation");
+    addTaggedItems(uniqueFollowUp, part.label, ["neuro-observatie en hercontrole bewustzijn"], ["Spoed/Ambulance"], "followup");
+    departments.add("Spoed/Ambulance");
   }
 
   if (part.key === "torso" && ["puncturewound", "velocitywound", "highvelocitywound", "crush"].includes(injury.wound)) {
@@ -602,33 +598,33 @@ function addFractureAdvice(part, ctx) {
     departments
   } = ctx;
 
-  addTaggedItems(uniqueSteps, part.label, ["immobiliseer het getroffen lichaamsdeel"], ["Spoed"], "step");
-  addTaggedItems(uniqueActions, part.label, ["immobiliseer en beperk beweging"], ["Spoed"], "action");
-  addTaggedItems(uniqueWarnings, part.label, ["vermoeden van fractuur, verdere evaluatie aanbevolen"], ["Spoed"], "warning");
-  addTaggedItems(uniqueInvestigations, part.label, ["RX aanbevolen bij vermoeden van fractuur"], ["Spoed"], "investigation");
-  addTaggedItems(uniqueFollowUp, part.label, ["hercontroleer pijn, stand en functie na immobilisatie"], ["Spoed"], "followup");
+  addTaggedItems(uniqueSteps, part.label, ["immobiliseer het getroffen lichaamsdeel"], ["Spoed/Ambulance"], "step");
+  addTaggedItems(uniqueActions, part.label, ["immobiliseer en beperk beweging"], ["Spoed/Ambulance"], "action");
+  addTaggedItems(uniqueWarnings, part.label, ["vermoeden van fractuur, verdere evaluatie aanbevolen"], ["Spoed/Ambulance"], "warning");
+  addTaggedItems(uniqueInvestigations, part.label, ["RX aanbevolen bij vermoeden van fractuur"], ["Spoed/Ambulance"], "investigation");
+  addTaggedItems(uniqueFollowUp, part.label, ["hercontroleer pijn, stand en functie na immobilisatie"], ["Spoed/Ambulance"], "followup");
 
   departments.add("Spoed");
 
   switch (part.fractureZone) {
     case "neck":
-      addSimpleTaggedItems(uniqueItems, ["neckbrace"], ["Ambulance", "Spoed"]);
-      addTaggedItems(uniqueActions, part.label, ["stabiliseer hoofd/nek en beperk beweging"], ["Ambulance", "Spoed"], "action");
-      addTaggedItems(uniqueWarnings, part.label, ["overweeg beeldvorming bij nek- of hoofdletsel"], ["Ambulance", "Spoed"], "warning");
-      addTaggedItems(uniqueInvestigations, part.label, ["CT of RX overwegen afhankelijk van context"], ["Ambulance", "Spoed"], "investigation");
-      departments.add("Ambulance");
+      addSimpleTaggedItems(uniqueItems, ["neckbrace"], ["Spoed/Ambulance"]);
+      addTaggedItems(uniqueActions, part.label, ["stabiliseer hoofd/nek en beperk beweging"], ["Spoed/Ambulance"], "action");
+      addTaggedItems(uniqueWarnings, part.label, ["overweeg beeldvorming bij nek- of hoofdletsel"], ["Spoed/Ambulance"], "warning");
+      addTaggedItems(uniqueInvestigations, part.label, ["CT of RX overwegen afhankelijk van context"], ["Spoed/Ambulance"], "investigation");
+      departments.add("Spoed/Ambulance");
       break;
 
     case "arm":
-      addSimpleTaggedItems(uniqueItems, ["armsplint"], ["Spoed"]);
-      addTaggedItems(uniqueActions, part.label, ["voorzie armspalk"], ["Spoed"], "action");
-      addTaggedItems(uniqueWarnings, part.label, ["armfractuur kan mobiliteit en functie beperken"], ["Spoed"], "warning");
+      addSimpleTaggedItems(uniqueItems, ["armsplint"], ["Spoed/Ambulance"]);
+      addTaggedItems(uniqueActions, part.label, ["voorzie armspalk"], ["Spoed/Ambulance"], "action");
+      addTaggedItems(uniqueWarnings, part.label, ["armfractuur kan mobiliteit en functie beperken"], ["Spoed/Ambulance"], "warning");
       break;
 
     case "leg":
-      addSimpleTaggedItems(uniqueItems, ["legsplint"], ["Spoed"]);
-      addTaggedItems(uniqueActions, part.label, ["voorzie beenspalk"], ["Spoed"], "action");
-      addTaggedItems(uniqueWarnings, part.label, ["beenfractuur kan instabiliteit en manken veroorzaken"], ["Spoed"], "warning");
+      addSimpleTaggedItems(uniqueItems, ["legsplint"], ["Spoed/Ambulance"]);
+      addTaggedItems(uniqueActions, part.label, ["voorzie beenspalk"], ["Spoed/Ambulance"], "action");
+      addTaggedItems(uniqueWarnings, part.label, ["beenfractuur kan instabiliteit en manken veroorzaken"], ["Spoed/Ambulance"], "warning");
       break;
 
     case "torso":
@@ -641,8 +637,8 @@ function addFractureAdvice(part, ctx) {
 }
 
 function addImagingAdvice(part, investigationsSet, departments) {
-  addTaggedItems(investigationsSet, part.label, ["beeldvorming overwegen op basis van klinisch beeld"], ["Spoed"], "investigation");
-  departments.add("Spoed");
+  addTaggedItems(investigationsSet, part.label, ["beeldvorming overwegen op basis van klinisch beeld"], ["Spoed/Ambulance"], "investigation");
+  departments.add("Spoed/Ambulance");
 
   if (part.key === "head" || part.key === "torso") {
     departments.add("Chirurgie");
@@ -658,7 +654,7 @@ function addTaggedItems(targetSet, labelPrefix, items, departments, type) {
     const text = labelPrefix ? `${labelPrefix}: ${item}` : item;
     targetSet.add(JSON.stringify({
       text,
-      departments: departments && departments.length ? departments : ["Spoed"],
+      departments: departments && departments.length ? departments : ["Spoed/Ambulance"],
       type
     }));
   });
@@ -668,7 +664,7 @@ function addSimpleTaggedItems(targetSet, itemCodes, departments) {
   itemCodes.forEach((code) => {
     targetSet.add(JSON.stringify({
       code,
-      departments: departments && departments.length ? departments : ["Spoed"]
+      departments: departments && departments.length ? departments : ["Spoed/Ambulance"]
     }));
   });
 }
