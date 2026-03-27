@@ -301,8 +301,31 @@
           </details>
 
           <details id="costBlock" class="tool-accordion right-accordion">
-            <summary>Kostenoverzicht</summary>
+            <summary>Kostenmodule</summary>
             <div class="accordion-content">
+              <div class="grid-2 cost-filter-grid">
+                <div class="form-field">
+                  <label for="costProfile">Kostfilter per rapport / document</label>
+                  <select id="costProfile" class="form-select"></select>
+                </div>
+
+                <div class="form-field">
+                  <label for="costDepartmentScope">Afdelingsscope kosten</label>
+                  <select id="costDepartmentScope" class="form-select">
+                    <option value="auto">Automatisch via afdelingsview</option>
+                    <option value="all">Alle afdelingen</option>
+                    <option value="Spoed/Ambulance">Enkel Spoed/Ambulance</option>
+                    <option value="Chirurgie">Enkel Chirurgie</option>
+                  </select>
+                </div>
+              </div>
+
+              <p id="costProfileHelp" class="help-text">
+                Kies een documenttype om alleen de passende kosten aan te rekenen.
+              </p>
+
+              <div id="extraCostGroups" class="extra-cost-groups"></div>
+
               <div class="cost-box">
                 <div class="cost-summary-line">
                   <span>Letsels</span>
@@ -315,6 +338,10 @@
                 <div class="cost-summary-line">
                   <span>Onderzoeken</span>
                   <strong id="costInvestigations">€ 0</strong>
+                </div>
+                <div class="cost-summary-line">
+                  <span>Extra kosten</span>
+                  <strong id="costExtras">€ 0</strong>
                 </div>
                 <div class="cost-summary-line total">
                   <span>Totaal</span>

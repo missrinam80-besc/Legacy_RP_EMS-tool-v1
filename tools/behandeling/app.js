@@ -35,6 +35,13 @@ const costItems = document.getElementById("costItems");
 const costInvestigations = document.getElementById("costInvestigations");
 const costTotal = document.getElementById("costTotal");
 const costBreakdownList = document.getElementById("costBreakdownList");
+const costExtras = document.getElementById("costExtras");
+const costProfileSelect = document.getElementById("costProfile");
+const costDepartmentScope = document.getElementById("costDepartmentScope");
+const costProfileHelp = document.getElementById("costProfileHelp");
+const extraCostGroups = document.getElementById("extraCostGroups");
+
+let LAST_RESULT = null;
 
 const injuryRowTemplate = document.getElementById("injuryRowTemplate");
 
@@ -76,7 +83,9 @@ async function initApp() {
 
     renderStaticSelects();
     renderBodyPartInputs();
+    renderExtraCostGroups();
     bindEvents();
+    updateCostProfileHelp();
     applyDisplayMode();
   } catch (error) {
     console.error("Fout bij laden van de behandeltool:", error);
@@ -100,6 +109,7 @@ function renderStaticSelects() {
   renderOptions("bleedingLevel", APP_CONFIG.selectOptions.bleedingLevel);
   renderOptions("airwayRisk", APP_CONFIG.selectOptions.airwayRisk);
   renderOptions("breathingStatus", APP_CONFIG.selectOptions.breathingStatus);
+  renderOptions("costProfile", APP_CONFIG.selectOptions.costProfile || []);
 }
 
 function renderOptions(selectId, options) {
@@ -221,6 +231,18 @@ function bindEvents() {
 
   document.getElementById("displayFilter").addEventListener("change", applyDisplayMode);
   document.getElementById("viewMode").addEventListener("change", applyDisplayMode);
+
+  if (costProfileSelect) {
+    costProfileSelect.addEventListener("change", handleCostFilterChange);
+  }
+
+  if (costDepartmentScope) {
+    costDepartmentScope.addEventListener("change", handleCostFilterChange);
+  }
+
+  if (extraCostGroups) {
+    extraCostGroups.addEventListener("change", handleCostFilterChange);
+  }
 }
 
 /* =========================================================
@@ -232,7 +254,9 @@ function getFormData() {
     filter: {
       department: valueOf("departmentFilter"),
       display: valueOf("displayFilter"),
-      viewMode: valueOf("viewMode")
+      viewMode: valueOf("viewMode"),
+      costProfile: valueOf("costProfile") || "all",
+      costDepartmentScope: valueOf("costDepartmentScope") || "auto"
     },
     patient: {
       name: valueOf("patientName"),
@@ -290,6 +314,7 @@ function checkedOf(id) {
 function handleGenerateAdvice() {
   const formData = getFormData();
   const result = buildTreatmentAdvice(formData);
+  LAST_RESULT = result;
   renderResult(result);
   applyDisplayMode();
 }
@@ -311,12 +336,7 @@ function buildTreatmentAdvice(formData) {
     observe: new Set()
   };
 
-  const costState = {
-    injuries: 0,
-    items: 0,
-    investigations: 0,
-    breakdown: []
-  };
+  const costEntries = [];
 
   let severityScore = 0;
   let hasAnyInjury = false;
@@ -367,7 +387,7 @@ function buildTreatmentAdvice(formData) {
         imaging
       });
 
-      addInjuryCost(injury.wound, injury.severity, costState);
+      addInjuryCost(injury.wound, injury.severity, costEntries, rule.departments || []);
       addClinicalFromInjury(part, injury, clinicalImpressions);
       addOperationFromInjury(part, injury, priorityAlerts);
     });
@@ -384,7 +404,7 @@ function buildTreatmentAdvice(formData) {
         imaging,
         priorityAlerts
       });
-      addCostLine(costState, "injuries", `Fractuurverdenking ${part.label}`, APP_CONFIG.costs.fractureSurcharge || 0);
+      addCostLine(costEntries, "injuries", `Fractuurverdenking ${part.label}`, APP_CONFIG.costs.fractureSurcharge || 0, inferFractureDepartments(part));
     }
 
     if (part.needsImaging) {
@@ -417,8 +437,8 @@ function buildTreatmentAdvice(formData) {
     observe: filterImagingSet(imaging.observe, formData.filter.department)
   };
 
-  addItemCosts(filteredItems, costState);
-  addInvestigationCosts(filteredImaging, costState);
+  addItemCosts(filteredItems, costEntries);
+  addInvestigationCosts(filteredImaging, costEntries);
 
   const priority = determinePriority(severityScore, formData.condition);
   const operation = determineOperationIndication(formData);
@@ -438,6 +458,7 @@ function buildTreatmentAdvice(formData) {
   );
 
   return {
+    formData,
     priority,
     operation,
     closing,
@@ -451,15 +472,148 @@ function buildTreatmentAdvice(formData) {
     followUp: filteredFollowUp,
     warnings: filteredWarnings,
     summary,
-    costs: {
-      injuries: costState.injuries,
-      items: costState.items,
-      investigations: costState.investigations,
-      total: costState.injuries + costState.items + costState.investigations,
-      breakdown: costState.breakdown
-    }
+    costEntries
   };
 }
+
+
+function handleCostFilterChange() {
+  updateCostProfileHelp();
+  renderExtraCostGroups();
+
+  if (LAST_RESULT) {
+    renderCosts(buildVisibleCosts(LAST_RESULT.costEntries, LAST_RESULT.formData));
+  }
+}
+
+function updateCostProfileHelp() {
+  if (!costProfileHelp) return;
+
+  const profileKey = valueOf("costProfile") || "all";
+  const profile = APP_CONFIG.costProfiles?.[profileKey];
+
+  costProfileHelp.textContent = profile?.description || "Kies een documenttype om alleen de passende kosten aan te rekenen.";
+}
+
+function renderExtraCostGroups() {
+  if (!extraCostGroups) return;
+
+  const profileKey = valueOf("costProfile") || "all";
+  const departmentScope = valueOf("costDepartmentScope") || "auto";
+  const activeDepartment = departmentScope === "auto" ? (valueOf("departmentFilter") || "all") : departmentScope;
+
+  const groups = (APP_CONFIG.extraCostGroups || []).filter((group) => {
+    const profileMatch = !group.allowedProfiles || group.allowedProfiles.includes(profileKey);
+    const departmentMatch = activeDepartment === "all" || (group.departments || []).includes(activeDepartment);
+    return profileMatch && departmentMatch;
+  });
+
+  if (!groups.length) {
+    extraCostGroups.innerHTML = '<p class="help-text">Voor dit documenttype zijn momenteel geen extra afdelingskosten beschikbaar.</p>';
+    return;
+  }
+
+  extraCostGroups.innerHTML = groups.map((group) => `
+    <div class="extra-cost-group">
+      <h4>${escapeHtml(group.label)}</h4>
+      <div class="extra-cost-options">
+        ${(group.items || []).map((item) => `
+          <label class="checkbox-inline extra-cost-option">
+            <input type="checkbox"
+                   class="extra-cost-checkbox"
+                   data-group-code="${escapeAttr(group.code)}"
+                   data-item-code="${escapeAttr(item.code)}"
+                   data-label="${escapeAttr(item.label)}"
+                   data-amount="${escapeAttr(item.amount)}"
+                   data-departments="${escapeAttr((group.departments || []).join("|"))}" />
+            <span>${escapeHtml(item.label)} <strong>(${formatCurrency(item.amount)})</strong></span>
+          </label>
+        `).join("")}
+      </div>
+    </div>
+  `).join("");
+}
+
+function buildVisibleCosts(costEntries, formData) {
+  const profileKey = valueOf("costProfile") || formData.filter.costProfile || "all";
+  const departmentScope = valueOf("costDepartmentScope") || formData.filter.costDepartmentScope || "auto";
+  const allowedDepartments = getAllowedDepartments(profileKey, formData.filter.department, departmentScope);
+  const visibleEntries = (costEntries || []).filter((entry) => entryMatchesCostFilter(entry, allowedDepartments, profileKey));
+  const extraEntries = getSelectedExtraCostEntries(profileKey, allowedDepartments);
+
+  return summarizeCostEntries([...visibleEntries, ...extraEntries]);
+}
+
+function getAllowedDepartments(profileKey, selectedDepartment, departmentScope) {
+  const profileDepartments = APP_CONFIG.costProfiles?.[profileKey]?.allowedDepartments || ["Spoed/Ambulance", "Chirurgie"];
+  const scopeDepartment = departmentScope === "auto" ? selectedDepartment : departmentScope;
+
+  if (!scopeDepartment || scopeDepartment === "all") {
+    return profileDepartments;
+  }
+
+  return profileDepartments.includes(scopeDepartment) ? [scopeDepartment] : [];
+}
+
+function entryMatchesCostFilter(entry, allowedDepartments, profileKey) {
+  if (!allowedDepartments.length) return false;
+
+  const departments = entry.departments && entry.departments.length ? entry.departments : ["Spoed/Ambulance", "Chirurgie"];
+  const departmentMatch = departments.some((department) => allowedDepartments.includes(department));
+
+  if (!departmentMatch) return false;
+
+  if (profileKey === "operation_report" && !departments.includes("Chirurgie")) return false;
+  if (profileKey === "forensic_report" && entry.kind === "extra" && entry.groupCode !== "forensic") return false;
+  if (profileKey === "coma_report" && entry.bucket === "items" && ["field_dressing", "elastic_bandage"].includes(entry.code)) return false;
+
+  return true;
+}
+
+function getSelectedExtraCostEntries(profileKey, allowedDepartments) {
+  return Array.from(document.querySelectorAll(".extra-cost-checkbox:checked")).map((checkbox) => ({
+    bucket: "extras",
+    kind: "extra",
+    groupCode: checkbox.dataset.groupCode || "",
+    code: checkbox.dataset.itemCode || "",
+    label: checkbox.dataset.label || "",
+    amount: Number(checkbox.dataset.amount || 0),
+    departments: (checkbox.dataset.departments || "").split("|").filter(Boolean),
+    profiles: [profileKey]
+  })).filter((entry) => entryMatchesCostFilter(entry, allowedDepartments, profileKey));
+}
+
+function summarizeCostEntries(entries) {
+  const state = {
+    injuries: 0,
+    items: 0,
+    investigations: 0,
+    extras: 0,
+    total: 0,
+    breakdown: []
+  };
+
+  entries.forEach((entry) => {
+    const amount = Number(entry.amount || 0);
+    if (!amount) return;
+
+    if (entry.bucket === "injuries") state.injuries += amount;
+    else if (entry.bucket === "items") state.items += amount;
+    else if (entry.bucket === "investigations") state.investigations += amount;
+    else if (entry.bucket === "extras") state.extras += amount;
+
+    state.total += amount;
+    state.breakdown.push({ label: entry.label, amount, bucket: entry.bucket });
+  });
+
+  return state;
+}
+
+function inferFractureDepartments(part) {
+  if (part.fractureZone === "torso") return ["Spoed/Ambulance", "Chirurgie"];
+  return ["Spoed/Ambulance"];
+}
+
 
 /* =========================================================
    GENERAL LOGIC
@@ -908,7 +1062,12 @@ function filterItemsSet(taggedSet, selectedDepartment) {
     .map((value) => JSON.parse(value))
     .filter((entry) => matchesDepartment(entry.departments, selectedDepartment))
     .forEach((entry) => {
-      if (!map.has(entry.code)) map.set(entry.code, entry);
+      if (!map.has(entry.code)) {
+        map.set(entry.code, { code: entry.code, departments: entry.departments || [] });
+      } else {
+        const existing = map.get(entry.code);
+        existing.departments = Array.from(new Set([...(existing.departments || []), ...(entry.departments || [])]));
+      }
     });
 
   return Array.from(map.values());
@@ -945,15 +1104,23 @@ function matchesDepartment(entryDepartments, selectedDepartment) {
    COSTS
 ========================================================= */
 
-function addInjuryCost(woundCode, severity, costState) {
+function addInjuryCost(woundCode, severity, costEntries, departments) {
   const woundBaseCost = APP_CONFIG.costs.wounds[woundCode] ?? APP_CONFIG.costs.defaultWound ?? 0;
   const multiplier = APP_CONFIG.costs.severityMultipliers[severity] ?? 1;
   const cost = Math.round(woundBaseCost * multiplier);
 
-  addCostLine(costState, "injuries", `${getWoundLabel(woundCode)} (${getSeverityLabel(severity)})`, cost);
+  addCostLine(
+    costEntries,
+    "injuries",
+    `${getWoundLabel(woundCode)} (${getSeverityLabel(severity)})`,
+    cost,
+    departments,
+    woundCode,
+    "wound"
+  );
 }
 
-function addItemCosts(filteredItems, costState) {
+function addItemCosts(filteredItems, costEntries) {
   const seen = new Set();
 
   filteredItems.forEach((item) => {
@@ -962,30 +1129,51 @@ function addItemCosts(filteredItems, costState) {
 
     const cost = APP_CONFIG.costs.items[item.code] ?? 0;
     if (cost > 0) {
-      addCostLine(costState, "items", APP_CONFIG.itemLabels[item.code] || item.code, cost);
+      addCostLine(
+        costEntries,
+        "items",
+        APP_CONFIG.itemLabels[item.code] || item.code,
+        cost,
+        item.departments || ["Spoed/Ambulance"],
+        item.code,
+        "item"
+      );
     }
   });
 }
 
-function addInvestigationCosts(filteredImaging, costState) {
-  [...filteredImaging.rx, ...filteredImaging.ct, ...filteredImaging.observe].forEach((investigation) => {
+function addInvestigationCosts(filteredImaging, costEntries) {
+  const entries = [
+    ...filteredImaging.rx.map((label) => ({ label, departments: ["Spoed/Ambulance", "Chirurgie"] })),
+    ...filteredImaging.ct.map((label) => ({ label, departments: ["Spoed/Ambulance", "Chirurgie"] })),
+    ...filteredImaging.observe.map((label) => ({ label, departments: ["Spoed/Ambulance", "Chirurgie"] }))
+  ];
+
+  entries.forEach((entry) => {
     const matchKey = Object.keys(APP_CONFIG.costs.investigations).find((key) =>
-      investigation.toLowerCase().includes(key.toLowerCase())
+      entry.label.toLowerCase().includes(key.toLowerCase())
     );
 
     if (!matchKey) return;
 
     const cost = APP_CONFIG.costs.investigations[matchKey] ?? 0;
     if (cost > 0) {
-      addCostLine(costState, "investigations", investigation, cost);
+      addCostLine(costEntries, "investigations", entry.label, cost, entry.departments, matchKey, "investigation");
     }
   });
 }
 
-function addCostLine(costState, bucket, label, amount) {
+function addCostLine(costEntries, bucket, label, amount, departments = ["Spoed/Ambulance", "Chirurgie"], code = "", kind = "standard") {
   if (!amount) return;
-  costState[bucket] += amount;
-  costState.breakdown.push({ bucket, label, amount });
+
+  costEntries.push({
+    bucket,
+    label,
+    amount,
+    departments,
+    code,
+    kind
+  });
 }
 
 /* =========================================================
@@ -1071,7 +1259,7 @@ function buildReportSummary(formData, priority, operation, closing, departments,
     `Operatie-indicatie: ${operation.label}. Reden: ${operation.reason}`,
     steps.length ? `Stappenplan: ${steps.join("; ")}.` : "",
     actions.length ? `Aanbevolen handelingen: ${actions.join("; ")}.` : "",
-    items.length ? `Aanbevolen items: ${items.map((item) => APP_CONFIG.itemLabels[item.code] || item.code).join(", ")}.` : "",
+    items.length ? `Aanbevolen items: ${items.join(", ")}.` : "",
     imagingFlat.length ? `Beeldvorming/onderzoek: ${imagingFlat.join("; ")}.` : "",
     followUp.length ? `Nazorg patiënt: ${followUp.join("; ")}.` : "",
     `Afsluitstatus: ${closing.label}. ${closing.text}`,
@@ -1099,6 +1287,8 @@ function getSelectLabel(group, value) {
 ========================================================= */
 
 function renderResult(result) {
+  updateCostProfileHelp();
+  renderExtraCostGroups();
   priorityBadge.className = `priority-badge ${result.priority.className}`;
   priorityBadge.textContent = result.priority.label;
 
@@ -1124,7 +1314,7 @@ function renderResult(result) {
 
   renderList(followUpList, result.followUp, "Geen nazorg voorgesteld.");
   renderList(warningsList, result.warnings, "Geen extra aandachtspunten.");
-  renderCosts(result.costs);
+  renderCosts(buildVisibleCosts(result.costEntries, result.formData));
 
   reportSummary.value = result.summary;
 }
@@ -1133,6 +1323,7 @@ function renderCosts(costs) {
   costInjuries.textContent = formatCurrency(costs.injuries);
   costItems.textContent = formatCurrency(costs.items);
   costInvestigations.textContent = formatCurrency(costs.investigations);
+  if (costExtras) costExtras.textContent = formatCurrency(costs.extras);
   costTotal.textContent = formatCurrency(costs.total);
 
   costBreakdownList.innerHTML = "";
@@ -1242,6 +1433,7 @@ function hideBlocks(keys) {
 ========================================================= */
 
 function handleReset() {
+  LAST_RESULT = null;
   document.querySelectorAll("input, select, textarea").forEach((el) => {
     if (el.type === "checkbox") {
       el.checked = false;
@@ -1277,7 +1469,9 @@ function handleReset() {
   renderList(imagingObserveList, [], "Nog geen observatie-advies.");
   renderList(followUpList, [], "Nog geen nazorg voorgesteld.");
   renderList(warningsList, [], "Nog geen aandachtspunten.");
-  renderCosts({ injuries: 0, items: 0, investigations: 0, total: 0, breakdown: [] });
+  renderExtraCostGroups();
+  updateCostProfileHelp();
+  renderCosts({ injuries: 0, items: 0, investigations: 0, extras: 0, total: 0, breakdown: [] });
 
   reportSummary.value = "";
   applyDisplayMode();
