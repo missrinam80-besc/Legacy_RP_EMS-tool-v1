@@ -1,0 +1,25 @@
+{
+  "version": "1.0.0",
+  "siteTitle": "Pillbox EMS Suite",
+  "siteSubtitle": "Interne EMS tools en portalen",
+  "logoPath": "assets/images/logo.png",
+  "bannerPath": "assets/images/Banner.png",
+  "colors": {
+    "background": "#f4f6fa",
+    "surface": "#ffffff",
+    "surfaceSoft": "#f8fafc",
+    "text": "#1f2937",
+    "textSoft": "#6b7280",
+    "primary": "#8b0a0a",
+    "primaryDark": "#5f0606",
+    "primaryLight": "#b91c1c",
+    "border": "#d8dee9",
+    "success": "#15803d",
+    "warning": "#b45309",
+    "danger": "#b91c1c",
+    "info": "#1d4ed8"
+  },
+  "borderRadius": "16px",
+  "shadowStyle": "medium",
+  "compactMode": false
+}

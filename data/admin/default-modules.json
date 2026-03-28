@@ -1,0 +1,491 @@
+{
+  "version": "1.0.0",
+  "statuses": [
+    "live",
+    "nieuw",
+    "in-opbouw",
+    "verborgen"
+  ],
+  "types": [
+    "portaal",
+    "aanvraag",
+    "tool",
+    "rapport",
+    "beheer",
+    "info"
+  ],
+  "departments": [
+    "algemeen",
+    "spoed-ambulance",
+    "chirurgie",
+    "psychologie",
+    "ortho-revalidatie",
+    "forensisch",
+    "command"
+  ],
+  "items": [
+    {
+      "id": "module_personeelslijst",
+      "name": "Personeelslijst",
+      "type": "info",
+      "department": "algemeen",
+      "url": "tools/personeelslijst/index.html",
+      "enabled": true,
+      "visibleOnHome": true,
+      "visibleOnCommand": true,
+      "visibleInPortal": false,
+      "status": "live",
+      "roles": [
+        "medewerker",
+        "command"
+      ],
+      "order": 10,
+      "notes": "Algemene personeelsweergave."
+    },
+    {
+      "id": "module_afwezigheid",
+      "name": "Afwezigheidsmelding",
+      "type": "aanvraag",
+      "department": "algemeen",
+      "url": "tools/afwezigheid/index.html",
+      "enabled": true,
+      "visibleOnHome": true,
+      "visibleOnCommand": true,
+      "visibleInPortal": false,
+      "status": "live",
+      "roles": [
+        "medewerker",
+        "command"
+      ],
+      "order": 20,
+      "notes": "Interne aanvraag voor afwezigheid."
+    },
+    {
+      "id": "module_evaluatieformulier",
+      "name": "Evaluatieformulier",
+      "type": "tool",
+      "department": "command",
+      "url": "tools/evaluatieformulier/index.html",
+      "enabled": true,
+      "visibleOnHome": false,
+      "visibleOnCommand": true,
+      "visibleInPortal": false,
+      "status": "live",
+      "roles": [
+        "command"
+      ],
+      "order": 30,
+      "notes": "Commandtool voor opvolging en evaluatie."
+    },
+    {
+      "id": "module_portaal_spoed",
+      "name": "Portaal Spoed & Ambulance",
+      "type": "portaal",
+      "department": "spoed-ambulance",
+      "url": "tools/portaal-spoed-ambu/index.html",
+      "enabled": true,
+      "visibleOnHome": true,
+      "visibleOnCommand": true,
+      "visibleInPortal": false,
+      "status": "live",
+      "roles": [
+        "medewerker",
+        "command"
+      ],
+      "order": 40,
+      "notes": "Afdelingsportaal voor spoed en ambulance."
+    },
+    {
+      "id": "module_behandeling",
+      "name": "Behandeltool",
+      "type": "tool",
+      "department": "spoed-ambulance",
+      "url": "tools/behandeling/index.html",
+      "enabled": true,
+      "visibleOnHome": false,
+      "visibleOnCommand": true,
+      "visibleInPortal": true,
+      "status": "live",
+      "roles": [
+        "medewerker",
+        "command"
+      ],
+      "order": 50,
+      "notes": "Algemene behandeltool voor medische interventies."
+    },
+    {
+      "id": "module_rapport_trauma",
+      "name": "Trauma rapport",
+      "type": "rapport",
+      "department": "spoed-ambulance",
+      "url": "tools/rapport-trauma/index.html",
+      "enabled": true,
+      "visibleOnHome": false,
+      "visibleOnCommand": true,
+      "visibleInPortal": true,
+      "status": "live",
+      "roles": [
+        "medewerker",
+        "command"
+      ],
+      "order": 60,
+      "notes": "Traumarapport voor spoedcasussen."
+    },
+    {
+      "id": "module_portaal_chirurgie",
+      "name": "Portaal Chirurgie",
+      "type": "portaal",
+      "department": "chirurgie",
+      "url": "tools/portaal-chirurgie/index.html",
+      "enabled": true,
+      "visibleOnHome": true,
+      "visibleOnCommand": true,
+      "visibleInPortal": false,
+      "status": "live",
+      "roles": [
+        "medewerker",
+        "command"
+      ],
+      "order": 70,
+      "notes": "Afdelingsportaal chirurgie."
+    },
+    {
+      "id": "module_aanvraag_spoedoperatie",
+      "name": "Aanvraag spoedoperatie",
+      "type": "aanvraag",
+      "department": "chirurgie",
+      "url": "tools/aanvraag-spoedoperatie/index.html",
+      "enabled": true,
+      "visibleOnHome": false,
+      "visibleOnCommand": true,
+      "visibleInPortal": true,
+      "status": "live",
+      "roles": [
+        "medewerker",
+        "command"
+      ],
+      "order": 80,
+      "notes": "Dringende operatieve aanvraag."
+    },
+    {
+      "id": "module_operatie_tool",
+      "name": "Operatie tool",
+      "type": "tool",
+      "department": "chirurgie",
+      "url": "tools/operatie-tool/index.html",
+      "enabled": true,
+      "visibleOnHome": false,
+      "visibleOnCommand": true,
+      "visibleInPortal": true,
+      "status": "live",
+      "roles": [
+        "medewerker",
+        "command"
+      ],
+      "order": 90,
+      "notes": "Behandel- en operatietool voor chirurgie."
+    },
+    {
+      "id": "module_rapport_operatie",
+      "name": "Operatie rapport",
+      "type": "rapport",
+      "department": "chirurgie",
+      "url": "tools/rapport-operatie/index.html",
+      "enabled": true,
+      "visibleOnHome": false,
+      "visibleOnCommand": true,
+      "visibleInPortal": true,
+      "status": "live",
+      "roles": [
+        "medewerker",
+        "command"
+      ],
+      "order": 100,
+      "notes": "Operatierapport voor ingrepen."
+    },
+    {
+      "id": "module_portaal_psychologie",
+      "name": "Portaal Psychologie",
+      "type": "portaal",
+      "department": "psychologie",
+      "url": "tools/portaal-psychologie/index.html",
+      "enabled": true,
+      "visibleOnHome": true,
+      "visibleOnCommand": true,
+      "visibleInPortal": false,
+      "status": "live",
+      "roles": [
+        "medewerker",
+        "command"
+      ],
+      "order": 110,
+      "notes": "Afdelingsportaal psychologie."
+    },
+    {
+      "id": "module_aanvraag_psychologie_crisis",
+      "name": "Aanvraag psychologie crisis",
+      "type": "aanvraag",
+      "department": "psychologie",
+      "url": "tools/aanvraag-psychologie-crisis/index.html",
+      "enabled": true,
+      "visibleOnHome": false,
+      "visibleOnCommand": true,
+      "visibleInPortal": true,
+      "status": "live",
+      "roles": [
+        "medewerker",
+        "command"
+      ],
+      "order": 120,
+      "notes": "Crisis- of dringende psychologische aanvraag."
+    },
+    {
+      "id": "module_psychologie_tool",
+      "name": "Psychologie tool",
+      "type": "tool",
+      "department": "psychologie",
+      "url": "tools/psychologie-tool/index.html",
+      "enabled": true,
+      "visibleOnHome": false,
+      "visibleOnCommand": true,
+      "visibleInPortal": true,
+      "status": "live",
+      "roles": [
+        "medewerker",
+        "command"
+      ],
+      "order": 130,
+      "notes": "Psychologische intake en trajecttool."
+    },
+    {
+      "id": "module_rapport_psychologie",
+      "name": "Rapport psychologie",
+      "type": "rapport",
+      "department": "psychologie",
+      "url": "tools/rapport-psychologie/index.html",
+      "enabled": true,
+      "visibleOnHome": false,
+      "visibleOnCommand": true,
+      "visibleInPortal": true,
+      "status": "live",
+      "roles": [
+        "medewerker",
+        "command"
+      ],
+      "order": 140,
+      "notes": "Verslag psychologische opvolging."
+    },
+    {
+      "id": "module_portaal_revalidatie",
+      "name": "Portaal Ortho & Revalidatie",
+      "type": "portaal",
+      "department": "ortho-revalidatie",
+      "url": "tools/portaal-ortho-revalidatie/index.html",
+      "enabled": true,
+      "visibleOnHome": true,
+      "visibleOnCommand": true,
+      "visibleInPortal": false,
+      "status": "live",
+      "roles": [
+        "medewerker",
+        "command"
+      ],
+      "order": 150,
+      "notes": "Afdelingsportaal voor ortho en revalidatie."
+    },
+    {
+      "id": "module_aanvraag_ortho_prioritair",
+      "name": "Aanvraag ortho prioritair",
+      "type": "aanvraag",
+      "department": "ortho-revalidatie",
+      "url": "tools/aanvraag-ortho-prioritair/index.html",
+      "enabled": true,
+      "visibleOnHome": false,
+      "visibleOnCommand": true,
+      "visibleInPortal": true,
+      "status": "live",
+      "roles": [
+        "medewerker",
+        "command"
+      ],
+      "order": 160,
+      "notes": "Prioritaire ortho- of revalidatieaanvraag."
+    },
+    {
+      "id": "module_revalidatie_tool",
+      "name": "Revalidatie tool",
+      "type": "tool",
+      "department": "ortho-revalidatie",
+      "url": "tools/revalidatie-tool/index.html",
+      "enabled": true,
+      "visibleOnHome": false,
+      "visibleOnCommand": true,
+      "visibleInPortal": true,
+      "status": "live",
+      "roles": [
+        "medewerker",
+        "command"
+      ],
+      "order": 170,
+      "notes": "Herstel- en mobiliteitstool."
+    },
+    {
+      "id": "module_rapport_revalidatie",
+      "name": "Rapport revalidatie",
+      "type": "rapport",
+      "department": "ortho-revalidatie",
+      "url": "tools/rapport-revalidatie/index.html",
+      "enabled": true,
+      "visibleOnHome": false,
+      "visibleOnCommand": true,
+      "visibleInPortal": true,
+      "status": "live",
+      "roles": [
+        "medewerker",
+        "command"
+      ],
+      "order": 180,
+      "notes": "Rapport voor revalidatie en ortho-opvolging."
+    },
+    {
+      "id": "module_portaal_forensisch",
+      "name": "Portaal Forensisch",
+      "type": "portaal",
+      "department": "forensisch",
+      "url": "tools/portaal-forensisch/index.html",
+      "enabled": true,
+      "visibleOnHome": true,
+      "visibleOnCommand": true,
+      "visibleInPortal": false,
+      "status": "in-opbouw",
+      "roles": [
+        "medewerker",
+        "command"
+      ],
+      "order": 190,
+      "notes": "Portaal in verdere opbouw."
+    },
+    {
+      "id": "module_rapport_forensisch",
+      "name": "Rapport forensisch",
+      "type": "rapport",
+      "department": "forensisch",
+      "url": "tools/rapport-forensisch/index.html",
+      "enabled": true,
+      "visibleOnHome": false,
+      "visibleOnCommand": true,
+      "visibleInPortal": true,
+      "status": "live",
+      "roles": [
+        "medewerker",
+        "command"
+      ],
+      "order": 200,
+      "notes": "Forensisch rapport."
+    },
+    {
+      "id": "module_rapport_coma",
+      "name": "Rapport coma",
+      "type": "rapport",
+      "department": "spoed-ambulance",
+      "url": "tools/rapport-coma/index.html",
+      "enabled": true,
+      "visibleOnHome": false,
+      "visibleOnCommand": true,
+      "visibleInPortal": false,
+      "status": "live",
+      "roles": [
+        "medewerker",
+        "command"
+      ],
+      "order": 210,
+      "notes": "Comarapport."
+    },
+    {
+      "id": "module_rapport_labo",
+      "name": "Rapport labo",
+      "type": "rapport",
+      "department": "algemeen",
+      "url": "tools/rapport-labo/index.html",
+      "enabled": true,
+      "visibleOnHome": false,
+      "visibleOnCommand": true,
+      "visibleInPortal": false,
+      "status": "live",
+      "roles": [
+        "medewerker",
+        "command"
+      ],
+      "order": 220,
+      "notes": "Laboresultaten en attesten."
+    },
+    {
+      "id": "module_beheer_prijzen",
+      "name": "Beheer prijzen",
+      "type": "beheer",
+      "department": "command",
+      "url": "tools/beheer-prijzen/index.html",
+      "enabled": true,
+      "visibleOnHome": false,
+      "visibleOnCommand": true,
+      "visibleInPortal": false,
+      "status": "live",
+      "roles": [
+        "command"
+      ],
+      "order": 300,
+      "notes": "Centrale prijsconfiguratie."
+    },
+    {
+      "id": "module_beheer_medicatie",
+      "name": "Beheer medicatie",
+      "type": "beheer",
+      "department": "command",
+      "url": "tools/beheer-medicatie/index.html",
+      "enabled": true,
+      "visibleOnHome": false,
+      "visibleOnCommand": true,
+      "visibleInPortal": false,
+      "status": "live",
+      "roles": [
+        "command"
+      ],
+      "order": 310,
+      "notes": "Centrale medicatie- en hulpmiddelenconfiguratie."
+    },
+    {
+      "id": "module_beheer_modules",
+      "name": "Beheer modules",
+      "type": "beheer",
+      "department": "command",
+      "url": "tools/beheer-modules/index.html",
+      "enabled": true,
+      "visibleOnHome": false,
+      "visibleOnCommand": true,
+      "visibleInPortal": false,
+      "status": "live",
+      "roles": [
+        "command"
+      ],
+      "order": 320,
+      "notes": "Centrale zichtbaarheid en status van modules."
+    },
+    {
+      "id": "module_beheer_thema",
+      "name": "Beheer thema",
+      "type": "beheer",
+      "department": "command",
+      "url": "tools/beheer-thema/index.html",
+      "enabled": true,
+      "visibleOnHome": false,
+      "visibleOnCommand": true,
+      "visibleInPortal": false,
+      "status": "live",
+      "roles": [
+        "command"
+      ],
+      "order": 330,
+      "notes": "Thema, branding en kleurinstellingen."
+    }
+  ]
+}

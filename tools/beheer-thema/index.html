@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EMS Beheer thema</title>
+
+  <link rel="stylesheet" href="../../assets/styles/base.css" />
+  <link rel="stylesheet" href="../../assets/styles/components.css" />
+  <link rel="stylesheet" href="../../assets/styles/layout.css" />
+  <link rel="stylesheet" href="../../assets/styles/theme.css" />
+  <link rel="stylesheet" href="../../assets/styles/utilities.css" />
+  <link rel="stylesheet" href="../../assets/styles/beheer.css" />
+</head>
+<body>
+  <div class="admin-page">
+    <header class="site-header">
+      <img src="../../assets/images/Banner.png" alt="EMS Tools Hub banner" class="site-banner" />
+    </header>
+
+    <main class="admin-app">
+      <section class="admin-card">
+        <div class="admin-header">
+          <div class="admin-header__meta">
+            <h1>Beheer thema</h1>
+            <p>
+              Beheer centraal de branding, kleuren en basisinstellingen van de EMS-suite.
+              Dit thema kan via de theme-loader op meerdere pagina's worden toegepast.
+            </p>
+          </div>
+
+          <div class="button-row">
+            <a class="btn btn-secondary" href="../../command.html">Command hub</a>
+            <a class="btn btn-secondary" href="../beheer-modules/index.html">Beheer modules</a>
+          </div>
+        </div>
+
+        <div class="stats-grid" id="statsGrid"></div>
+
+        <div class="admin-toolbar">
+          <button id="applyBtn" class="btn btn-primary" type="button">Toepassen & bewaren</button>
+          <button id="exportBtn" class="btn btn-secondary" type="button">Export JSON</button>
+          <label class="btn btn-secondary" for="importInput">Import JSON</label>
+          <input id="importInput" class="file-input" type="file" accept="application/json,.json" />
+          <button id="resetDefaultsBtn" class="btn btn-secondary" type="button">Reset naar standaard</button>
+          <button id="reloadBtn" class="btn btn-secondary" type="button">Herlaad</button>
+        </div>
+
+        <div id="statusMessage" class="status status--info">Themaconfig wordt geladen...</div>
+      </section>
+
+      <section class="admin-layout">
+        <section class="admin-card">
+          <div class="section-heading">
+            <div>
+              <h2>Editor</h2>
+              <p class="small-muted">Pas branding, kleuren en visuele instellingen aan.</p>
+            </div>
+          </div>
+
+          <form id="themeForm" class="form-grid-admin">
+            <div class="form-field full-width">
+              <label for="siteTitleInput">Sitetitel</label>
+              <input id="siteTitleInput" class="form-input" type="text" required />
+            </div>
+            <div class="form-field full-width">
+              <label for="siteSubtitleInput">Subtitel</label>
+              <input id="siteSubtitleInput" class="form-input" type="text" />
+            </div>
+            <div class="form-field">
+              <label for="logoPathInput">Logo pad</label>
+              <input id="logoPathInput" class="form-input" type="text" />
+            </div>
+            <div class="form-field">
+              <label for="bannerPathInput">Banner pad</label>
+              <input id="bannerPathInput" class="form-input" type="text" />
+            </div>
+
+            <div class="form-field"><label for="backgroundInput">Achtergrond</label><input id="backgroundInput" class="form-input" type="color" /></div>
+            <div class="form-field"><label for="surfaceInput">Surface</label><input id="surfaceInput" class="form-input" type="color" /></div>
+            <div class="form-field"><label for="surfaceSoftInput">Surface soft</label><input id="surfaceSoftInput" class="form-input" type="color" /></div>
+            <div class="form-field"><label for="textInput">Tekst</label><input id="textInput" class="form-input" type="color" /></div>
+            <div class="form-field"><label for="textSoftInput">Tekst soft</label><input id="textSoftInput" class="form-input" type="color" /></div>
+            <div class="form-field"><label for="primaryInput">Primary</label><input id="primaryInput" class="form-input" type="color" /></div>
+            <div class="form-field"><label for="primaryDarkInput">Primary dark</label><input id="primaryDarkInput" class="form-input" type="color" /></div>
+            <div class="form-field"><label for="primaryLightInput">Primary light</label><input id="primaryLightInput" class="form-input" type="color" /></div>
+            <div class="form-field"><label for="borderInput">Border</label><input id="borderInput" class="form-input" type="color" /></div>
+            <div class="form-field"><label for="successInput">Success</label><input id="successInput" class="form-input" type="color" /></div>
+            <div class="form-field"><label for="warningInput">Warning</label><input id="warningInput" class="form-input" type="color" /></div>
+            <div class="form-field"><label for="dangerInput">Danger</label><input id="dangerInput" class="form-input" type="color" /></div>
+            <div class="form-field"><label for="infoInput">Info</label><input id="infoInput" class="form-input" type="color" /></div>
+
+            <div class="form-field">
+              <label for="borderRadiusInput">Border radius</label>
+              <input id="borderRadiusInput" class="form-input" type="text" placeholder="16px" />
+            </div>
+            <div class="form-field">
+              <label for="shadowStyleInput">Shadowstijl</label>
+              <select id="shadowStyleInput" class="form-select">
+                <option value="soft">Soft</option>
+                <option value="medium">Medium</option>
+                <option value="strong">Strong</option>
+              </select>
+            </div>
+            <div class="form-field full-width">
+              <label><input id="compactModeInput" type="checkbox" /> Compact mode</label>
+            </div>
+          </form>
+        </section>
+
+        <section class="admin-card">
+          <div class="section-heading">
+            <div>
+              <h2>Live preview</h2>
+              <p class="small-muted">Voorbeeldkaart met de actuele thema-instellingen.</p>
+            </div>
+          </div>
+
+          <div id="themePreview" class="preview-box">
+            <div class="price-card" style="margin:0;">
+              <div class="price-card__top">
+                <div>
+                  <h3 id="previewTitle">Pillbox EMS Suite</h3>
+                  <p id="previewSubtitle" class="small-muted">Interne EMS tools en portalen</p>
+                </div>
+                <span class="preview-chip">Preview</span>
+              </div>
+              <div id="previewChips" class="preview-grid"></div>
+              <ul id="previewMeta" class="meta-list"></ul>
+            </div>
+          </div>
+
+          <hr class="soft-divider" />
+          <p class="small-muted">
+            Het thema wordt opgeslagen onder <code>ems_admin_theme</code>. Pagina's die
+            <code>theme-loader.js</code> inladen, gebruiken automatisch de laatst opgeslagen instellingen.
+          </p>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script src="../../assets/scripts/theme-loader.js"></script>
+  <script src="../../assets/scripts/admin-utils.js"></script>
+  <script src="../../assets/scripts/admin-store.js"></script>
+  <script src="../../assets/scripts/admin-ui.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

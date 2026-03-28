@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EMS Beheer modules</title>
+  <link rel="stylesheet" href="../../assets/styles/base.css" />
+  <link rel="stylesheet" href="../../assets/styles/components.css" />
+  <link rel="stylesheet" href="../../assets/styles/layout.css" />
+  <link rel="stylesheet" href="../../assets/styles/theme.css" />
+  <link rel="stylesheet" href="../../assets/styles/utilities.css" />
+  <link rel="stylesheet" href="../../assets/styles/beheer.css" />
+</head>
+<body>
+  <div class="admin-page">
+    <header class="site-header">
+      <img src="../../assets/images/Banner.png" alt="EMS Tools Hub banner" class="site-banner" />
+    </header>
+    <main class="admin-app">
+      <section class="admin-card">
+        <div class="admin-header">
+          <div class="admin-header__meta">
+            <h1>Beheer modules</h1>
+            <p>
+              Beheer centraal welke tools, portalen, rapporten en beheerschermen actief en zichtbaar zijn
+              op de medewerkershomepage, het commandportaal en de afdelingsportalen.
+            </p>
+          </div>
+          <div class="button-row">
+            <a class="btn btn-secondary" href="../../command.html">Command hub</a>
+            <a class="btn btn-secondary" href="../beheer-prijzen/index.html">Beheer prijzen</a>
+          </div>
+        </div>
+
+        <div class="stats-grid" id="statsGrid"></div>
+
+        <div class="admin-toolbar">
+          <button id="newItemBtn" class="btn btn-primary" type="button">Nieuwe module</button>
+          <button id="exportBtn" class="btn btn-secondary" type="button">Export JSON</button>
+          <label class="btn btn-secondary" for="importInput">Import JSON</label>
+          <input id="importInput" class="file-input" type="file" accept="application/json,.json" />
+          <button id="resetDefaultsBtn" class="btn btn-secondary" type="button">Reset naar standaard</button>
+          <button id="reloadBtn" class="btn btn-secondary" type="button">Herlaad</button>
+        </div>
+
+        <div class="filter-toolbar">
+          <div class="toolbar-field form-field">
+            <label for="searchInput">Zoeken</label>
+            <input id="searchInput" class="form-input" type="search" placeholder="Zoek op naam, url of nota..." />
+          </div>
+          <div class="toolbar-field form-field">
+            <label for="typeFilter">Type</label>
+            <select id="typeFilter" class="form-select"></select>
+          </div>
+          <div class="toolbar-field form-field">
+            <label for="departmentFilter">Afdeling</label>
+            <select id="departmentFilter" class="form-select"></select>
+          </div>
+          <div class="toolbar-field form-field">
+            <label for="statusFilter">Status</label>
+            <select id="statusFilter" class="form-select"></select>
+          </div>
+          <div class="toolbar-field form-field">
+            <label for="visibilityFilter">Zichtbaarheid</label>
+            <select id="visibilityFilter" class="form-select">
+              <option value="all">Alles</option>
+              <option value="home">Zichtbaar op medewerkershomepage</option>
+              <option value="command">Zichtbaar op command</option>
+              <option value="portal">Zichtbaar in portaal</option>
+              <option value="hidden">Niet zichtbaar</option>
+            </select>
+          </div>
+          <div class="toolbar-field form-field">
+            <label for="enabledFilter">Beschikbaarheid</label>
+            <select id="enabledFilter" class="form-select">
+              <option value="all">Alles</option>
+              <option value="enabled">Enkel actief</option>
+              <option value="disabled">Enkel uitgeschakeld</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="statusMessage" class="status status--info">Moduleconfig wordt geladen...</div>
+      </section>
+
+      <section class="admin-layout">
+        <section class="admin-card">
+          <div class="section-heading">
+            <div>
+              <h2>Modules</h2>
+              <p class="small-muted">Overzicht van alle centrale modules en hun zichtbaarheid.</p>
+            </div>
+            <strong id="resultCount">0 resultaten</strong>
+          </div>
+          <ul id="moduleList" class="price-list"></ul>
+          <div id="emptyState" class="empty-state" hidden>Er zijn geen modules die overeenkomen met de huidige filters.</div>
+        </section>
+
+        <section class="admin-card">
+          <div class="section-heading">
+            <div>
+              <h2>Editor</h2>
+              <p class="small-muted">Voeg een module toe of bewerk de geselecteerde module.</p>
+            </div>
+          </div>
+
+          <form id="moduleForm" class="form-grid-admin">
+            <input id="itemId" type="hidden" />
+            <div class="form-field">
+              <label for="nameInput">Naam</label>
+              <input id="nameInput" class="form-input" type="text" required />
+            </div>
+            <div class="form-field">
+              <label for="typeInput">Type</label>
+              <select id="typeInput" class="form-select" required></select>
+            </div>
+            <div class="form-field">
+              <label for="departmentInput">Afdeling</label>
+              <select id="departmentInput" class="form-select" required></select>
+            </div>
+            <div class="form-field">
+              <label for="statusInput">Status</label>
+              <select id="statusInput" class="form-select" required></select>
+            </div>
+            <div class="form-field full-width">
+              <label for="urlInput">URL / pad</label>
+              <input id="urlInput" class="form-input" type="text" placeholder="tools/voorbeeld/index.html" required />
+            </div>
+            <div class="form-field">
+              <label for="orderInput">Sorteervolgorde</label>
+              <input id="orderInput" class="form-input" type="number" min="0" step="1" value="100" />
+            </div>
+            <div class="form-field">
+              <label for="rolesInput">Rollen</label>
+              <input id="rolesInput" class="form-input" type="text" placeholder="medewerker, command" />
+            </div>
+            <div class="form-field full-width">
+              <label>Instellingen</label>
+              <div class="inline-checkboxes">
+                <label><input id="enabledInput" type="checkbox" checked /> Module actief</label>
+                <label><input id="visibleHomeInput" type="checkbox" checked /> Zichtbaar op home</label>
+                <label><input id="visibleCommandInput" type="checkbox" checked /> Zichtbaar op command</label>
+                <label><input id="visiblePortalInput" type="checkbox" /> Zichtbaar in portaal</label>
+              </div>
+            </div>
+            <div class="form-field full-width">
+              <label for="notesInput">Interne nota</label>
+              <textarea id="notesInput" class="form-textarea" rows="4" placeholder="Optionele notitie, context of interne uitleg..."></textarea>
+            </div>
+            <div class="full-width editor-actions">
+              <button class="btn btn-primary" type="submit">Opslaan</button>
+              <button id="clearFormBtn" class="btn btn-secondary" type="button">Leeg formulier</button>
+            </div>
+          </form>
+
+          <hr class="soft-divider" />
+
+          <div>
+            <h3>Preview</h3>
+            <div class="preview-box">
+              <strong id="previewTitle">Nog geen selectie</strong>
+              <p id="previewAmount" class="small-muted">Selecteer of bewerk een module om hier de preview te zien.</p>
+              <div id="previewChips" class="preview-grid"></div>
+              <ul id="previewMeta" class="meta-list"></ul>
+              <p id="previewNotes" class="small-muted">Geen notities beschikbaar.</p>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script src="../../assets/scripts/theme-loader.js"></script>
+  <script src="../../assets/scripts/admin-utils.js"></script>
+  <script src="../../assets/scripts/admin-store.js"></script>
+  <script src="../../assets/scripts/admin-ui.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

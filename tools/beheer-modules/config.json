@@ -1,0 +1,7 @@
+{
+  "storageKey": "ems_admin_modules",
+  "defaultDataPath": "../../data/admin/default-modules.json",
+  "title": "Beheer modules",
+  "entityLabel": "module",
+  "exportFilename": "ems-modules-export.json"
+}

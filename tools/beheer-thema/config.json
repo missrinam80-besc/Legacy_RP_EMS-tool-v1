@@ -1,0 +1,7 @@
+{
+  "storageKey": "ems_admin_theme",
+  "defaultDataPath": "../../data/admin/default-theme.json",
+  "title": "Beheer thema",
+  "entityLabel": "thema",
+  "exportFilename": "ems-thema-export.json"
+}
