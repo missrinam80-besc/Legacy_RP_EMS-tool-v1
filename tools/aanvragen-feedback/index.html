@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Feedbackformulier - EMS Tools</title>
+
+  <link rel="stylesheet" href="../../assets/styles/theme.css" />
+  <link rel="stylesheet" href="../../assets/styles/base.css" />
+  <link rel="stylesheet" href="../../assets/styles/layout.css" />
+  <link rel="stylesheet" href="../../assets/styles/components.css" />
+  <link rel="stylesheet" href="../../assets/styles/utilities.css" />
+  <link rel="stylesheet" href="../../assets/styles/aanvragen.css" />
+</head>
+<body class="request-page">
+  <div class="app-shell">
+    <header class="site-header">
+      <img
+        src="../../assets/images/Banner.png"
+        alt="EMS Tools Hub banner"
+        class="site-banner"
+      />
+    </header>
+
+    <main class="page-container">
+      <section class="request-hero-card">
+        <div class="request-hero-card__content">
+          <h1>Feedbackformulier</h1>
+          <p>
+            Gebruik dit formulier om feedback te geven over de werking, samenwerking,
+            procedures of interne tools.
+          </p>
+
+          <nav class="request-subnav" aria-label="Snelle navigatie">
+            <a class="request-subnav__link" href="../../index.html">🏠 Home medewerkers</a>
+            <a class="request-subnav__link" href="../../command.html">⚙️ Command</a>
+            <a class="request-subnav__link" href="../afwezigheid/index.html">📅 Afwezigheid</a>
+            <a class="request-subnav__link" href="../aanvragen-training/index.html">🎓 Trainingsaanvraag</a>
+          </nav>
+        </div>
+      </section>
+
+      <section class="request-layout">
+        <section class="request-form-card">
+          <div class="section-heading">
+            <div>
+              <h2>Feedback indienen</h2>
+              <p class="text-soft">
+                Vul hieronder de belangrijkste gegevens in.
+              </p>
+            </div>
+          </div>
+
+          <form id="requestForm" class="request-form">
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="naam">Naam</label>
+                <input class="form-input" id="naam" name="naam" type="text" placeholder="Naam medewerker" />
+              </div>
+
+              <div class="form-field">
+                <label for="roepnummer">Roepnummer</label>
+                <input class="form-input" id="roepnummer" name="roepnummer" type="text" placeholder="Bijv. 201" />
+              </div>
+
+              <div class="form-field">
+                <label for="feedbackType">Type feedback</label>
+                <select class="form-select" id="feedbackType" name="feedbackType">
+                  <option value="">Maak een keuze</option>
+                  <option value="werking">Algemene werking</option>
+                  <option value="samenwerking">Samenwerking</option>
+                  <option value="procedure">Procedure</option>
+                  <option value="tool">Tool of formulier</option>
+                  <option value="opleiding">Opleiding of begeleiding</option>
+                  <option value="anders">Anders</option>
+                </select>
+              </div>
+
+              <div class="form-field">
+                <label for="feedbackDoel">Gericht aan</label>
+                <select class="form-select" id="feedbackDoel" name="feedbackDoel">
+                  <option value="">Maak een keuze</option>
+                  <option value="algemeen">Algemeen EMS</option>
+                  <option value="command">Command</option>
+                  <option value="opleiding">Opleidingsteam</option>
+                  <option value="tooling">Tooling / administratie</option>
+                  <option value="afdeling">Specifieke afdeling</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-field mt-2">
+              <label for="situatie">Situatie of context</label>
+              <textarea
+                class="form-textarea"
+                id="situatie"
+                name="situatie"
+                rows="4"
+                placeholder="Beschrijf kort de situatie of context."
+              ></textarea>
+            </div>
+
+            <div class="form-field mt-2">
+              <label for="feedbackInhoud">Feedback</label>
+              <textarea
+                class="form-textarea"
+                id="feedbackInhoud"
+                name="feedbackInhoud"
+                rows="6"
+                placeholder="Wat liep goed, wat kan beter en wat stel je voor?"
+              ></textarea>
+            </div>
+
+            <div class="form-field mt-2">
+              <label for="voorstel">Voorstel of gewenste verbetering</label>
+              <textarea
+                class="form-textarea"
+                id="voorstel"
+                name="voorstel"
+                rows="4"
+                placeholder="Beschrijf eventueel een concreet voorstel."
+              ></textarea>
+            </div>
+
+            <div class="request-actions">
+              <button type="button" class="btn btn-primary" id="generateBtn">Genereer samenvatting</button>
+              <button type="reset" class="btn btn-secondary" id="resetBtn">Reset</button>
+            </div>
+          </form>
+        </section>
+
+        <aside class="request-output-card">
+          <div class="section-heading">
+            <div>
+              <h2>Samenvatting</h2>
+              <p class="text-soft">
+                Deze output kan je kopiëren voor intern gebruik of rapportering.
+              </p>
+            </div>
+          </div>
+
+          <div id="requestStatus" class="status-box status-info">
+            Vul het formulier in en klik op “Genereer samenvatting”.
+          </div>
+
+          <div class="form-field mt-2">
+            <label for="output">Gegenereerde tekst</label>
+            <textarea
+              class="form-textarea request-output"
+              id="output"
+              rows="18"
+              readonly
+              placeholder="Hier verschijnt de samenvatting..."
+            ></textarea>
+          </div>
+
+          <div class="request-actions">
+            <button type="button" class="btn btn-primary" id="copyBtn">Kopieer tekst</button>
+          </div>
+        </aside>
+      </section>
+    </main>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>

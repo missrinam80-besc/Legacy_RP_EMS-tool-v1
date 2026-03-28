@@ -1,0 +1,125 @@
+/* =========================
+   Aanvraagmodules
+   ========================= */
+
+.request-page .page-container {
+  padding-top: 1.5rem;
+  padding-bottom: 2rem;
+}
+
+.request-hero-card,
+.request-form-card,
+.request-output-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.request-hero-card {
+  position: relative;
+  overflow: hidden;
+  padding: 1.5rem;
+  background:
+    linear-gradient(135deg, rgba(139, 10, 10, 0.06), rgba(255, 255, 255, 0.97)),
+    var(--color-surface);
+}
+
+.request-hero-card__content {
+  position: relative;
+  z-index: 1;
+}
+
+.request-hero-card h1 {
+  margin-bottom: 0.5rem;
+  color: var(--color-primary);
+}
+
+.request-hero-card p {
+  margin-bottom: 0;
+  max-width: 70ch;
+}
+
+.request-subnav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.request-subnav__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 42px;
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.request-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.request-form-card,
+.request-output-card {
+  padding: 1.25rem;
+}
+
+.request-form {
+  margin-top: 1rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.request-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.request-output {
+  min-height: 340px;
+}
+
+.status-box {
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.status-info {
+  background: #dbeafe;
+  color: var(--color-info);
+  border-color: #bfdbfe;
+}
+
+@media (max-width: 900px) {
+  .request-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .request-hero-card,
+  .request-form-card,
+  .request-output-card {
+    padding: 1rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
