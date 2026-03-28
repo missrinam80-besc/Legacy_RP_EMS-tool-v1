@@ -1,0 +1,7 @@
+{
+  "storageKey": "ems_admin_medication",
+  "defaultDataPath": "../../data/admin/default-medication.json",
+  "title": "Beheer medicatie & hulpmiddelen",
+  "entityLabel": "medicatie-item",
+  "exportFilename": "ems-medicatie-export.json"
+}

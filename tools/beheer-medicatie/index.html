@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EMS Beheer medicatie & hulpmiddelen</title>
+
+  <link rel="stylesheet" href="../../assets/styles/base.css" />
+  <link rel="stylesheet" href="../../assets/styles/components.css" />
+  <link rel="stylesheet" href="../../assets/styles/layout.css" />
+  <link rel="stylesheet" href="../../assets/styles/theme.css" />
+  <link rel="stylesheet" href="../../assets/styles/utilities.css" />
+  <link rel="stylesheet" href="../../assets/styles/beheer.css" />
+</head>
+<body>
+  <div class="admin-page">
+    <header class="site-header">
+      <img src="../../assets/images/Banner.png" alt="EMS Tools Hub banner" class="site-banner" />
+    </header>
+
+    <main class="admin-app">
+      <section class="admin-card">
+        <div class="admin-header">
+          <div class="admin-header__meta">
+            <h1>Beheer medicatie & hulpmiddelen</h1>
+            <p>
+              Centrale beheermodule voor medicatie, hulpmiddelen, verbruiksartikelen en kits. Gebruik deze pagina
+              om keuzes en waarschuwingen op één plaats te beheren voor behandeltools, rapporten en afdelingsflows.
+            </p>
+          </div>
+
+          <div class="button-row">
+            <a class="btn btn-secondary" href="../../command.html">Command hub</a>
+            <a class="btn btn-secondary" href="../behandeling/index.html">Behandeltool</a>
+          </div>
+        </div>
+
+        <div class="stats-grid" id="statsGrid"></div>
+
+        <div class="admin-toolbar">
+          <button id="newItemBtn" class="btn btn-primary" type="button">Nieuw item</button>
+          <button id="exportBtn" class="btn btn-secondary" type="button">Export JSON</button>
+          <label class="btn btn-secondary" for="importInput">Import JSON</label>
+          <input id="importInput" class="file-input" type="file" accept="application/json,.json" />
+          <button id="resetDefaultsBtn" class="btn btn-secondary" type="button">Reset naar standaard</button>
+          <button id="reloadBtn" class="btn btn-secondary" type="button">Herlaad</button>
+        </div>
+
+        <div class="filter-toolbar">
+          <div class="toolbar-field form-field">
+            <label for="searchInput">Zoeken</label>
+            <input id="searchInput" class="form-input" type="search" placeholder="Zoek op naam, categorie, indicatie..." />
+          </div>
+          <div class="toolbar-field form-field">
+            <label for="typeFilter">Type</label>
+            <select id="typeFilter" class="form-select"></select>
+          </div>
+          <div class="toolbar-field form-field">
+            <label for="categoryFilter">Categorie</label>
+            <select id="categoryFilter" class="form-select"></select>
+          </div>
+          <div class="toolbar-field form-field">
+            <label for="departmentFilter">Afdeling</label>
+            <select id="departmentFilter" class="form-select"></select>
+          </div>
+          <div class="toolbar-field form-field">
+            <label for="routeFilter">Toedieningswijze</label>
+            <select id="routeFilter" class="form-select"></select>
+          </div>
+          <div class="toolbar-field form-field">
+            <label for="activeFilter">Status</label>
+            <select id="activeFilter" class="form-select">
+              <option value="all">Alles</option>
+              <option value="active">Enkel actief</option>
+              <option value="inactive">Enkel inactief</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="statusMessage" class="status status--info">Medicatieconfig wordt geladen...</div>
+      </section>
+
+      <section class="admin-layout">
+        <section class="admin-card">
+          <div class="section-heading">
+            <div>
+              <h2>Items</h2>
+              <p class="small-muted">Beheer de centrale lijst van medicatie, materiaal en hulpmiddelen.</p>
+            </div>
+            <strong id="resultCount">0 resultaten</strong>
+          </div>
+          <ul id="itemList" class="price-list"></ul>
+          <div id="emptyState" class="empty-state" hidden>Er zijn geen items die overeenkomen met de huidige filters.</div>
+        </section>
+
+        <section class="admin-card">
+          <div class="section-heading">
+            <div>
+              <h2>Editor</h2>
+              <p class="small-muted">Voeg een nieuw item toe of bewerk de geselecteerde configuratie.</p>
+            </div>
+          </div>
+
+          <form id="itemForm" class="form-grid-admin">
+            <input id="itemId" type="hidden" />
+            <div class="form-field">
+              <label for="nameInput">Naam</label>
+              <input id="nameInput" class="form-input" type="text" required />
+            </div>
+            <div class="form-field">
+              <label for="typeInput">Type</label>
+              <select id="typeInput" class="form-select" required></select>
+            </div>
+            <div class="form-field">
+              <label for="categoryInput">Categorie</label>
+              <input id="categoryInput" class="form-input" type="text" required />
+            </div>
+            <div class="form-field">
+              <label for="dosageInput">Dosering / gebruik</label>
+              <input id="dosageInput" class="form-input" type="text" placeholder="bv. standaard dosis / per toepassing" />
+            </div>
+            <div class="form-field">
+              <label for="routeInput">Toedieningswijze</label>
+              <select id="routeInput" class="form-select" required></select>
+            </div>
+            <div class="form-field">
+              <label for="priceInput">Prijs</label>
+              <input id="priceInput" class="form-input" type="number" min="0" step="0.01" value="0" />
+            </div>
+            <div class="form-field full-width">
+              <label for="indicationInput">Indicatie</label>
+              <textarea id="indicationInput" class="form-textarea" rows="3" placeholder="Wanneer of waarvoor gebruik je dit item?"></textarea>
+            </div>
+            <div class="form-field full-width">
+              <label for="contraInput">Waarschuwing / contra-opmerking</label>
+              <textarea id="contraInput" class="form-textarea" rows="3" placeholder="Belangrijke aandachtspunten, limieten of opmerkingen..."></textarea>
+            </div>
+            <div class="form-field full-width">
+              <label>Afdelingen</label>
+              <p class="help-block">Selecteer in welke afdelingen dit item beschikbaar is.</p>
+              <div id="departmentCheckboxes" class="checkbox-stack"></div>
+            </div>
+            <div class="form-field full-width">
+              <label for="warningsInput">Waarschuwingen (komma gescheiden)</label>
+              <input id="warningsInput" class="form-input" type="text" placeholder="bv. monitoring nodig, sedatie, wond opvolgen" />
+            </div>
+            <div class="form-field full-width">
+              <label>Instellingen</label>
+              <div class="inline-checkboxes">
+                <label><input id="activeInput" type="checkbox" checked /> Actief</label>
+              </div>
+            </div>
+            <div class="form-field full-width">
+              <label for="notesInput">Interne nota</label>
+              <textarea id="notesInput" class="form-textarea" rows="4" placeholder="Optionele interne notitie..."></textarea>
+            </div>
+            <div class="full-width editor-actions">
+              <button class="btn btn-primary" type="submit">Opslaan</button>
+              <button id="clearFormBtn" class="btn btn-secondary" type="button">Leeg formulier</button>
+            </div>
+          </form>
+
+          <hr class="soft-divider" />
+
+          <div>
+            <h3>Preview</h3>
+            <div class="preview-box">
+              <strong id="previewTitle">Nog geen selectie</strong>
+              <p id="previewPrice" class="price-amount">€ 0,00</p>
+              <div id="previewChips" class="preview-grid"></div>
+              <ul id="previewMeta" class="meta-list"></ul>
+              <p id="previewWarnings" class="small-muted">Selecteer of bewerk een item om hier de preview te zien.</p>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script src="../../assets/scripts/admin-utils.js"></script>
+  <script src="../../assets/scripts/admin-store.js"></script>
+  <script src="../../assets/scripts/admin-ui.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
