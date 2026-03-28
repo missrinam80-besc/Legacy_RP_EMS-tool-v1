@@ -1,0 +1,238 @@
+/* =========================
+   Homepage / medewerkershub
+   ========================= */
+
+.hero-card {
+  position: relative;
+  overflow: hidden;
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(135deg, rgba(139, 10, 10, 0.06), rgba(255, 255, 255, 0.96)),
+    var(--color-surface);
+}
+
+.hero-card::after {
+  content: "";
+  position: absolute;
+  inset: auto -80px -80px auto;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(139, 10, 10, 0.08), transparent 70%);
+  pointer-events: none;
+}
+
+.hero-card__content {
+  position: relative;
+  z-index: 1;
+}
+
+.hero-card h1 {
+  margin-bottom: 0.6rem;
+  color: var(--color-primary);
+  font-size: clamp(1.8rem, 2.6vw, 2.4rem);
+}
+
+.hero-card p {
+  margin-bottom: 0;
+  max-width: 72ch;
+}
+
+.panel + .tool-section,
+.tool-section + .tool-section {
+  margin-top: 1.5rem;
+}
+
+.section-heading h2 {
+  margin-bottom: 0.25rem;
+  color: var(--color-primary);
+}
+
+.section-heading p {
+  margin-bottom: 0;
+}
+
+.status-box {
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.status-info {
+  background: #dbeafe;
+  color: var(--color-info);
+  border-color: #bfdbfe;
+}
+
+.quick-actions-grid {
+  margin-top: 1rem;
+}
+
+.quick-action-card {
+  min-height: 100px;
+}
+
+.quick-action-card strong {
+  display: block;
+  color: var(--color-primary);
+  line-height: 1.25;
+}
+
+.quick-action-card p {
+  margin-bottom: 0;
+}
+
+.quick-action-card__icon {
+  flex-shrink: 0;
+  color: var(--color-primary);
+}
+
+.tool-section {
+  scroll-margin-top: 1rem;
+}
+
+.tool-grid {
+  align-items: stretch;
+}
+
+.tool-card--hub {
+  position: relative;
+  min-height: 220px;
+  height: 100%;
+  border-radius: var(--radius-md);
+}
+
+.tool-card--hub::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+  background: var(--color-primary);
+  opacity: 0.9;
+}
+
+.tool-card__title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.tool-card__title-row h3 {
+  margin: 0;
+  font-size: 1.08rem;
+  line-height: 1.25;
+}
+
+.tool-card--hub p {
+  margin-bottom: 0;
+  color: var(--color-text-soft);
+}
+
+.tool-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  min-width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: #f8e9e9;
+  font-size: 1.2rem;
+}
+
+.tool-status {
+  background: var(--color-surface-soft);
+  color: var(--color-text-soft);
+  border: 1px solid var(--color-border);
+}
+
+.tool-card--hub:hover .tool-icon,
+.quick-action-card:hover .quick-action-card__icon {
+  background: #efe2e2;
+}
+
+.tool-card--hub:focus-visible,
+.quick-action-card:focus-visible {
+  outline: 3px solid rgba(29, 78, 216, 0.22);
+  outline-offset: 2px;
+}
+
+.is-placeholder {
+  opacity: 0.85;
+  border-style: dashed;
+}
+
+.is-placeholder::before {
+  background: var(--color-border);
+}
+
+.tool-card[data-status="nieuw"] .tool-badge {
+  background: #fff4d6;
+  color: #9a6700;
+}
+
+.tool-card[data-status="intern"] .tool-badge {
+  background: #e8eefc;
+  color: #2643a2;
+}
+
+.tool-card[data-status="later"] .tool-badge {
+  background: #eef2f7;
+  color: #475569;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: rgba(139, 10, 10, 0.35);
+  box-shadow: 0 0 0 4px rgba(139, 10, 10, 0.08);
+}
+
+@media (max-width: 1024px) {
+  .hero-card {
+    padding: 1.35rem;
+  }
+
+  .tool-card--hub {
+    min-height: 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-container {
+    padding-top: 1.25rem;
+  }
+
+  .hero-card,
+  .panel,
+  .output-card {
+    padding: 1rem;
+  }
+
+  .section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .quick-actions-grid,
+  .tool-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tool-card--hub {
+    min-height: auto;
+  }
+
+  .tool-card__title-row {
+    gap: 0.65rem;
+  }
+
+  .tool-icon,
+  .quick-action-card__icon {
+    width: 42px;
+    min-width: 42px;
+    height: 42px;
+  }
+}

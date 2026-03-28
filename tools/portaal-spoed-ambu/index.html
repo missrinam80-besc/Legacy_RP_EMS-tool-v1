@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portaal [Afdeling] - EMS Tools</title>
+
+  <link rel="stylesheet" href="../../assets/styles/theme.css" />
+  <link rel="stylesheet" href="../../assets/styles/base.css" />
+  <link rel="stylesheet" href="../../assets/styles/layout.css" />
+  <link rel="stylesheet" href="../../assets/styles/components.css" />
+  <link rel="stylesheet" href="../../assets/styles/utilities.css" />
+  <link rel="stylesheet" href="../../assets/styles/portaal.css" />
+</head>
+<body class="portal-page">
+  <div class="app-shell">
+    <header class="site-header">
+      <img
+        src="../../assets/images/Banner.png"
+        alt="EMS Tools Hub banner"
+        class="site-banner"
+      />
+    </header>
+
+    <main class="page-container">
+      <section class="portal-header-card">
+        <div class="portal-header-card__content">
+          <h1>Portaal [Afdeling]</h1>
+          <p>
+            [Korte beschrijving van de afdeling. Bijvoorbeeld: operaties, opname en
+            complexe letsels.]
+          </p>
+
+          <nav class="portal-subnav" aria-label="Snelle navigatie">
+            <a class="portal-subnav__link" href="../../index.html">🏠 Home medewerkers</a>
+            <a class="portal-subnav__link" href="../../command.html">⚙️ Command</a>
+            <a class="portal-subnav__link" href="../../tools/personeelslijst/view.html">👥 Personeelslijst</a>
+            <a class="portal-subnav__link" href="../../tools/afwezigheid/index.html">📅 Afwezigheid</a>
+          </nav>
+
+          <div class="portal-anchor-nav" aria-label="Sectienavigatie">
+            <a href="#afdelingsinfo">Afdelingsinfo</a>
+            <a href="#tools">Tools</a>
+            <a href="#rapporten">Rapporten</a>
+            <a href="#aanvragen">Aanvragen</a>
+            <a href="#doorverwijzingen">Doorverwijzingen</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="portal-layout" id="afdelingsinfo">
+        <article class="portal-info-card">
+          <h2>Afdelingsinfo</h2>
+          <p>
+            [Licht hier kort toe waarvoor deze afdeling dient, wanneer medewerkers
+            moeten doorverwijzen en welke types casussen hieronder vallen.]
+          </p>
+
+          <div class="portal-meta-grid">
+            <div class="portal-meta-item">
+              <strong>Wanneer inzetten</strong>
+              <span>[Bijvoorbeeld: bij complexe letsels, ingrepen of gespecialiseerde opvolging.]</span>
+            </div>
+
+            <div class="portal-meta-item">
+              <strong>Belangrijkste focus</strong>
+              <span>[Bijvoorbeeld: stabiliseren, behandelen, opvolgen, rapporteren.]</span>
+            </div>
+          </div>
+
+          <div class="portal-note">
+            <strong>Opmerking:</strong>
+            Houd rapportering en doorverwijzing steeds in lijn met de RP-context en de interne werking.
+          </div>
+        </article>
+
+        <aside class="portal-side-card">
+          <h2>Snelle aandachtspunten</h2>
+          <p>Gebruik dit blok voor de belangrijkste checks of aandachtspunten.</p>
+
+          <ul class="portal-checklist">
+            <li>[Aandachtspunt 1]</li>
+            <li>[Aandachtspunt 2]</li>
+            <li>[Aandachtspunt 3]</li>
+          </ul>
+        </aside>
+      </section>
+
+      <section class="portal-section" id="tools">
+        <div class="section-heading">
+          <div>
+            <h2>Tools</h2>
+            <p class="text-soft">
+              Afdelingsspecifieke hulpmiddelen en werkmodules.
+            </p>
+          </div>
+        </div>
+
+        <div class="portal-grid">
+          <a class="portal-card" href="../voorbeeld-tool/index.html">
+            <div class="portal-card__top">
+              <span class="portal-card__badge">Tool</span>
+              <span class="portal-card__status portal-card__status--success">Actief</span>
+            </div>
+
+            <div class="portal-card__title">
+              <span class="portal-card__icon" aria-hidden="true">🛠️</span>
+              <div>
+                <h3>[Toolnaam 1]</h3>
+              </div>
+            </div>
+
+            <p>[Korte uitleg van wat deze tool doet.]</p>
+
+            <div class="portal-card__footer">
+              <span class="portal-card__link">Openen →</span>
+            </div>
+          </a>
+
+          <a class="portal-card" href="../voorbeeld-tool-2/index.html">
+            <div class="portal-card__top">
+              <span class="portal-card__badge">Tool</span>
+              <span class="portal-card__status">Nieuw</span>
+            </div>
+
+            <div class="portal-card__title">
+              <span class="portal-card__icon" aria-hidden="true">🧩</span>
+              <div>
+                <h3>[Toolnaam 2]</h3>
+              </div>
+            </div>
+
+            <p>[Korte uitleg van wat deze tool doet.]</p>
+
+            <div class="portal-card__footer">
+              <span class="portal-card__link">Openen →</span>
+            </div>
+          </a>
+
+          <a class="portal-card is-placeholder" href="#">
+            <div class="portal-card__top">
+              <span class="portal-card__badge">Later</span>
+              <span class="portal-card__status">Placeholder</span>
+            </div>
+
+            <div class="portal-card__title">
+              <span class="portal-card__icon" aria-hidden="true">➕</span>
+              <div>
+                <h3>[Toekomstige tool]</h3>
+              </div>
+            </div>
+
+            <p>[Reservekaart voor een latere uitbreiding.]</p>
+
+            <div class="portal-card__footer">
+              <span class="portal-card__link">Later →</span>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <section class="portal-section" id="rapporten">
+        <div class="section-heading">
+          <div>
+            <h2>Rapporten</h2>
+            <p class="text-soft">
+              Rapporten en documenten die bij deze afdeling horen.
+            </p>
+          </div>
+        </div>
+
+        <div class="portal-grid">
+          <a class="portal-card" href="../rapport-voorbeeld/index.html">
+            <div class="portal-card__top">
+              <span class="portal-card__badge">Rapport</span>
+              <span class="portal-card__status portal-card__status--success">Actief</span>
+            </div>
+
+            <div class="portal-card__title">
+              <span class="portal-card__icon" aria-hidden="true">📝</span>
+              <div>
+                <h3>[Rapportnaam 1]</h3>
+              </div>
+            </div>
+
+            <p>[Korte uitleg van het rapport.]</p>
+
+            <div class="portal-card__footer">
+              <span class="portal-card__link">Openen →</span>
+            </div>
+          </a>
+
+          <a class="portal-card" href="../rapport-voorbeeld-2/index.html">
+            <div class="portal-card__top">
+              <span class="portal-card__badge">Rapport</span>
+              <span class="portal-card__status portal-card__status--success">Actief</span>
+            </div>
+
+            <div class="portal-card__title">
+              <span class="portal-card__icon" aria-hidden="true">📄</span>
+              <div>
+                <h3>[Rapportnaam 2]</h3>
+              </div>
+            </div>
+
+            <p>[Korte uitleg van het rapport.]</p>
+
+            <div class="portal-card__footer">
+              <span class="portal-card__link">Openen →</span>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <section class="portal-section" id="aanvragen">
+        <div class="section-heading">
+          <div>
+            <h2>Aanvragen</h2>
+            <p class="text-soft">
+              Afdelingsgerichte aanvragen en interesses.
+            </p>
+          </div>
+        </div>
+
+        <div class="portal-grid">
+          <a class="portal-card" href="../aanvragen-training/index.html">
+            <div class="portal-card__top">
+              <span class="portal-card__badge">Aanvraag</span>
+              <span class="portal-card__status">Nieuw</span>
+            </div>
+
+            <div class="portal-card__title">
+              <span class="portal-card__icon" aria-hidden="true">🎓</span>
+              <div>
+                <h3>Trainingsaanvraag</h3>
+              </div>
+            </div>
+
+            <p>Dien een aanvraag in voor opleiding of begeleiding.</p>
+
+            <div class="portal-card__footer">
+              <span class="portal-card__link">Openen →</span>
+            </div>
+          </a>
+
+          <a class="portal-card" href="../aanvragen-specialisatie/index.html">
+            <div class="portal-card__top">
+              <span class="portal-card__badge">Aanvraag</span>
+              <span class="portal-card__status">Nieuw</span>
+            </div>
+
+            <div class="portal-card__title">
+              <span class="portal-card__icon" aria-hidden="true">⭐</span>
+              <div>
+                <h3>Specialisatie-interesse</h3>
+              </div>
+            </div>
+
+            <p>Laat weten dat je interesse hebt in deze afdeling of specialisatie.</p>
+
+            <div class="portal-card__footer">
+              <span class="portal-card__link">Openen →</span>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <section class="portal-section" id="doorverwijzingen">
+        <div class="section-heading">
+          <div>
+            <h2>Doorverwijzingen</h2>
+            <p class="text-soft">
+              Relevante interne routes naar andere afdelingen of kernmodules.
+            </p>
+          </div>
+        </div>
+
+        <div class="portal-grid">
+          <a class="portal-card" href="../portaal-andere-afdeling/index.html">
+            <div class="portal-card__top">
+              <span class="portal-card__badge">Portaal</span>
+              <span class="portal-card__status">Intern</span>
+            </div>
+
+            <div class="portal-card__title">
+              <span class="portal-card__icon" aria-hidden="true">↔️</span>
+              <div>
+                <h3>[Andere afdeling]</h3>
+              </div>
+            </div>
+
+            <p>[Bijvoorbeeld: voor opvolging, nazorg of bijkomende analyse.]</p>
+
+            <div class="portal-card__footer">
+              <span class="portal-card__link">Openen →</span>
+            </div>
+          </a>
+
+          <a class="portal-card" href="../../index.html">
+            <div class="portal-card__top">
+              <span class="portal-card__badge">Home</span>
+              <span class="portal-card__status">Intern</span>
+            </div>
+
+            <div class="portal-card__title">
+              <span class="portal-card__icon" aria-hidden="true">🏠</span>
+              <div>
+                <h3>Terug naar homepage</h3>
+              </div>
+            </div>
+
+            <p>Ga terug naar het algemene medewerkersportaal en de acute dienst.</p>
+
+            <div class="portal-card__footer">
+              <span class="portal-card__link">Openen →</span>
+            </div>
+          </a>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

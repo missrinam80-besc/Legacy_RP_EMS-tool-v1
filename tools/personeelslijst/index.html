@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EMS Personeelslijst</title>
+
+  <link rel="stylesheet" href="../../assets/styles/theme.css" />
+  <link rel="stylesheet" href="../../assets/styles/base.css" />
+  <link rel="stylesheet" href="../../assets/styles/layout.css" />
+  <link rel="stylesheet" href="../../assets/styles/components.css" />
+  <link rel="stylesheet" href="../../assets/styles/utilities.css" />
+  <link rel="stylesheet" href="../../assets/styles/personeel.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="site-header">
+      <img
+        src="../../assets/images/Banner.png"
+        alt="Pillbox Hill Medical Center"
+        class="site-banner"
+      />
+    </header>
+
+    <main class="page-container">
+      <!-- <div class="tool-nav">
+        <a href="../../index.html">← Terug naar EMS Tools Hub</a>
+      </div> -->
+
+      <section class="hero-card">
+        <div class="hero-card__content">
+          <h1>EMS Personeelslijst</h1>
+          <p class="text-soft">
+            Overzicht van actieve en zichtbare medewerkers.
+          </p>
+        </div>
+      </section>
+
+      <section class="panel mt-2">
+        <div class="personeel-toolbar">
+          <div class="form-field personeel-toolbar__search">
+            <label for="searchInput">Zoeken</label>
+            <input
+              class="form-input"
+              type="text"
+              id="searchInput"
+              placeholder="Zoek op roepnummer, naam, rang, afdeling of status..."
+            />
+          </div>
+
+          <div class="personeel-toolbar__actions">
+            <button class="btn btn-secondary" id="loadBtn" type="button">Vernieuwen</button>
+          </div>
+        </div>
+
+        <div id="messageBox" class="status-box status-info mt-2" aria-live="polite">
+          Klaar om te laden.
+        </div>
+      </section>
+
+      <section class="panel mt-2">
+        <div class="personeel-meta">
+          <div class="personeel-meta__count">
+            <span class="text-soft">Aantal resultaten:</span>
+            <strong id="resultCount">0</strong>
+          </div>
+
+          <div class="personeel-legend">
+            <span class="personeel-legend__item">
+              <span class="personeel-dot personeel-dot--actief"></span> Actief
+            </span>
+            <span class="personeel-legend__item">
+              <span class="personeel-dot personeel-dot--non-actief"></span> Non-actief
+            </span>
+            <span class="personeel-legend__item">
+              <span class="personeel-dot personeel-dot--verlof"></span> Verlof
+            </span>
+            <span class="personeel-legend__item">
+              <span class="personeel-dot personeel-dot--ziekte"></span> Ziekte
+            </span>
+          </div>
+        </div>
+
+        <div class="personeel-table-wrap">
+          <table class="personeel-table personeel-table--view" id="staffTable">
+            <thead>
+              <tr>
+                <th>Roepnummer</th>
+                <th>Naam</th>
+                <th>Rang</th>
+                <th>Afdeling</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="staffTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxh-7nXpT8A7D4KCQJsvA3rS_fWbFZUPsxC6zjbiLuN5Cp2y8AZ35NrrtgwGhgX8KffRA/exec';
+  </script>
+  <script src="../../assets/scripts/personeel-shared.js"></script>
+  <script src="./view.js"></script>
+</body>
+</html>

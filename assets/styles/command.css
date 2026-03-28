@@ -1,0 +1,84 @@
+/* =========================
+   Command / high command
+   ========================= */
+
+.command-section {
+  position: relative;
+}
+
+.command-section .section-heading h2 {
+  color: var(--color-primary-dark);
+}
+
+.command-section .tool-card--hub {
+  background:
+    linear-gradient(180deg, rgba(139, 10, 10, 0.03), rgba(255, 255, 255, 1)),
+    var(--color-surface);
+}
+
+.command-section .tool-card--hub::before {
+  background: linear-gradient(180deg, var(--color-primary), var(--color-primary-dark));
+}
+
+.command-section .tool-badge {
+  background: #f8e1e1;
+  color: var(--color-primary-dark);
+}
+
+.command-section .tool-icon {
+  background: #f6e3e3;
+}
+
+.command-section .is-placeholder {
+  background:
+    linear-gradient(180deg, rgba(148, 163, 184, 0.07), rgba(255, 255, 255, 1)),
+    var(--color-surface);
+}
+
+.command-section .is-placeholder .tool-icon {
+  background: #eef2f7;
+}
+
+.command-section .is-placeholder .tool-badge {
+  background: #eef2f7;
+  color: #475569;
+}
+
+.command-highlight {
+  border-left: 5px solid var(--color-primary);
+}
+
+.command-highlight .tool-card__title-row h3 {
+  color: var(--color-primary-dark);
+}
+
+body.command-page .hero-card {
+  background:
+    linear-gradient(135deg, rgba(95, 6, 6, 0.08), rgba(255, 255, 255, 0.97)),
+    var(--color-surface);
+}
+
+body.command-page .hero-card::after {
+  background: radial-gradient(circle, rgba(95, 6, 6, 0.12), transparent 70%);
+}
+
+body.command-page .quick-action-card {
+  border-color: rgba(139, 10, 10, 0.16);
+}
+
+body.command-page .quick-action-card__icon {
+  background: #f6e3e3;
+  color: var(--color-primary-dark);
+}
+
+body.command-page .status-box.status-info {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #fde68a;
+}
+
+@media (max-width: 768px) {
+  .command-section {
+    margin-top: 1.5rem;
+  }
+}
