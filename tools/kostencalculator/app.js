@@ -35,6 +35,7 @@ async function initApp() {
     }
 
     APP_CONFIG = await response.json();
+    await applyCentralPriceConfig();
 
     renderDepartmentSelect();
     renderItemCheckboxes();
@@ -45,6 +46,54 @@ async function initApp() {
   } catch (error) {
     console.error("Fout bij laden van de kostencalculator:", error);
     alert("Fout bij laden van de kostencalculator. Controleer config.json en het pad.");
+  }
+}
+
+
+async function applyCentralPriceConfig() {
+  try {
+    const adminDefaultPath = '../../data/admin/default-prices.json';
+    const localRaw = localStorage.getItem('ems_admin_prices');
+    let priceData = null;
+
+    if (localRaw) {
+      priceData = JSON.parse(localRaw);
+    } else {
+      const response = await fetch(adminDefaultPath, { cache: 'no-store' });
+      if (response.ok) {
+        priceData = await response.json();
+      }
+    }
+
+    if (!priceData || !Array.isArray(priceData.items)) return;
+
+    const departmentMap = {
+      general: 'algemeen',
+      spoed: 'spoed',
+      chirurgie: 'chirurgie',
+      psychologie: 'psychologie',
+      ortho: 'ortho-revalidatie'
+    };
+
+    Object.keys(APP_CONFIG.departmentExtras || {}).forEach((configDepartmentKey) => {
+      const adminDepartment = departmentMap[configDepartmentKey];
+      const extras = priceData.items
+        .filter((item) => item.active !== false)
+        .filter((item) => item.visibleInCalculator !== false)
+        .filter((item) => item.department === adminDepartment)
+        .map((item) => ({
+          code: item.code || item.id,
+          label: item.label,
+          amount: Number(item.defaultPrice) || 0
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label, 'nl'));
+
+      if (extras.length) {
+        APP_CONFIG.departmentExtras[configDepartmentKey] = extras;
+      }
+    });
+  } catch (error) {
+    console.warn('Centrale prijsconfig kon niet toegepast worden op de kostencalculator.', error);
   }
 }
 

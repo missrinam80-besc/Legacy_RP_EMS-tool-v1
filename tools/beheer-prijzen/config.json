@@ -1,0 +1,7 @@
+{
+  "storageKey": "ems_admin_prices",
+  "defaultDataPath": "../../data/admin/default-prices.json",
+  "title": "Beheer prijzen",
+  "entityLabel": "prijsregel",
+  "exportFilename": "ems-prijzen-export.json"
+}

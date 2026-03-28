@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EMS Beheer prijzen</title>
+
+  <link rel="stylesheet" href="../../assets/styles/base.css" />
+  <link rel="stylesheet" href="../../assets/styles/components.css" />
+  <link rel="stylesheet" href="../../assets/styles/layout.css" />
+  <link rel="stylesheet" href="../../assets/styles/theme.css" />
+  <link rel="stylesheet" href="../../assets/styles/utilities.css" />
+  <link rel="stylesheet" href="../../assets/styles/beheer.css" />
+</head>
+<body>
+  <div class="admin-page">
+    <header class="site-header">
+      <img src="../../assets/images/Banner.png" alt="EMS Tools Hub banner" class="site-banner" />
+    </header>
+
+    <main class="admin-app">
+      <section class="admin-card">
+        <div class="admin-header">
+          <div class="admin-header__meta">
+            <h1>Beheer prijzen</h1>
+            <p>
+              Centrale prijsmodule voor rapporten, behandeltools en de kostencalculator. Bewerk prijsregels
+              hier zodat de rest van de suite dezelfde tarieven kan gebruiken.
+            </p>
+          </div>
+
+          <div class="button-row">
+            <a class="btn btn-secondary" href="../../command.html">Command hub</a>
+            <a class="btn btn-secondary" href="../kostencalculator/index.html">Kostencalculator</a>
+          </div>
+        </div>
+
+        <div class="stats-grid" id="statsGrid"></div>
+
+        <div class="admin-toolbar">
+          <button id="newItemBtn" class="btn btn-primary" type="button">Nieuwe prijsregel</button>
+          <button id="exportBtn" class="btn btn-secondary" type="button">Export JSON</button>
+          <label class="btn btn-secondary" for="importInput">Import JSON</label>
+          <input id="importInput" class="file-input" type="file" accept="application/json,.json" />
+          <button id="resetDefaultsBtn" class="btn btn-secondary" type="button">Reset naar standaard</button>
+          <button id="reloadBtn" class="btn btn-secondary" type="button">Herlaad</button>
+        </div>
+
+        <div class="filter-toolbar">
+          <div class="toolbar-field form-field">
+            <label for="searchInput">Zoeken</label>
+            <input id="searchInput" class="form-input" type="search" placeholder="Zoek op label, code, nota..." />
+          </div>
+          <div class="toolbar-field form-field">
+            <label for="departmentFilter">Afdeling</label>
+            <select id="departmentFilter" class="form-select"></select>
+          </div>
+          <div class="toolbar-field form-field">
+            <label for="categoryFilter">Categorie</label>
+            <select id="categoryFilter" class="form-select"></select>
+          </div>
+          <div class="toolbar-field form-field">
+            <label for="documentTypeFilter">Documenttype</label>
+            <select id="documentTypeFilter" class="form-select"></select>
+          </div>
+          <div class="toolbar-field form-field">
+            <label for="visibilityFilter">Zichtbaarheid</label>
+            <select id="visibilityFilter" class="form-select">
+              <option value="all">Alles</option>
+              <option value="reports">Enkel zichtbaar in rapporten</option>
+              <option value="calculator">Enkel zichtbaar in calculator</option>
+              <option value="hidden">Niet zichtbaar in rapport of calculator</option>
+            </select>
+          </div>
+          <div class="toolbar-field form-field">
+            <label for="activeFilter">Status</label>
+            <select id="activeFilter" class="form-select">
+              <option value="all">Alles</option>
+              <option value="active">Enkel actief</option>
+              <option value="inactive">Enkel inactief</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="statusMessage" class="status status--info">Prijsconfig wordt geladen...</div>
+      </section>
+
+      <section class="admin-layout">
+        <section class="admin-card">
+          <div class="section-heading">
+            <div>
+              <h2>Prijsregels</h2>
+              <p class="small-muted">Filter, bekijk en beheer alle centrale prijsregels.</p>
+            </div>
+            <strong id="resultCount">0 resultaten</strong>
+          </div>
+          <ul id="priceList" class="price-list"></ul>
+          <div id="emptyState" class="empty-state" hidden>Er zijn geen prijsregels die overeenkomen met de huidige filters.</div>
+        </section>
+
+        <section class="admin-card">
+          <div class="section-heading">
+            <div>
+              <h2>Editor</h2>
+              <p class="small-muted">Voeg een nieuwe prijsregel toe of bewerk de geselecteerde regel.</p>
+            </div>
+          </div>
+
+          <form id="priceForm" class="form-grid-admin">
+            <input id="itemId" type="hidden" />
+            <div class="form-field">
+              <label for="labelInput">Label</label>
+              <input id="labelInput" class="form-input" type="text" required />
+            </div>
+            <div class="form-field">
+              <label for="codeInput">Code</label>
+              <input id="codeInput" class="form-input" type="text" required />
+            </div>
+            <div class="form-field">
+              <label for="departmentInput">Afdeling</label>
+              <select id="departmentInput" class="form-select" required></select>
+            </div>
+            <div class="form-field">
+              <label for="categoryInput">Categorie</label>
+              <select id="categoryInput" class="form-select" required></select>
+            </div>
+            <div class="form-field">
+              <label for="priceInput">Bedrag</label>
+              <input id="priceInput" class="form-input" type="number" min="0" step="0.01" required />
+            </div>
+            <div class="form-field">
+              <label for="vatInput">BTW-modus</label>
+              <select id="vatInput" class="form-select">
+                <option value="none">Geen btw</option>
+                <option value="included">BTW inbegrepen</option>
+                <option value="excluded">BTW exclusief</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="currencyInput">Valuta</label>
+              <input id="currencyInput" class="form-input" type="text" value="EUR" maxlength="3" />
+            </div>
+            <div class="form-field">
+              <label for="sortOrderInput">Sorteervolgorde</label>
+              <input id="sortOrderInput" class="form-input" type="number" min="0" step="1" value="100" />
+            </div>
+            <div class="form-field full-width">
+              <label>Documenttypes</label>
+              <p class="help-block">Kies in welke tools of rapporten deze prijsregel zichtbaar mag zijn.</p>
+              <div id="documentTypeCheckboxes" class="checkbox-stack"></div>
+            </div>
+            <div class="form-field full-width">
+              <label>Instellingen</label>
+              <div class="inline-checkboxes">
+                <label><input id="activeInput" type="checkbox" checked /> Actief</label>
+                <label><input id="visibleCalculatorInput" type="checkbox" checked /> Zichtbaar in calculator</label>
+                <label><input id="visibleReportsInput" type="checkbox" checked /> Zichtbaar in rapporten</label>
+              </div>
+            </div>
+            <div class="form-field full-width">
+              <label for="notesInput">Interne nota</label>
+              <textarea id="notesInput" class="form-textarea" rows="4" placeholder="Optionele notitie, context of interne uitleg..."></textarea>
+            </div>
+            <div class="full-width editor-actions">
+              <button class="btn btn-primary" type="submit">Opslaan</button>
+              <button id="clearFormBtn" class="btn btn-secondary" type="button">Leeg formulier</button>
+            </div>
+          </form>
+
+          <hr class="soft-divider" />
+
+          <div>
+            <h3>Preview</h3>
+            <div class="preview-box">
+              <strong id="previewTitle">Nog geen selectie</strong>
+              <p id="previewAmount" class="price-amount">€ 0,00</p>
+              <div id="previewChips" class="preview-grid"></div>
+              <ul id="previewMeta" class="meta-list"></ul>
+              <p id="previewNotes" class="small-muted">Selecteer of bewerk een prijsregel om hier de preview te zien.</p>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script src="../../assets/scripts/admin-utils.js"></script>
+  <script src="../../assets/scripts/admin-store.js"></script>
+  <script src="../../assets/scripts/admin-ui.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
