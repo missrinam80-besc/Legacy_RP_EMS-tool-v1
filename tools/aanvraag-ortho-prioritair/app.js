@@ -32,6 +32,38 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+
+
+  if (window.DepartmentFlow) {
+    DepartmentFlow.init({
+      departmentKey: "revalidatie",
+      label: "ortho / revalidatie",
+      stage: "request",
+      nextUrl: "../revalidatie-tool/index.html",
+      steps: [
+        { id: "request", title: "1. Aanvraag", shortTitle: "aanvraag", url: window.location.pathname },
+        { id: "tool", title: "2. Tool", shortTitle: "tool", url: "../revalidatie-tool/index.html" },
+        { id: "report", title: "3. Rapport", shortTitle: "rapport", url: "../rapport-revalidatie/index.html" }
+      ],
+      collectValues: () => ({
+        patientName: document.getElementById("patientName")?.value || "",
+        patientDob: document.getElementById("patientDob")?.value || "",
+        aanvrager: document.getElementById("aanvrager")?.value || "",
+        roepnummer: document.getElementById("roepnummer")?.value || "",
+        locatie: document.getElementById("locatie")?.value || "",
+        urgentie: document.getElementById("urgentie")?.value || "",
+        letselType: document.getElementById("letselType")?.value || "",
+        mobiliteit: document.getElementById("mobiliteit")?.value || "",
+        stabiliteit: document.getElementById("stabiliteit")?.value || "",
+        samenvatting: document.getElementById("samenvatting")?.value || "",
+        reedsGedaan: document.getElementById("reedsGedaan")?.value || "",
+        extraInfo: document.getElementById("extraInfo")?.value || ""
+      }),
+      buildSummary: () => output.value.trim() || buildSummary(),
+      saveNextLabel: "Zet klaar voor tool"
+    });
+  }
+
   form.addEventListener("reset", () => {
     setTimeout(() => {
       output.value = "";

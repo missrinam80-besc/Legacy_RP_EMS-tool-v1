@@ -32,6 +32,37 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+
+
+  if (window.DepartmentFlow) {
+    DepartmentFlow.init({
+      departmentKey: "psychologie",
+      label: "psychologie",
+      stage: "request",
+      nextUrl: "../psychologie-tool/index.html",
+      steps: [
+        { id: "request", title: "1. Aanvraag", shortTitle: "aanvraag", url: window.location.pathname },
+        { id: "tool", title: "2. Tool", shortTitle: "tool", url: "../psychologie-tool/index.html" },
+        { id: "report", title: "3. Rapport", shortTitle: "rapport", url: "../rapport-psychologie/index.html" }
+      ],
+      collectValues: () => ({
+        patientName: document.getElementById("patientName")?.value || "",
+        patientDob: document.getElementById("patientDob")?.value || "",
+        aanvrager: document.getElementById("aanvrager")?.value || "",
+        verwijzer: document.getElementById("verwijzer")?.value || "",
+        trajectType: document.getElementById("trajectType")?.value || "",
+        gewensteTiming: document.getElementById("gewensteTiming")?.value || "",
+        hulpvraag: document.getElementById("hulpvraag")?.value || "",
+        huidigeThema: document.getElementById("huidigeThema")?.value || "",
+        risicoIndicaties: document.getElementById("risicoIndicaties")?.value || "",
+        bestaandeOpvolging: document.getElementById("bestaandeOpvolging")?.value || "",
+        extraInfo: document.getElementById("extraInfo")?.value || ""
+      }),
+      buildSummary: () => output.value.trim() || buildSummary(),
+      saveNextLabel: "Zet klaar voor tool"
+    });
+  }
+
   form.addEventListener("reset", () => {
     setTimeout(() => {
       output.value = "";

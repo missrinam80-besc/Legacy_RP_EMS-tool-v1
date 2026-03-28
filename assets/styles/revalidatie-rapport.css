@@ -1,0 +1,5 @@
+@import url("./operatie.css");
+
+.intro.panel h1::before {
+  content: "🦴 ";
+}

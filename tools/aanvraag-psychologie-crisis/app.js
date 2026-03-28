@@ -32,6 +32,38 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+
+
+  if (window.DepartmentFlow) {
+    DepartmentFlow.init({
+      departmentKey: "psychologie",
+      label: "psychologie",
+      stage: "request",
+      nextUrl: "../psychologie-tool/index.html",
+      steps: [
+        { id: "request", title: "1. Aanvraag", shortTitle: "aanvraag", url: window.location.pathname },
+        { id: "tool", title: "2. Tool", shortTitle: "tool", url: "../psychologie-tool/index.html" },
+        { id: "report", title: "3. Rapport", shortTitle: "rapport", url: "../rapport-psychologie/index.html" }
+      ],
+      collectValues: () => ({
+        patientName: document.getElementById("patientName")?.value || "",
+        patientDob: document.getElementById("patientDob")?.value || "",
+        aanvrager: document.getElementById("aanvrager")?.value || "",
+        roepnummer: document.getElementById("roepnummer")?.value || "",
+        locatie: document.getElementById("locatie")?.value || "",
+        urgentie: document.getElementById("urgentie")?.value || "",
+        veiligheid: document.getElementById("veiligheid")?.value || "",
+        presentatie: document.getElementById("presentatie")?.value || "",
+        huidigeSituatie: document.getElementById("huidigeSituatie")?.value || "",
+        risicoIndicaties: document.getElementById("risicoIndicaties")?.value || "",
+        eersteActies: document.getElementById("eersteActies")?.value || "",
+        extraInfo: document.getElementById("extraInfo")?.value || ""
+      }),
+      buildSummary: () => output.value.trim() || buildSummary(),
+      saveNextLabel: "Zet klaar voor tool"
+    });
+  }
+
   form.addEventListener("reset", () => {
     setTimeout(() => {
       output.value = "";

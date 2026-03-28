@@ -32,6 +32,37 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+
+
+  if (window.DepartmentFlow) {
+    DepartmentFlow.init({
+      departmentKey: "revalidatie",
+      label: "ortho / revalidatie",
+      stage: "request",
+      nextUrl: "../revalidatie-tool/index.html",
+      steps: [
+        { id: "request", title: "1. Aanvraag", shortTitle: "aanvraag", url: window.location.pathname },
+        { id: "tool", title: "2. Tool", shortTitle: "tool", url: "../revalidatie-tool/index.html" },
+        { id: "report", title: "3. Rapport", shortTitle: "rapport", url: "../rapport-revalidatie/index.html" }
+      ],
+      collectValues: () => ({
+        patientName: document.getElementById("patientName")?.value || "",
+        patientDob: document.getElementById("patientDob")?.value || "",
+        aanvrager: document.getElementById("aanvrager")?.value || "",
+        verwijzer: document.getElementById("verwijzer")?.value || "",
+        trajectType: document.getElementById("trajectType")?.value || "",
+        gewensteTiming: document.getElementById("gewensteTiming")?.value || "",
+        letselType: document.getElementById("letselType")?.value || "",
+        beperkingen: document.getElementById("beperkingen")?.value || "",
+        hulpmiddel: document.getElementById("hulpmiddel")?.value || "",
+        doelstelling: document.getElementById("doelstelling")?.value || "",
+        extraInfo: document.getElementById("extraInfo")?.value || ""
+      }),
+      buildSummary: () => output.value.trim() || buildSummary(),
+      saveNextLabel: "Zet klaar voor tool"
+    });
+  }
+
   form.addEventListener("reset", () => {
     setTimeout(() => {
       output.value = "";

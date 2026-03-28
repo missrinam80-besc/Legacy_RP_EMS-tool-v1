@@ -1,0 +1,20 @@
+
+.flow-card {
+  margin: 1rem 0 1.5rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  background: rgba(255,255,255,0.04);
+}
+.flow-card__title { margin: 0 0 .35rem; }
+.flow-card__text { margin: 0 0 .85rem; color: var(--text-soft, #cfcfcf); }
+.flow-steps { display:flex; gap:.75rem; flex-wrap:wrap; margin:0 0 .9rem; padding:0; list-style:none; }
+.flow-step { display:flex; align-items:center; gap:.5rem; padding:.65rem .85rem; border-radius:999px; background: rgba(250,218,11,.08); border:1px solid rgba(250,218,11,.18); }
+.flow-step.is-active { background: rgba(250,218,11,.18); border-color: rgba(250,218,11,.42); font-weight:600; }
+.flow-actions { display:flex; flex-wrap:wrap; gap:.75rem; }
+.flow-actions .btn { min-width: 190px; }
+.portal-flow-grid { display:grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap:1rem; }
+.portal-flow-card { display:block; padding:1rem; border-radius:16px; background: rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,.08); text-decoration:none; color:inherit; }
+.portal-flow-card h3 { margin:.2rem 0 .35rem; }
+.portal-flow-card p { margin:0; color: var(--text-soft, #cfcfcf); }
+.portal-flow-card__step { display:inline-flex; align-items:center; justify-content:center; min-width:2rem; height:2rem; border-radius:999px; font-weight:700; background: rgba(250,218,11,.14); border:1px solid rgba(250,218,11,.28); }

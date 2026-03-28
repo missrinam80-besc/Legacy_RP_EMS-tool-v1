@@ -265,3 +265,59 @@ function escapeHtml(value) {
     .replace(/\"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
+
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (!window.DepartmentFlow) return;
+  DepartmentFlow.init({
+    departmentKey: "chirurgie",
+    label: "chirurgie",
+    stage: "tool",
+    nextUrl: "../rapport-operatie/index.html",
+    autoImport: true,
+    importLabel: "Importeer aanvraag",
+    importMapping: {
+      patientName: "patientName",
+      patientDob: "patientDob",
+      locatie: "location",
+      urgency: "urgency",
+      urgentie: "urgency",
+      stabiliteit: "stability",
+      ingreepType: "operationType",
+      diagnose: "diagnosis",
+      bewustzijn: "consciousness",
+      pols: "pulse",
+      bloedverlies: "bloodLoss",
+      allergieen: "allergies",
+      nuchter: "npoStatus",
+      preopActies: "preOpActions",
+      extraInfo: "extraInfo"
+    },
+    steps: [
+      { id: "request", title: "1. Aanvraag", shortTitle: "aanvraag", url: "../aanvraag-spoedoperatie/index.html" },
+      { id: "tool", title: "2. Tool", shortTitle: "tool", url: window.location.pathname },
+      { id: "report", title: "3. Rapport", shortTitle: "rapport", url: "../rapport-operatie/index.html" }
+    ],
+    collectValues: () => ({
+      patientName: document.getElementById("patientName")?.value || "",
+      patientDob: document.getElementById("patientDob")?.value || "",
+      location: document.getElementById("location")?.value || "",
+      operationType: document.getElementById("operationType")?.value || "",
+      diagnosis: document.getElementById("diagnosis")?.value || "",
+      urgency: document.getElementById("urgency")?.value || "",
+      stability: document.getElementById("stability")?.value || "",
+      consciousness: document.getElementById("consciousness")?.value || "",
+      pulse: document.getElementById("pulse")?.value || "",
+      bloodLoss: document.getElementById("bloodLoss")?.value || "",
+      allergies: document.getElementById("allergies")?.value || "",
+      npoStatus: document.getElementById("npoStatus")?.value || "",
+      preOpActions: document.getElementById("preOpActions")?.value || "",
+      postOpPlan: document.getElementById("postOpPlan")?.value || "",
+      extraInfo: document.getElementById("extraInfo")?.value || ""
+    }),
+    buildSummary: () => document.getElementById("summaryOutput")?.value || "",
+    saveNextLabel: "Zet klaar voor rapport"
+  });
+});
+

@@ -1,0 +1,19 @@
+{
+  "staffApiUrl": "https://script.google.com/macros/s/AKfycbxh-7nXpT8A7D4KCQJsvA3rS_fWbFZUPsxC6zjbiLuN5Cp2y8AZ35NrrtgwGhgX8KffRA/exec",
+  "storageKey": "ems-rapport-revalidatie-v1",
+  "staffLabelFormat": "naam-roepnummer-rang",
+  "selects": {
+    "caseOrigin": ["Chirurgie", "Spoed / ambulance", "Controle consult", "Opname", "Interne doorverwijzing", "Andere"],
+    "urgency": ["Vandaag", "Binnen 24 uur", "Binnen 72 uur", "Gepland traject"],
+    "injuryType": ["Fractuur", "Spierletsel", "Pees / ligamentletsel", "Post-operatief herstel", "Chronische mobiliteitsklacht", "Andere"],
+    "mobilityLevel": ["Vrij mobiel", "Beperkt mobiel", "Sterk beperkt", "Niet mobiel"],
+    "painLevel": ["Licht", "Matig", "Hoog", "Extreem"],
+    "stability": ["Stabiel", "Matig stabiel", "Onstabiel"],
+    "weightBearing": ["Volledig", "Beperkt", "Niet toegestaan", "Onbekend"],
+    "healingPhase": ["Acute fase", "Vroege herstel fase", "Actieve revalidatie", "Opvolgfase"],
+    "supportAid": ["Geen", "Brace", "Krukken", "Rolstoel", "Immobilisatie", "Combinatie"],
+    "trajectoryIntensity": ["Kort advies", "Beperkt traject", "Standaard traject", "Intensief traject"],
+    "outcomeStatus": ["Goed herstel", "Voorzichtig herstel", "Weinig vooruitgang", "Nieuwe evaluatie nodig"],
+    "referralDepartment": ["Geen", "Chirurgie", "Spoed", "Opname", "Psychologie", "Nieuwe ortho controle"]
+  }
+}

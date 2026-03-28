@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="../../assets/styles/components.css" />
   <link rel="stylesheet" href="../../assets/styles/utilities.css" />
   <link rel="stylesheet" href="../../assets/styles/portaal.css" />
+  <link rel="stylesheet" href="../../assets/styles/flow.css" />
 </head>
 <body class="portal-page">
   <div class="app-shell">
@@ -104,6 +105,16 @@
         </aside>
       </section>
 
+      
+      <section class="portal-section" id="flow">
+        <div class="section-heading"><div><h2>Afdelingsflow</h2><p class="text-soft">Werk steeds in dezelfde volgorde zodat elke casus consequent wordt opgebouwd.</p></div></div>
+        <div class="portal-flow-grid">
+          <a class="portal-flow-card" href="../aanvraag-spoedoperatie/index.html"><span class="portal-flow-card__step">1</span><h3>Aanvraag</h3><p>Spoedoperatie of operatieplanning registreren, inclusief pre-op context.</p></a>
+          <a class="portal-flow-card" href="../operatie-tool/index.html"><span class="portal-flow-card__step">2</span><h3>Tool</h3><p>Casus uitwerken in de operatie-assistent met checklist, kosten en post-op plan.</p></a>
+          <a class="portal-flow-card" href="../rapport-operatie/index.html"><span class="portal-flow-card__step">3</span><h3>Rapport</h3><p>Definitieve chirurgische verslaggeving opbouwen voor dossier en opvolging.</p></a>
+        </div>
+      </section>
+
       <section class="portal-section" id="tools">
         <div class="section-heading">
           <div>
@@ -135,9 +146,9 @@
             </div>
           </a>
 
-          <a class="portal-card is-placeholder" href="../operatie-tool/index.html">
+          <a class="portal-card is-placeholder" href="../aanvraag-spoedoperatie/index.html">
             <div class="portal-card__top">
-              <span class="portal-card__badge">Tool</span>
+              <span class="portal-card__badge">Aanvraag</span>
               <span class="portal-card__status portal-card__status--success">Actief</span>
             </div>
 
@@ -400,5 +411,6 @@
 
   <script src="../../assets/scripts/portaal.js"></script>
 
+  <script src="../../assets/scripts/department-flow.js"></script>
 </body>
 </html>

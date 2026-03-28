@@ -242,3 +242,64 @@ function escapeHtml(value) {
     .replace(/\"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
+
+
+
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (!window.DepartmentFlow) return;
+  DepartmentFlow.init({
+    departmentKey: "psychologie",
+    label: "psychologie",
+    stage: "tool",
+    nextUrl: "../rapport-psychologie/index.html",
+    autoImport: true,
+    importLabel: "Importeer aanvraag",
+    importMapping: {
+      patientName: "patientName",
+      patientDob: "patientDob",
+      locatie: "caseOrigin",
+      hulpvraag: "intakeSummary",
+      huidigeSituatie: "intakeSummary",
+      huidigeThema: "contextNotes",
+      presentatie: "mentalState",
+      veiligheid: "riskLevel",
+      risicoIndicaties: "riskNotes",
+      eersteActies: "rpApproach",
+      trajectType: "trajectoryType",
+      extraInfo: "alerts"
+    },
+    steps: [
+      { id: "request", title: "1. Aanvraag", shortTitle: "aanvraag", url: "../aanvraag-psychologie-crisis/index.html" },
+      { id: "tool", title: "2. Tool", shortTitle: "tool", url: window.location.pathname },
+      { id: "report", title: "3. Rapport", shortTitle: "rapport", url: "../rapport-psychologie/index.html" }
+    ],
+    collectValues: () => ({
+      patientName: document.getElementById("patientName")?.value || "",
+      patientDob: document.getElementById("patientDob")?.value || "",
+      caseOrigin: document.getElementById("caseOrigin")?.value || "",
+      urgency: document.getElementById("urgency")?.value || "",
+      caseType: document.getElementById("caseType")?.value || "",
+      riskLevel: document.getElementById("riskLevel")?.value || "",
+      intakeSummary: document.getElementById("intakeSummary")?.value || "",
+      supportGoal: document.getElementById("supportGoal")?.value || "",
+      mentalState: document.getElementById("mentalState")?.value || "",
+      cooperation: document.getElementById("cooperation")?.value || "",
+      orientation: document.getElementById("orientation")?.value || "",
+      sleepFunctioning: document.getElementById("sleepFunctioning")?.value || "",
+      riskNotes: document.getElementById("riskNotes")?.value || "",
+      contextNotes: document.getElementById("contextNotes")?.value || "",
+      trajectoryType: document.getElementById("trajectoryType")?.value || "",
+      sessionFrequency: document.getElementById("sessionFrequency")?.value || "",
+      medicationAdvice: document.getElementById("medicationAdvice")?.value || "",
+      rpApproach: document.getElementById("rpApproach")?.value || "",
+      outcomeStatus: document.getElementById("outcomeStatus")?.value || "",
+      referralDepartment: document.getElementById("referralDepartment")?.value || "",
+      followupPlan: document.getElementById("followupPlan")?.value || "",
+      alerts: document.getElementById("alerts")?.value || ""
+    }),
+    buildSummary: () => document.getElementById("summaryOutput")?.value || "",
+    saveNextLabel: "Zet klaar voor rapport"
+  });
+});

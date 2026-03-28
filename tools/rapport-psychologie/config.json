@@ -1,0 +1,20 @@
+{
+  "staffApiUrl": "https://script.google.com/macros/s/AKfycbxh-7nXpT8A7D4KCQJsvA3rS_fWbFZUPsxC6zjbiLuN5Cp2y8AZ35NrrtgwGhgX8KffRA/exec",
+  "storageKey": "ems-rapport-psychologie-v1",
+  "staffLabelFormat": "naam-roepnummer-rang",
+  "selects": {
+    "caseOrigin": ["Spoed / ambulance", "Walk-in consult", "Doorverwijzing LSPD", "Doorverwijzing chirurgie", "Interne opvolging", "Andere"],
+    "urgency": ["Onmiddellijk", "Vandaag", "Binnen 24 uur", "Gepland traject"],
+    "caseType": ["Crisisopvang", "Psychose / verward gedrag", "Angst / paniek", "Trauma / rouw", "Relatietherapie", "Genderchange therapie", "Mental coaching", "Bijstand hulpdiensten", "Andere"],
+    "riskLevel": ["Laag", "Matig", "Hoog", "Acuut"],
+    "mentalState": ["Rustig", "Emotioneel", "Verward", "Achterdochtig", "Ontregeld", "Agressief"],
+    "cooperation": ["Goed", "Wisselend", "Moeilijk", "Geen medewerking"],
+    "orientation": ["Volledig georiënteerd", "Deels georiënteerd", "Gedesoriënteerd"],
+    "sleepFunctioning": ["Normaal", "Licht verstoord", "Sterk verstoord", "Onbekend"],
+    "trajectoryType": ["Crisisinterventie", "Kort begeleidingstraject", "Therapietraject", "Mediation / relatietherapie", "Mental coaching", "Medicatie-opvolging", "Observatie zonder traject"],
+    "sessionFrequency": ["Eenmalig consult", "Dagelijks tijdelijk", "2x per week", "Wekelijks", "Tweewekelijks", "Op afroep"],
+    "medicationAdvice": ["Geen", "Rustgevend / kalmerend advies", "Slaapondersteuning", "Antipsychotische opvolging", "Psychiatrische evaluatie aanbevolen"],
+    "outcomeStatus": ["Gestabiliseerd", "Tijdelijk stabiel", "Nog ontregeld", "Opname / observatie nodig"],
+    "referralDepartment": ["Geen", "Spoed / observatie", "Chirurgie", "Opname", "LSPD begeleiding", "Externe opvolging RP"]
+  }
+}

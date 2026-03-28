@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EMS Psychologisch Verslag</title>
+
+  <link rel="stylesheet" href="../../assets/styles/theme.css" />
+  <link rel="stylesheet" href="../../assets/styles/base.css" />
+  <link rel="stylesheet" href="../../assets/styles/layout.css" />
+  <link rel="stylesheet" href="../../assets/styles/components.css" />
+  <link rel="stylesheet" href="../../assets/styles/utilities.css" />
+  <link rel="stylesheet" href="../../assets/styles/psychologie-rapport.css" />
+  <link rel="stylesheet" href="../../assets/styles/flow.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="site-header">
+      <img src="../../assets/images/Banner.png" alt="EMS Tools Hub banner" class="site-banner" />
+    </header>
+
+    <div class="page-container">
+      <section class="intro panel">
+        <h1>EMS Psychologisch Verslag</h1>
+        <p>Verslagmodule voor intake, crisisopvang, consulten en opvolging binnen de RP-context.</p>
+      </section>
+
+      <div class="tool-nav">
+        <a href="../portaal-psychologie/index.html">← Terug naar portaal psychologie</a>
+      </div>
+
+      <section class="panel patient-panel">
+        <div class="panel-header">
+          <h2>Patiëntgegevens</h2>
+        </div>
+
+        <div class="panel-body">
+          <div class="form-row form-row--2">
+            <div class="field">
+              <label for="patientName">Naam patiënt</label>
+              <input id="patientName" type="text" placeholder="Voornaam Achternaam" />
+            </div>
+            <div class="field">
+              <label for="patientDob">Geboortedatum</label>
+              <input id="patientDob" type="date" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="workspace-grid">
+        <div class="tool-form-column">
+          <div class="panel input-panel">
+            <div class="panel-body">
+              <details class="accordion-section" open>
+                <summary>Consultgegevens</summary>
+                <div class="accordion-content">
+                  <div class="form-row form-row--2">
+                    <div class="field">
+                      <label for="location">Locatie</label>
+                      <input id="location" type="text" placeholder="Psychologie, consultkamer, observatie..." />
+                    </div>
+                    <div class="field">
+                      <label for="caseOrigin">Herkomst casus</label>
+                      <select id="caseOrigin"></select>
+                    </div>
+                  </div>
+                  <div class="form-row form-row--2">
+                    <div class="field">
+                      <label for="consultDate">Datum</label>
+                      <input id="consultDate" type="date" />
+                    </div>
+                    <div class="field">
+                      <label for="consultTime">Uur</label>
+                      <input id="consultTime" type="time" />
+                    </div>
+                  </div>
+                  <div class="form-row form-row--2">
+                    <div class="field">
+                      <label for="caseType">Type casus</label>
+                      <select id="caseType"></select>
+                    </div>
+                    <div class="field">
+                      <label for="urgency">Urgentie</label>
+                      <select id="urgency"></select>
+                    </div>
+                  </div>
+                  <div class="form-row form-row--1">
+                    <div class="field">
+                      <label for="reason">Aanmelding / hulpvraag</label>
+                      <textarea id="reason" rows="4" placeholder="Waarom werd de patiënt gezien?"></textarea>
+                    </div>
+                  </div>
+                </div>
+              </details>
+
+              <details class="accordion-section">
+                <summary>Psycholoog & betrokkenen</summary>
+                <div class="accordion-content">
+                  <div class="form-row form-row--2">
+                    <div class="field">
+                      <label for="leadPsychologist">Behandelend psycholoog</label>
+                      <select id="leadPsychologist">
+                        <option value="">Kies een behandelaar</option>
+                      </select>
+                    </div>
+                    <div class="field">
+                      <label for="assistants">Assistenten / aanwezigen</label>
+                      <select id="assistants" multiple size="6"></select>
+                      <small class="field-help">Gebruik Ctrl of Cmd om meerdere personen te selecteren.</small>
+                    </div>
+                  </div>
+                  <div class="form-row form-row--1">
+                    <div class="field">
+                      <label for="network">Betrokken partner / familie / diensten</label>
+                      <input id="network" type="text" placeholder="Partner, familie, LSPD, collega, geen..." />
+                    </div>
+                  </div>
+                </div>
+              </details>
+
+              <details class="accordion-section">
+                <summary>Mentale inschatting</summary>
+                <div class="accordion-content">
+                  <div class="form-row form-row--3">
+                    <div class="field">
+                      <label for="riskLevel">Risiconiveau</label>
+                      <select id="riskLevel"></select>
+                    </div>
+                    <div class="field">
+                      <label for="mentalState">Mentale toestand</label>
+                      <select id="mentalState"></select>
+                    </div>
+                    <div class="field">
+                      <label for="cooperation">Medewerking</label>
+                      <select id="cooperation"></select>
+                    </div>
+                  </div>
+                  <div class="form-row form-row--2">
+                    <div class="field">
+                      <label for="orientation">Oriëntatie</label>
+                      <select id="orientation"></select>
+                    </div>
+                    <div class="field">
+                      <label for="sleepFunctioning">Slaap / functioneren</label>
+                      <select id="sleepFunctioning"></select>
+                    </div>
+                  </div>
+                  <div class="form-row form-row--2">
+                    <div class="field">
+                      <label for="observations">Observaties</label>
+                      <textarea id="observations" rows="5" placeholder="Gedrag, uitspraken, sfeer, opvallende signalen..."></textarea>
+                    </div>
+                    <div class="field">
+                      <label for="workingDiagnosis">Werkdiagnose / inschatting</label>
+                      <textarea id="workingDiagnosis" rows="5" placeholder="Voorlopige inschatting, diagnose of werkhypothese..."></textarea>
+                    </div>
+                  </div>
+                </div>
+              </details>
+
+              <details class="accordion-section">
+                <summary>Traject & advies</summary>
+                <div class="accordion-content">
+                  <div class="form-row form-row--2">
+                    <div class="field">
+                      <label for="trajectoryType">Type traject</label>
+                      <select id="trajectoryType"></select>
+                    </div>
+                    <div class="field">
+                      <label for="sessionFrequency">Frequentie</label>
+                      <select id="sessionFrequency"></select>
+                    </div>
+                  </div>
+                  <div class="form-row form-row--2">
+                    <div class="field">
+                      <label for="medicationAdvice">Medicatie / psychiatrisch advies</label>
+                      <select id="medicationAdvice"></select>
+                    </div>
+                    <div class="field">
+                      <label for="referralDepartment">Doorverwijzing</label>
+                      <select id="referralDepartment"></select>
+                    </div>
+                  </div>
+                  <div class="form-row form-row--2">
+                    <div class="field">
+                      <label for="interventions">Uitgevoerde interventies</label>
+                      <textarea id="interventions" rows="5" placeholder="Gesprek, de-escalatie, psycho-educatie, coaching..."></textarea>
+                    </div>
+                    <div class="field">
+                      <label for="advicePlan">Advies en plan</label>
+                      <textarea id="advicePlan" rows="5" placeholder="Concrete afspraken, grenzen, vervolg, doorverwijzing..."></textarea>
+                    </div>
+                  </div>
+                </div>
+              </details>
+
+              <details class="accordion-section">
+                <summary>Opvolging & kosten</summary>
+                <div class="accordion-content">
+                  <div class="form-row form-row--2">
+                    <div class="field">
+                      <label for="outcomeStatus">Status na consult</label>
+                      <select id="outcomeStatus"></select>
+                    </div>
+                    <div class="field">
+                      <label for="nextContact">Volgend contactmoment</label>
+                      <input id="nextContact" type="text" placeholder="Binnen 24 uur, volgende week, op afroep..." />
+                    </div>
+                  </div>
+                  <div class="form-row form-row--2">
+                    <div class="field">
+                      <label for="costTotal">Totaalbedrag (€)</label>
+                      <input id="costTotal" type="number" min="0" step="1" placeholder="Bijv. 70" />
+                    </div>
+                    <div class="field">
+                      <label for="costNotes">Opmerking kosten</label>
+                      <input id="costNotes" type="text" placeholder="Intake, crisisconsult, sessie..." />
+                    </div>
+                  </div>
+                </div>
+              </details>
+
+              <details class="accordion-section">
+                <summary>Tekstlog & extra notities</summary>
+                <div class="accordion-content">
+                  <div class="form-row form-row--1">
+                    <div class="field">
+                      <label for="medicalLog">Tekstlog / ruwe notities</label>
+                      <textarea id="medicalLog" rows="8" placeholder="Plak hier vrije tekst, log of intake-notities..."></textarea>
+                    </div>
+                  </div>
+                  <div class="button-row">
+                    <button type="button" class="btn btn-secondary btn-compact" id="parseLogBtn">Lees log uit</button>
+                  </div>
+                  <div class="form-row form-row--1">
+                    <div class="field">
+                      <label for="summaryNotes">Extra notities</label>
+                      <textarea id="summaryNotes" rows="5" placeholder="Bijzonderheden, RP-afspraken, aandachtspunten..."></textarea>
+                    </div>
+                  </div>
+                </div>
+              </details>
+            </div>
+          </div>
+        </div>
+
+        <div class="tool-output-column">
+          <div class="panel output-actions-panel">
+            <div class="button-row button-row--compact">
+              <button type="button" class="btn btn-primary btn-compact" id="buildBtn">Bouw rapport</button>
+              <button type="button" class="btn btn-secondary btn-compact" id="copyBtn">Kopieer</button>
+              <button type="button" class="btn btn-secondary btn-compact" id="resetBtn">Reset</button>
+            </div>
+            <div id="statusBox" class="status-box status--neutral"></div>
+          </div>
+
+          <div class="panel output-panel">
+            <div class="output-panel__header">
+              <h2>Gegenereerd rapport</h2>
+              <p>Hier verschijnt het psychologisch verslag in leesbare vorm.</p>
+            </div>
+            <div class="output-canvas">
+              <div id="reportPreview" class="report-preview" aria-live="polite"></div>
+              <textarea id="reportOutput" class="output-canvas__textarea is-hidden" readonly></textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script src="../../assets/scripts/ems-staff-service.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

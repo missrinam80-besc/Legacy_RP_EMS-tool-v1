@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EMS Revalidatierapport</title>
+
+  <link rel="stylesheet" href="../../assets/styles/theme.css" />
+  <link rel="stylesheet" href="../../assets/styles/base.css" />
+  <link rel="stylesheet" href="../../assets/styles/layout.css" />
+  <link rel="stylesheet" href="../../assets/styles/components.css" />
+  <link rel="stylesheet" href="../../assets/styles/utilities.css" />
+  <link rel="stylesheet" href="../../assets/styles/revalidatie-rapport.css" />
+  <link rel="stylesheet" href="../../assets/styles/flow.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="site-header">
+      <img src="../../assets/images/Banner.png" alt="EMS Tools Hub banner" class="site-banner" />
+    </header>
+
+    <div class="page-container">
+      <section class="intro panel">
+        <h1>EMS Revalidatierapport</h1>
+        <p>Rapportmodule voor mobiliteitscheck, herstelplan, hulpmiddelen en opvolging.</p>
+      </section>
+
+      <div class="tool-nav">
+        <a href="../portaal-ortho-revalidatie/index.html">← Terug naar portaal ortho / revalidatie</a>
+      </div>
+
+      <section class="panel patient-panel">
+        <div class="panel-header">
+          <h2>Patiëntgegevens</h2>
+        </div>
+        <div class="panel-body">
+          <div class="form-row form-row--2">
+            <div class="field">
+              <label for="patientName">Naam patiënt</label>
+              <input id="patientName" type="text" placeholder="Voornaam Achternaam" />
+            </div>
+            <div class="field">
+              <label for="patientDob">Geboortedatum</label>
+              <input id="patientDob" type="date" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="workspace-grid">
+        <div class="tool-form-column">
+          <div class="panel input-panel">
+            <div class="panel-body">
+              <details class="accordion-section" open>
+                <summary>Casusgegevens</summary>
+                <div class="accordion-content">
+                  <div class="form-row form-row--2">
+                    <div class="field">
+                      <label for="location">Locatie</label>
+                      <input id="location" type="text" placeholder="Revalidatie, controle, opname..." />
+                    </div>
+                    <div class="field">
+                      <label for="caseOrigin">Herkomst casus</label>
+                      <select id="caseOrigin"></select>
+                    </div>
+                  </div>
+                  <div class="form-row form-row--2">
+                    <div class="field">
+                      <label for="consultDate">Datum</label>
+                      <input id="consultDate" type="date" />
+                    </div>
+                    <div class="field">
+                      <label for="consultTime">Uur</label>
+                      <input id="consultTime" type="time" />
+                    </div>
+                  </div>
+                  <div class="form-row form-row--2">
+                    <div class="field">
+                      <label for="injuryType">Type letsel</label>
+                      <select id="injuryType"></select>
+                    </div>
+                    <div class="field">
+                      <label for="urgency">Urgentie</label>
+                      <select id="urgency"></select>
+                    </div>
+                  </div>
+                  <div class="form-row form-row--1">
+                    <div class="field">
+                      <label for="reason">Aanmelding / reden</label>
+                      <textarea id="reason" rows="4" placeholder="Waarom werd de patiënt doorverwezen of opgevolgd?"></textarea>
+                    </div>
+                  </div>
+                </div>
+              </details>
+
+              <details class="accordion-section">
+                <summary>Behandelaar & betrokken zone</summary>
+                <div class="accordion-content">
+                  <div class="form-row form-row--2">
+                    <div class="field">
+                      <label for="leadTherapist">Behandelaar</label>
+                      <select id="leadTherapist">
+                        <option value="">Kies een behandelaar</option>
+                      </select>
+                    </div>
+                    <div class="field">
+                      <label for="assistants">Assistenten / aanwezigen</label>
+                      <select id="assistants" multiple size="6"></select>
+                    </div>
+                  </div>
+                  <div class="form-row form-row--2">
+                    <div class="field">
+                      <label for="bodyZone">Betrokken zone</label>
+                      <input id="bodyZone" type="text" placeholder="Linkerbeen, rechterarm, knie, rug..." />
+                    </div>
+                    <div class="field">
+                      <label for="postSurgery">Postoperatief?</label>
+                      <select id="postSurgery">
+                        <option value="">Kies een optie</option>
+                        <option value="Ja">Ja</option>
+                        <option value="Nee">Nee</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </details>
+
+              <details class="accordion-section">
+                <summary>Mobiliteitscheck</summary>
+                <div class="accordion-content">
+                  <div class="form-row form-row--3">
+                    <div class="field">
+                      <label for="mobilityLevel">Mobiliteit</label>
+                      <select id="mobilityLevel"></select>
+                    </div>
+                    <div class="field">
+                      <label for="painLevel">Pijnniveau</label>
+                      <select id="painLevel"></select>
+                    </div>
+                    <div class="field">
+                      <label for="stability">Stabiliteit</label>
+                      <select id="stability"></select>
+                    </div>
+                  </div>
+                  <div class="form-row form-row--2">
+                    <div class="field">
+                      <label for="weightBearing">Belastbaarheid</label>
+                      <select id="weightBearing"></select>
+                    </div>
+                    <div class="field">
+                      <label for="healingPhase">Herstelfase</label>
+                      <select id="healingPhase"></select>
+                    </div>
+                  </div>
+                  <div class="form-row form-row--2">
+                    <div class="field">
+                      <label for="findings">Bevindingen</label>
+                      <textarea id="findings" rows="5" placeholder="Looptest, traplopen, steunname, beperking..."></textarea>
+                    </div>
+                    <div class="field">
+                      <label for="restrictions">Beperkingen</label>
+                      <textarea id="restrictions" rows="5" placeholder="Wat mag de patiënt wel of niet doen?"></textarea>
+                    </div>
+                  </div>
+                </div>
+              </details>
+
+              <details class="accordion-section">
+                <summary>Herstelplan & hulpmiddelen</summary>
+                <div class="accordion-content">
+                  <div class="form-row form-row--3">
+                    <div class="field">
+                      <label for="supportAid">Hulpmiddel</label>
+                      <select id="supportAid"></select>
+                    </div>
+                    <div class="field">
+                      <label for="trajectoryIntensity">Trajectintensiteit</label>
+                      <select id="trajectoryIntensity"></select>
+                    </div>
+                    <div class="field">
+                      <label for="referralDepartment">Doorverwijzing</label>
+                      <select id="referralDepartment"></select>
+                    </div>
+                  </div>
+                  <div class="form-row form-row--2">
+                    <div class="field">
+                      <label for="recoveryPlan">Herstelplan</label>
+                      <textarea id="recoveryPlan" rows="5" placeholder="Rust, oefeningen, controle, opbouw, nazorg..."></textarea>
+                    </div>
+                    <div class="field">
+                      <label for="followUp">Opvolging</label>
+                      <textarea id="followUp" rows="5" placeholder="Controle na x dagen, verdere evaluatie, terugkoppeling..."></textarea>
+                    </div>
+                  </div>
+                </div>
+              </details>
+
+              <details class="accordion-section">
+                <summary>Resultaat & kosten</summary>
+                <div class="accordion-content">
+                  <div class="form-row form-row--2">
+                    <div class="field">
+                      <label for="outcomeStatus">Resultaatstatus</label>
+                      <select id="outcomeStatus"></select>
+                    </div>
+                    <div class="field">
+                      <label for="estimatedDuration">Geschatte duur herstel</label>
+                      <input id="estimatedDuration" type="text" placeholder="3 dagen, 1 week, meerdere controles..." />
+                    </div>
+                  </div>
+                  <div class="form-row form-row--2">
+                    <div class="field">
+                      <label for="costTotal">Totaalbedrag (€)</label>
+                      <input id="costTotal" type="number" min="0" step="1" placeholder="Bijv. 85" />
+                    </div>
+                    <div class="field">
+                      <label for="costNotes">Opmerking kosten</label>
+                      <input id="costNotes" type="text" placeholder="Intake, hulpmiddel, sessie..." />
+                    </div>
+                  </div>
+                </div>
+              </details>
+
+              <details class="accordion-section">
+                <summary>Tekstlog & extra notities</summary>
+                <div class="accordion-content">
+                  <div class="form-row form-row--1">
+                    <div class="field">
+                      <label for="medicalLog">Tekstlog / ruwe notities</label>
+                      <textarea id="medicalLog" rows="8" placeholder="Plak hier vrije tekst of observatielog..."></textarea>
+                    </div>
+                  </div>
+                  <div class="button-row">
+                    <button type="button" class="btn btn-secondary btn-compact" id="parseLogBtn">Lees log uit</button>
+                  </div>
+                  <div class="form-row form-row--1">
+                    <div class="field">
+                      <label for="summaryNotes">Extra notities</label>
+                      <textarea id="summaryNotes" rows="5" placeholder="Bijzonderheden, samenhang met chirurgie, extra context..."></textarea>
+                    </div>
+                  </div>
+                </div>
+              </details>
+            </div>
+          </div>
+        </div>
+
+        <div class="tool-output-column">
+          <div class="panel output-actions-panel">
+            <div class="button-row button-row--compact">
+              <button type="button" class="btn btn-primary btn-compact" id="buildBtn">Bouw rapport</button>
+              <button type="button" class="btn btn-secondary btn-compact" id="copyBtn">Kopieer</button>
+              <button type="button" class="btn btn-secondary btn-compact" id="resetBtn">Reset</button>
+            </div>
+            <div id="statusBox" class="status-box status--neutral"></div>
+          </div>
+          <div class="panel output-panel">
+            <div class="output-panel__header">
+              <h2>Gegenereerd rapport</h2>
+              <p>Hier verschijnt het revalidatierapport in leesbare vorm.</p>
+            </div>
+            <div class="output-canvas">
+              <div id="reportPreview" class="report-preview" aria-live="polite"></div>
+              <textarea id="reportOutput" class="output-canvas__textarea is-hidden" readonly></textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script src="../../assets/scripts/ems-staff-service.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

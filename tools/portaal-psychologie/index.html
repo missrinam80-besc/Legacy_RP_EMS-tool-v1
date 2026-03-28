@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="../../assets/styles/components.css" />
   <link rel="stylesheet" href="../../assets/styles/utilities.css" />
   <link rel="stylesheet" href="../../assets/styles/portaal.css" />
+  <link rel="stylesheet" href="../../assets/styles/flow.css" />
 </head>
 <body class="portal-page">
   <div class="app-shell">
@@ -102,6 +103,16 @@
         </aside>
       </section>
 
+      
+      <section class="portal-section" id="flow">
+        <div class="section-heading"><div><h2>Afdelingsflow</h2><p class="text-soft">Gebruik dezelfde volgorde voor crisisopvang en trajectbegeleiding.</p></div></div>
+        <div class="portal-flow-grid">
+          <a class="portal-flow-card" href="../aanvraag-psychologie-crisis/index.html"><span class="portal-flow-card__step">1</span><h3>Aanvraag</h3><p>Crisisaanvraag of trajectverwijzing registreren met hulpvraag en risico-inschatting.</p></a>
+          <a class="portal-flow-card" href="../psychologie-tool/index.html"><span class="portal-flow-card__step">2</span><h3>Tool</h3><p>Intake, presentatie, risico’s, behandelvoorstel en opvolging structureren.</p></a>
+          <a class="portal-flow-card" href="../rapport-psychologie/index.html"><span class="portal-flow-card__step">3</span><h3>Rapport</h3><p>Verslag opmaken voor crisisinterventie, traject of mentale opvolging.</p></a>
+        </div>
+      </section>
+
       <section class="portal-section" id="tools">
         <div class="section-heading">
           <div>
@@ -186,10 +197,10 @@
         </div>
 
         <div class="portal-grid">
-          <a class="portal-card is-placeholder" href="#">
+          <a class="portal-card is-placeholder" href="../rapport-psychologie/index.html">
             <div class="portal-card__top">
               <span class="portal-card__badge">Rapport</span>
-              <span class="portal-card__status">Nieuw</span>
+              <span class="portal-card__status portal-card__status--success">Actief</span>
             </div>
 
             <div class="portal-card__title">
@@ -215,7 +226,7 @@
             <div class="portal-card__title">
               <span class="portal-card__icon" aria-hidden="true">📄</span>
               <div>
-                <h3>Opvolgrapport</h3>
+                <h3>Psychologisch opvolgrapport</h3>
               </div>
             </div>
 
@@ -235,7 +246,7 @@
             <div class="portal-card__title">
               <span class="portal-card__icon" aria-hidden="true">📘</span>
               <div>
-                <h3>Consultverslag</h3>
+                <h3>Consultverslag psychologie</h3>
               </div>
             </div>
 
@@ -398,5 +409,6 @@
 
   <script src="../../assets/scripts/portaal.js"></script>
   
+  <script src="../../assets/scripts/department-flow.js"></script>
 </body>
 </html>

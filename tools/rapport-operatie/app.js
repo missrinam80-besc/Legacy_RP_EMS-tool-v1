@@ -784,3 +784,34 @@ function matchGroup(text, regex) {
   const match = text.match(regex);
   return match && match[1] ? match[1].trim() : "";
 }
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (!window.DepartmentFlow) return;
+  DepartmentFlow.init({
+    departmentKey: "chirurgie",
+    label: "chirurgie",
+    stage: "report",
+    autoImport: true,
+    importLabel: "Importeer tool",
+    importMapping: {
+      patientName: "patientName",
+      patientDob: "patientDob",
+      location: "location",
+      operationType: "operationType",
+      diagnosis: "operationReason",
+      urgency: "stability",
+      stability: "stability",
+      complications: "complications",
+      extraInfo: "summaryNotes"
+    },
+    steps: [
+      { id: "request", title: "1. Aanvraag", shortTitle: "aanvraag", url: "../aanvraag-spoedoperatie/index.html" },
+      { id: "tool", title: "2. Tool", shortTitle: "tool", url: "../operatie-tool/index.html" },
+      { id: "report", title: "3. Rapport", shortTitle: "rapport", url: window.location.pathname }
+    ],
+    collectValues: collectData,
+    buildSummary: buildReport
+  });
+});
+

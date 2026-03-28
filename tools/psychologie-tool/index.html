@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="../../assets/styles/utilities.css" />
   <link rel="stylesheet" href="../../assets/styles/operatie.css" />
   <link rel="stylesheet" href="../../assets/styles/psychologie-tool.css" />
+  <link rel="stylesheet" href="../../assets/styles/flow.css" />
 </head>
 <body>
   <div class="app">
@@ -31,6 +32,8 @@
       </div><div class="tool-output-column"><section class="panel output-actions-panel"><div class="button-row button-row--compact"><button id="generateBtn" class="btn btn-primary" type="button">Genereer samenvatting</button><button id="copyBtn" class="btn btn-secondary btn-compact" type="button">Kopieer</button><button id="resetBtn" class="btn btn-secondary btn-compact" type="button">Reset</button></div><div id="statusBox" class="status-box status-info">Vul de psychologie-assistent in en genereer daarna de output.</div></section><section class="panel output-panel"><div class="output-panel__header"><h2>Snelle beoordeling</h2><p class="muted-line">Handige indicatoren voor crisisniveau, volledigheid en kostenschatting.</p></div><div class="quick-badge-grid"><div class="quick-badge-card"><span class="quick-badge-card__label">Prioriteit</span><strong id="priorityBadge">Nog niet berekend</strong></div><div class="quick-badge-card"><span class="quick-badge-card__label">Checklist</span><strong id="checklistBadge">0% voltooid</strong></div><div class="quick-badge-card"><span class="quick-badge-card__label">Kostenschatting</span><strong id="costBadge">€0</strong></div></div><ul id="warningList" class="warning-list"><li>Nog geen waarschuwingen.</li></ul></section><section class="panel output-panel"><div class="output-panel__header"><h2>Gegenereerde tekst</h2><p class="muted-line">Gebruik deze output als bouwsteen voor consult, opvolgverslag of overdracht.</p></div><div class="output-canvas"><textarea id="summaryOutput" class="output-canvas__textarea" readonly placeholder="Hier verschijnt de psychologie-samenvatting..."></textarea></div></section></div></section>
     </div>
   </div>
+  
+  <script src="../../assets/scripts/department-flow.js"></script>
   <script src="./app.js"></script>
 </body>
 </html>

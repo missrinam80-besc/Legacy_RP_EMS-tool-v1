@@ -61,6 +61,43 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+
+
+  if (window.DepartmentFlow) {
+    DepartmentFlow.init({
+      departmentKey: "chirurgie",
+      label: "chirurgie",
+      stage: "request",
+      nextUrl: "../operatie-tool/index.html",
+      steps: [
+        { id: "request", title: "1. Aanvraag", shortTitle: "aanvraag", url: window.location.pathname },
+        { id: "tool", title: "2. Tool", shortTitle: "tool", url: "../operatie-tool/index.html" },
+        { id: "report", title: "3. Rapport", shortTitle: "rapport", url: "../rapport-operatie/index.html" }
+      ],
+      collectValues: () => ({
+        patientName: document.getElementById("patientName")?.value || "",
+        patientDob: document.getElementById("patientDob")?.value || "",
+        aanvrager: document.getElementById("aanvrager")?.value || "",
+        roepnummer: document.getElementById("roepnummer")?.value || "",
+        locatie: document.getElementById("locatie")?.value || "",
+        urgentie: document.getElementById("urgentie")?.value || "",
+        stabiliteit: document.getElementById("stabiliteit")?.value || "",
+        ingreepType: document.getElementById("ingreepType")?.value || "",
+        diagnose: document.getElementById("diagnose")?.value || "",
+        bewustzijn: document.getElementById("bewustzijn")?.value || "",
+        pols: document.getElementById("pols")?.value || "",
+        ademhaling: document.getElementById("ademhaling")?.value || "",
+        bloedverlies: document.getElementById("bloedverlies")?.value || "",
+        allergieen: document.getElementById("allergieen")?.value || "",
+        nuchter: document.getElementById("nuchter")?.value || "",
+        preopActies: document.getElementById("preopActies")?.value || "",
+        extraInfo: document.getElementById("extraInfo")?.value || ""
+      }),
+      buildSummary: () => output.value.trim() || buildSummary(),
+      saveNextLabel: "Zet klaar voor tool"
+    });
+  }
+
   form.addEventListener("reset", () => {
     setTimeout(() => {
       output.value = "";
