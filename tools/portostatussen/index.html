@@ -22,13 +22,21 @@
       <section class="portal-header-card">
         <div class="portal-header-card__content">
           <h1>Portostatussen</h1>
-          <p>Overzicht van de belangrijkste porto- en inzetstatussen voor de dagelijkse werking.</p>
+          <p>
+            Overzicht van de belangrijkste porto- en inzetstatussen voor de dagelijkse
+            werking van EMS.
+          </p>
 
           <nav class="portal-subnav" aria-label="Snelle navigatie">
             <a class="portal-subnav__link" href="../../index.html">🏠 Home medewerkers</a>
             <a class="portal-subnav__link" href="../../command.html">⚙️ Command</a>
             <a class="portal-subnav__link" href="../personeelslijst/view.html">👥 Personeelslijst</a>
           </nav>
+
+          <div class="info-toolbar">
+            <button type="button" class="btn btn-secondary" id="expandAllBtn">Alles openklappen</button>
+            <button type="button" class="btn btn-secondary" id="collapseAllBtn">Alles sluiten</button>
+          </div>
         </div>
       </section>
 
@@ -36,7 +44,7 @@
         <div class="section-heading">
           <div>
             <h2>Statusoverzicht</h2>
-            <p class="text-soft">Gebruik duidelijke en consistente statussen op de porto.</p>
+            <p class="text-soft">Snelle visuele samenvatting van de meest gebruikte statussen.</p>
           </div>
         </div>
 
@@ -46,7 +54,7 @@
               <span class="portal-card__icon">🟢</span>
               <div><h3>Beschikbaar</h3></div>
             </div>
-            <p>Eenheid is inzetbaar en klaar voor een nieuwe oproep.</p>
+            <p>De eenheid is vrij en klaar voor een nieuwe oproep.</p>
           </article>
 
           <article class="portal-card">
@@ -54,7 +62,7 @@
               <span class="portal-card__icon">🚑</span>
               <div><h3>Onderweg</h3></div>
             </div>
-            <p>Eenheid is onderweg naar een oproep of locatie.</p>
+            <p>De eenheid is onderweg naar een oproep, patiënt of locatie.</p>
           </article>
 
           <article class="portal-card">
@@ -62,7 +70,7 @@
               <span class="portal-card__icon">📍</span>
               <div><h3>Ter plaatse</h3></div>
             </div>
-            <p>Eenheid is aangekomen en behandelt of beoordeelt de situatie.</p>
+            <p>De eenheid is aangekomen en de situatie wordt beoordeeld of behandeld.</p>
           </article>
 
           <article class="portal-card">
@@ -70,7 +78,7 @@
               <span class="portal-card__icon">🏥</span>
               <div><h3>Transport / ziekenhuis</h3></div>
             </div>
-            <p>Patiëntentransport bezig of aangekomen aan het ziekenhuis.</p>
+            <p>Patiëntentransport bezig of aangekomen in het ziekenhuis.</p>
           </article>
 
           <article class="portal-card">
@@ -78,7 +86,7 @@
               <span class="portal-card__icon">⛔</span>
               <div><h3>Tijdelijk niet inzetbaar</h3></div>
             </div>
-            <p>Eenheid is tijdelijk niet beschikbaar door administratie, nazorg of andere reden.</p>
+            <p>De eenheid is tijdelijk niet beschikbaar door nazorg, administratie of andere reden.</p>
           </article>
 
           <article class="portal-card">
@@ -86,11 +94,141 @@
               <span class="portal-card__icon">🌙</span>
               <div><h3>Uit dienst</h3></div>
             </div>
-            <p>Medewerker is niet langer inzetbaar voor de rest van de dienst.</p>
+            <p>De medewerker is niet langer inzetbaar voor de rest van de dienst.</p>
           </article>
+        </div>
+      </section>
+
+      <section class="portal-section">
+        <div class="section-heading">
+          <div>
+            <h2>Uitleg per status</h2>
+            <p class="text-soft">Gebruik deze blokken als vaste leidraad voor communicatie op de porto.</p>
+          </div>
+        </div>
+
+        <div class="info-blocks">
+          <details class="info-accordion" open>
+            <summary>Beschikbaar / vrij inzetbaar</summary>
+            <div class="info-accordion__content">
+              <p>Gebruik deze status wanneer je eenheid klaar is voor een nieuwe dispatch of oproep.</p>
+
+              <div class="info-mini-grid">
+                <div class="info-mini-card">
+                  <strong>Wanneer gebruiken</strong>
+                  <span>Na afronding van een interventie of bij aanvang van je inzet.</span>
+                </div>
+                <div class="info-mini-card">
+                  <strong>Vermijd</strong>
+                  <span>Deze status gebruiken als je nog administratie of nazorg moet afwerken.</span>
+                </div>
+              </div>
+
+              <div class="info-example">
+                <strong>Voorbeeld:</strong> “201 terug beschikbaar voor oproepen.”
+              </div>
+            </div>
+          </details>
+
+          <details class="info-accordion">
+            <summary>Onderweg</summary>
+            <div class="info-accordion__content">
+              <p>Deze status gebruik je wanneer je eenheid effectief onderweg is naar een incident of opdracht.</p>
+              <ul class="info-list">
+                <li>Meld idealiter je roepnummer mee.</li>
+                <li>Gebruik dit pas zodra je effectief vertrekt.</li>
+                <li>Hou communicatie kort en duidelijk.</li>
+              </ul>
+
+              <div class="info-example">
+                <strong>Voorbeeld:</strong> “214 onderweg naar oproep.”
+              </div>
+            </div>
+          </details>
+
+          <details class="info-accordion">
+            <summary>Ter plaatse</summary>
+            <div class="info-accordion__content">
+              <p>Gebruik deze status bij aankomst op de locatie of zodra je de situatie actief beoordeelt.</p>
+              <ul class="info-list">
+                <li>Meld indien nodig meteen of bijkomende ondersteuning nodig is.</li>
+                <li>Gebruik korte updates als de situatie verandert.</li>
+              </ul>
+
+              <div class="info-example">
+                <strong>Voorbeeld:</strong> “201 ter plaatse, beoordeling gestart.”
+              </div>
+            </div>
+          </details>
+
+          <details class="info-accordion">
+            <summary>Transport / ziekenhuis</summary>
+            <div class="info-accordion__content">
+              <p>Gebruik deze status wanneer je een patiënt vervoert of aangekomen bent aan Pillbox.</p>
+              <ul class="info-list">
+                <li>Hou dispatch op de hoogte wanneer je ambulance tijdelijk bezet blijft.</li>
+                <li>Na overdracht geef je een nieuwe status door.</li>
+              </ul>
+
+              <div class="info-example">
+                <strong>Voorbeeld:</strong> “225 transport bezig richting ziekenhuis.”
+              </div>
+            </div>
+          </details>
+
+          <details class="info-accordion">
+            <summary>Tijdelijk niet inzetbaar</summary>
+            <div class="info-accordion__content">
+              <p>Gebruik dit wanneer je even niet beschikbaar bent, maar wel nog in dienst bent.</p>
+
+              <ul class="info-list">
+                <li>Administratie of rapportering</li>
+                <li>Nazorg of schoonmaak van voertuig</li>
+                <li>Interne overlegmomenten</li>
+              </ul>
+
+              <div class="info-example">
+                <strong>Voorbeeld:</strong> “214 tijdelijk niet inzetbaar voor administratie.”
+              </div>
+            </div>
+          </details>
+
+          <details class="info-accordion">
+            <summary>Uit dienst</summary>
+            <div class="info-accordion__content">
+              <p>Gebruik deze status aan het einde van je inzet of shift.</p>
+              <ul class="info-list">
+                <li>Werk lopende administratie eerst af.</li>
+                <li>Laat geen openstaande onduidelijkheden achter.</li>
+              </ul>
+
+              <div class="info-example">
+                <strong>Voorbeeld:</strong> “201 uit dienst.”
+              </div>
+            </div>
+          </details>
+
+          <details class="info-accordion">
+            <summary>Algemene richtlijnen voor porto</summary>
+            <div class="info-accordion__content">
+              <ul class="info-list">
+                <li>Hou meldingen kort, duidelijk en functioneel.</li>
+                <li>Gebruik altijd een consistente terminologie.</li>
+                <li>Vermijd overbodige discussie op de porto.</li>
+                <li>Bevestig belangrijke statuswissels op tijd.</li>
+              </ul>
+
+              <div class="info-inline-actions">
+                <a href="../procedures-afspraken/index.html">Naar procedures & afspraken</a>
+                <a href="../../index.html">Terug naar homepage</a>
+              </div>
+            </div>
+          </details>
         </div>
       </section>
     </main>
   </div>
+
+  <script src="../../assets/scripts/info-pages.js"></script>
 </body>
 </html>

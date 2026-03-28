@@ -22,63 +22,47 @@
       <section class="portal-header-card">
         <div class="portal-header-card__content">
           <h1>Belangrijke info</h1>
-          <p>Snelle toegang tot kerninformatie, interne basisregels en nuttige vertrekpunten.</p>
+          <p>
+            Centrale kennispagina met kernregels, aandachtspunten en snelle interne
+            vertrekpunten voor EMS-medewerkers.
+          </p>
 
           <nav class="portal-subnav" aria-label="Snelle navigatie">
             <a class="portal-subnav__link" href="../../index.html">🏠 Home medewerkers</a>
             <a class="portal-subnav__link" href="../../command.html">⚙️ Command</a>
             <a class="portal-subnav__link" href="../procedures-afspraken/index.html">📚 Procedures</a>
           </nav>
+
+          <div class="info-toolbar">
+            <button type="button" class="btn btn-secondary" id="expandAllBtn">Alles openklappen</button>
+            <button type="button" class="btn btn-secondary" id="collapseAllBtn">Alles sluiten</button>
+          </div>
         </div>
       </section>
 
       <section class="portal-section">
         <div class="section-heading">
           <div>
-            <h2>Kernpunten</h2>
-            <p class="text-soft">Basisprincipes die elke EMS-medewerker moet kennen.</p>
+            <h2>Snelle toegang</h2>
+            <p class="text-soft">Belangrijkste vertrekpunten voor de dagelijkse werking.</p>
           </div>
         </div>
 
         <div class="portal-grid">
-          <article class="portal-card">
-            <div class="portal-card__title">
-              <span class="portal-card__icon">🤝</span>
-              <div><h3>Professioneel gedrag</h3></div>
-            </div>
-            <p>Werk respectvol, rustig en duidelijk tegenover patiënten, collega’s en andere diensten.</p>
-          </article>
-
-          <article class="portal-card">
-            <div class="portal-card__title">
-              <span class="portal-card__icon">📋</span>
-              <div><h3>Rapportering</h3></div>
-            </div>
-            <p>Leg belangrijke interventies, opnames en opvolging correct en beknopt vast.</p>
-          </article>
-
-          <article class="portal-card">
-            <div class="portal-card__title">
-              <span class="portal-card__icon">📻</span>
-              <div><h3>Communicatie</h3></div>
-            </div>
-            <p>Gebruik duidelijke portostatussen en stem goed af met collega’s en dispatch.</p>
-          </article>
-
           <a class="portal-card" href="../personeelslijst/view.html">
             <div class="portal-card__title">
               <span class="portal-card__icon">👥</span>
               <div><h3>Personeelslijst</h3></div>
             </div>
-            <p>Bekijk medewerkers, functies en specialisaties.</p>
+            <p>Bekijk medewerkers, rollen en specialisaties.</p>
           </a>
 
-          <a class="portal-card" href="../aanvragen-training/index.html">
+          <a class="portal-card" href="../portostatussen/index.html">
             <div class="portal-card__title">
-              <span class="portal-card__icon">🎓</span>
-              <div><h3>Aanvragen</h3></div>
+              <span class="portal-card__icon">📻</span>
+              <div><h3>Portostatussen</h3></div>
             </div>
-            <p>Ga snel naar training, feedback of specialisatie-interesse.</p>
+            <p>Gebruik duidelijke en consistente statusmeldingen.</p>
           </a>
 
           <a class="portal-card" href="../procedures-afspraken/index.html">
@@ -86,11 +70,117 @@
               <span class="portal-card__icon">📚</span>
               <div><h3>Procedures & afspraken</h3></div>
             </div>
-            <p>Open de operationele basisregels en werkafspraken.</p>
+            <p>Open de basisregels en operationele richtlijnen.</p>
           </a>
+
+          <a class="portal-card" href="../aanvragen-training/index.html">
+            <div class="portal-card__title">
+              <span class="portal-card__icon">🎓</span>
+              <div><h3>Trainingsaanvraag</h3></div>
+            </div>
+            <p>Vraag opleiding of begeleiding aan.</p>
+          </a>
+        </div>
+      </section>
+
+      <section class="portal-section">
+        <div class="section-heading">
+          <div>
+            <h2>Kerninformatie</h2>
+            <p class="text-soft">Belangrijkste inhoud voor medewerkers en interne werking.</p>
+          </div>
+        </div>
+
+        <div class="info-blocks">
+          <details class="info-accordion" open>
+            <summary>Basisprincipes van professioneel gedrag</summary>
+            <div class="info-accordion__content">
+              <ul class="info-list">
+                <li>Werk respectvol tegenover patiënten, collega’s en andere diensten.</li>
+                <li>Blijf rustig en duidelijk communiceren, ook in stressvolle situaties.</li>
+                <li>Hou je rol professioneel en help de werking vooruit.</li>
+                <li>Gebruik gezond verstand en blijf binnen de interne afspraken.</li>
+              </ul>
+            </div>
+          </details>
+
+          <details class="info-accordion">
+            <summary>Rapportering en documentatie</summary>
+            <div class="info-accordion__content">
+              <p>Belangrijke interventies en opvolgingen moeten correct geregistreerd worden.</p>
+              <ul class="info-list">
+                <li>Maak rapporten beknopt maar volledig.</li>
+                <li>Noteer observaties, behandeling en opvolging duidelijk.</li>
+                <li>Gebruik het juiste rapporttype voor de juiste situatie.</li>
+              </ul>
+
+              <div class="info-inline-actions">
+                <a href="../rapport-trauma/index.html">Traumarapport</a>
+                <a href="../rapport-opname/index.html">Opnamerapport</a>
+                <a href="../rapport-operatie/index.html">Operatierapport</a>
+              </div>
+            </div>
+          </details>
+
+          <details class="info-accordion">
+            <summary>Communicatie en samenwerking</summary>
+            <div class="info-accordion__content">
+              <ul class="info-list">
+                <li>Gebruik porto kort en functioneel.</li>
+                <li>Stem goed af met collega’s bij transport, triage en opvolging.</li>
+                <li>Vraag tijdig hulp of een doorverwijzing wanneer nodig.</li>
+                <li>Communiceer respectvol met command en gespecialiseerde afdelingen.</li>
+              </ul>
+            </div>
+          </details>
+
+          <details class="info-accordion">
+            <summary>Wanneer doorverwijzen</summary>
+            <div class="info-accordion__content">
+              <div class="info-mini-grid">
+                <div class="info-mini-card">
+                  <strong>Chirurgie</strong>
+                  <span>Bij operaties, complexe letsels, interne problemen of opname.</span>
+                </div>
+                <div class="info-mini-card">
+                  <strong>Psychologie</strong>
+                  <span>Bij mentale nood, crisiszorg, therapie of opvolging.</span>
+                </div>
+                <div class="info-mini-card">
+                  <strong>Ortho / revalidatie</strong>
+                  <span>Bij hersteltrajecten, mobiliteit en nazorg.</span>
+                </div>
+                <div class="info-mini-card">
+                  <strong>Forensisch</strong>
+                  <span>Bij verdachte of juridisch gevoelige medische context.</span>
+                </div>
+              </div>
+
+              <div class="info-inline-actions">
+                <a href="../portaal-chirurgie/index.html">Chirurgie</a>
+                <a href="../portaal-psychologie/index.html">Psychologie</a>
+                <a href="../portaal-ortho-revalidatie/index.html">Ortho / revalidatie</a>
+                <a href="../portaal-forensisch/index.html">Forensisch</a>
+              </div>
+            </div>
+          </details>
+
+          <details class="info-accordion">
+            <summary>Snelle interne routes</summary>
+            <div class="info-accordion__content">
+              <div class="info-inline-actions">
+                <a href="../afwezigheid/index.html">Afwezigheid melden</a>
+                <a href="../aanvragen-feedback/index.html">Feedbackformulier</a>
+                <a href="../aanvragen-training/index.html">Trainingsaanvraag</a>
+                <a href="../aanvragen-specialisatie/index.html">Specialisatie-interesse</a>
+              </div>
+            </div>
+          </details>
         </div>
       </section>
     </main>
   </div>
+
+  <script src="../../assets/scripts/info-pages.js"></script>
 </body>
 </html>

@@ -370,3 +370,149 @@
     height: 42px;
   }
 }
+
+/* =========================
+   Kennispagina's / infoblokken
+   ========================= */
+
+.info-blocks {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.info-accordion {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.info-accordion[open] {
+  border-color: rgba(139, 10, 10, 0.2);
+}
+
+.info-accordion summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  list-style: none;
+  cursor: pointer;
+  padding: 1rem 1.1rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  background: linear-gradient(180deg, rgba(139, 10, 10, 0.03), rgba(255, 255, 255, 1));
+}
+
+.info-accordion summary::-webkit-details-marker {
+  display: none;
+}
+
+.info-accordion summary::after {
+  content: "▾";
+  font-size: 1rem;
+  color: var(--color-primary);
+  transition: transform 0.18s ease;
+}
+
+.info-accordion[open] summary::after {
+  transform: rotate(180deg);
+}
+
+.info-accordion__content {
+  padding: 1rem 1.1rem 1.15rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.info-accordion__content > *:last-child {
+  margin-bottom: 0;
+}
+
+.info-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.info-list strong {
+  color: var(--color-primary);
+}
+
+.info-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+  margin-top: 1rem;
+}
+
+.info-mini-card {
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface-soft);
+}
+
+.info-mini-card strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--color-primary);
+}
+
+.info-example {
+  margin-top: 1rem;
+  padding: 0.95rem 1rem;
+  border-left: 4px solid var(--color-primary);
+  border-radius: 0 12px 12px 0;
+  background: #fcf6f6;
+  color: var(--color-text);
+}
+
+.info-inline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.info-inline-actions a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0.55rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.info-inline-actions a:hover {
+  border-color: rgba(139, 10, 10, 0.25);
+}
+
+.info-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.info-toolbar .btn {
+  min-height: 40px;
+}
+
+@media (max-width: 768px) {
+  .info-mini-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .info-accordion summary,
+  .info-accordion__content {
+    padding-left: 0.95rem;
+    padding-right: 0.95rem;
+  }
+}

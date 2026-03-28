@@ -22,21 +22,29 @@
       <section class="portal-header-card">
         <div class="portal-header-card__content">
           <h1>Procedures & afspraken</h1>
-          <p>Basisafspraken, operationele regels en praktische richtlijnen voor de EMS-werking.</p>
+          <p>
+            Praktische richtlijnen en werkafspraken voor de basiswerking van EMS,
+            van interventieflow tot doorverwijzing.
+          </p>
 
           <nav class="portal-subnav" aria-label="Snelle navigatie">
             <a class="portal-subnav__link" href="../../index.html">🏠 Home medewerkers</a>
             <a class="portal-subnav__link" href="../../command.html">⚙️ Command</a>
             <a class="portal-subnav__link" href="../portostatussen/index.html">📻 Portostatussen</a>
           </nav>
+
+          <div class="info-toolbar">
+            <button type="button" class="btn btn-secondary" id="expandAllBtn">Alles openklappen</button>
+            <button type="button" class="btn btn-secondary" id="collapseAllBtn">Alles sluiten</button>
+          </div>
         </div>
       </section>
 
       <section class="portal-section">
         <div class="section-heading">
           <div>
-            <h2>Werkafspraken</h2>
-            <p class="text-soft">Gebruik deze pagina als praktisch vertrekpunt voor de dagelijkse werking.</p>
+            <h2>Snelle samenvatting</h2>
+            <p class="text-soft">Belangrijkste operationele thema’s in één overzicht.</p>
           </div>
         </div>
 
@@ -46,7 +54,7 @@
               <span class="portal-card__icon">🔢</span>
               <div><h3>Roepnummers</h3></div>
             </div>
-            <p>Gebruik je correcte roepnummer en meld dit duidelijk bij oproepen en statuswissels.</p>
+            <p>Gebruik altijd je correcte identificatie op de porto en in meldingen.</p>
           </article>
 
           <article class="portal-card">
@@ -54,7 +62,7 @@
               <span class="portal-card__icon">🧥</span>
               <div><h3>Kledij</h3></div>
             </div>
-            <p>Draag aangepaste en herkenbare EMS-kledij volgens je functie en inzet.</p>
+            <p>Draag herkenbare en gepaste EMS-kledij volgens functie en inzet.</p>
           </article>
 
           <article class="portal-card">
@@ -62,51 +70,142 @@
               <span class="portal-card__icon">🚐</span>
               <div><h3>Voertuigen</h3></div>
             </div>
-            <p>Gebruik voertuigen correct volgens hun rol: interventie, transport of ondersteuning.</p>
+            <p>Gebruik voertuigen volgens hun functie en beperk patiëntentransport tot de juiste eenheden.</p>
           </article>
 
           <article class="portal-card">
             <div class="portal-card__title">
               <span class="portal-card__icon">🩺</span>
-              <div><h3>Basisflow interventie</h3></div>
+              <div><h3>Interventieflow</h3></div>
             </div>
-            <p>Beoordelen, stabiliseren, behandelen, transporteren, rapporteren en indien nodig doorverwijzen.</p>
+            <p>Beoordelen, stabiliseren, behandelen, transporteren, rapporteren en doorverwijzen.</p>
           </article>
+        </div>
+      </section>
 
-          <a class="portal-card" href="../portaal-chirurgie/index.html">
-            <div class="portal-card__title">
-              <span class="portal-card__icon">🔬</span>
-              <div><h3>Doorverwijzing chirurgie</h3></div>
-            </div>
-            <p>Bij operaties, interne problemen, opname of complexe letsels.</p>
-          </a>
+      <section class="portal-section">
+        <div class="section-heading">
+          <div>
+            <h2>Praktische afspraken</h2>
+            <p class="text-soft">Gebruik deze blokken als basis voor de dagelijkse werking.</p>
+          </div>
+        </div>
 
-          <a class="portal-card" href="../portaal-psychologie/index.html">
-            <div class="portal-card__title">
-              <span class="portal-card__icon">🧠</span>
-              <div><h3>Doorverwijzing psychologie</h3></div>
+        <div class="info-blocks">
+          <details class="info-accordion" open>
+            <summary>Roepnummers en communicatie</summary>
+            <div class="info-accordion__content">
+              <ul class="info-list">
+                <li>Meld je steeds met het juiste roepnummer.</li>
+                <li>Geef statuswissels duidelijk en tijdig door.</li>
+                <li>Gebruik korte, eenduidige communicatie op de porto.</li>
+              </ul>
             </div>
-            <p>Bij mentale nood, crisisopvang, therapie of psychologische opvolging.</p>
-          </a>
+          </details>
 
-          <a class="portal-card" href="../portaal-ortho-revalidatie/index.html">
-            <div class="portal-card__title">
-              <span class="portal-card__icon">🦴</span>
-              <div><h3>Doorverwijzing ortho / revalidatie</h3></div>
+          <details class="info-accordion">
+            <summary>Kledij en professionele uitstraling</summary>
+            <div class="info-accordion__content">
+              <ul class="info-list">
+                <li>Draag aangepaste EMS-kledij die past bij je taak of functie.</li>
+                <li>Hou je uitstraling verzorgd en herkenbaar.</li>
+                <li>Pas je uitrusting aan aan de context van de inzet.</li>
+              </ul>
             </div>
-            <p>Bij hersteltrajecten, mobiliteitsproblemen en nazorg.</p>
-          </a>
+          </details>
 
-          <a class="portal-card" href="../portaal-forensisch/index.html">
-            <div class="portal-card__title">
-              <span class="portal-card__icon">⚖️</span>
-              <div><h3>Doorverwijzing forensisch</h3></div>
+          <details class="info-accordion">
+            <summary>Voertuigen en transport</summary>
+            <div class="info-accordion__content">
+              <p>Gebruik voertuigen volgens hun rol binnen de EMS-werking.</p>
+
+              <div class="info-mini-grid">
+                <div class="info-mini-card">
+                  <strong>Ambulance</strong>
+                  <span>Voor patiëntentransport en acute interventies.</span>
+                </div>
+                <div class="info-mini-card">
+                  <strong>Ondersteunend voertuig</strong>
+                  <span>Voor verplaatsing, begeleiding of specifieke opdrachten.</span>
+                </div>
+              </div>
+
+              <div class="info-example">
+                <strong>Richtlijn:</strong> patiëntentransport gebeurt enkel met geschikte transporteenheden.
+              </div>
             </div>
-            <p>Bij verdachte, gevoelige of juridisch relevante medische contexten.</p>
-          </a>
+          </details>
+
+          <details class="info-accordion">
+            <summary>Basisflow van een interventie</summary>
+            <div class="info-accordion__content">
+              <ol class="info-list">
+                <li>Situatie beoordelen</li>
+                <li>Patiënt stabiliseren</li>
+                <li>Behandeling uitvoeren</li>
+                <li>Transport of verdere opvolging bepalen</li>
+                <li>Rapporteren en indien nodig doorverwijzen</li>
+              </ol>
+
+              <div class="info-inline-actions">
+                <a href="../behandeling/index.html">Behandeltool</a>
+                <a href="../rapport-trauma/index.html">Traumarapport</a>
+              </div>
+            </div>
+          </details>
+
+          <details class="info-accordion">
+            <summary>Doorverwijzen naar gespecialiseerde afdelingen</summary>
+            <div class="info-accordion__content">
+              <div class="info-mini-grid">
+                <div class="info-mini-card">
+                  <strong>Chirurgie</strong>
+                  <span>Operatie, opname of complexe letsels.</span>
+                </div>
+                <div class="info-mini-card">
+                  <strong>Psychologie</strong>
+                  <span>Mentale nood, therapie of crisisopvang.</span>
+                </div>
+                <div class="info-mini-card">
+                  <strong>Ortho / revalidatie</strong>
+                  <span>Hersteltraject, mobiliteit en nazorg.</span>
+                </div>
+                <div class="info-mini-card">
+                  <strong>Forensisch</strong>
+                  <span>Verdachte of juridisch gevoelige medische context.</span>
+                </div>
+              </div>
+
+              <div class="info-inline-actions">
+                <a href="../portaal-chirurgie/index.html">Chirurgie</a>
+                <a href="../portaal-psychologie/index.html">Psychologie</a>
+                <a href="../portaal-ortho-revalidatie/index.html">Ortho / revalidatie</a>
+                <a href="../portaal-forensisch/index.html">Forensisch</a>
+              </div>
+            </div>
+          </details>
+
+          <details class="info-accordion">
+            <summary>Algemene werkafspraken</summary>
+            <div class="info-accordion__content">
+              <ul class="info-list">
+                <li>Hou communicatie respectvol en professioneel.</li>
+                <li>Werk rapportering en nazorg tijdig af.</li>
+                <li>Vraag hulp of overleg zodra een casus dat vraagt.</li>
+                <li>Gebruik de juiste tools en formulieren voor elke stap.</li>
+              </ul>
+
+              <div class="info-inline-actions">
+                <a href="../aanvragen-feedback/index.html">Feedback geven</a>
+                <a href="../aanvragen-training/index.html">Training aanvragen</a>
+              </div>
+            </div>
+          </details>
         </div>
       </section>
     </main>
   </div>
+
+  <script src="../../assets/scripts/info-pages.js"></script>
 </body>
 </html>
