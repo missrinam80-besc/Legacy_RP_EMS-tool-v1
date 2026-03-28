@@ -516,3 +516,36 @@
     padding-right: 0.95rem;
   }
 }
+
+/* =========================
+   Zoekbalk portalen / info
+   ========================= */
+
+.portal-search-card {
+  margin-top: 1.25rem;
+  padding: 1rem 1.1rem;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.portal-search-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.85rem;
+}
+
+.portal-search-status {
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  background: #dbeafe;
+  color: var(--color-info);
+  border: 1px solid #bfdbfe;
+  font-weight: 600;
+}
+
+.portal-card[hidden],
+.info-accordion[hidden],
+.portal-section[hidden] {
+  display: none !important;
+}
