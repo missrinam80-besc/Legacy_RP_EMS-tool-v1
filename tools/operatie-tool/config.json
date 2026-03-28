@@ -1,0 +1,37 @@
+{
+  "version": "1.0.0",
+  "moduleType": "operatie-assistent",
+  "selects": {
+    "caseOrigin": ["Spoed / ambulance", "Consultatie", "Opname", "Doorverwijzing andere afdeling"],
+    "urgency": ["Gepland", "Binnen 1 uur", "Binnen 30 minuten", "Onmiddellijk"],
+    "operationType": ["Chirurgische ingreep", "Spoedoperatie", "Trauma-operatie", "Orthopedische ingreep", "Exploratieve ingreep", "Wondherstel / hechting", "Andere"],
+    "stability": ["Stabiel", "Matig stabiel", "Onstabiel", "Kritiek"],
+    "consciousness": ["Bij bewustzijn", "Verlaagd bewustzijn", "Buiten bewustzijn"],
+    "pulse": ["Traag", "Normaal", "Snel", "Geen voelbare pols"],
+    "breathing": ["Vrij", "Moeizaam", "Ondersteuning nodig"],
+    "bloodLoss": ["Weinig", "Matig", "Veel", "Ernstig"],
+    "painLevel": ["Licht", "Matig", "Hoog", "Extreem"],
+    "npoStatus": ["Ja", "Nee", "Onbekend"],
+    "anesthesia": ["Lokale verdoving", "Sedatie", "Algemene anesthesie", "Regionale anesthesie", "Geen"],
+    "operationComplexity": ["Klein", "Gemiddeld", "Groot", "Zeer complex"],
+    "postOpStatus": ["Stabiel", "Matig stabiel", "Instabiel", "Opname vereist"],
+    "followupDepartment": ["Geen", "Spoed / observatie", "Ortho / revalidatie", "Psychologie", "Opname / intensieve opvolging"]
+  },
+  "checklist": [
+    "Identiteit patiënt bevestigd",
+    "Indicatie en doel van de ingreep bevestigd",
+    "Materiaal en medicatie klaargelegd",
+    "Anesthesie / sedatie bepaald",
+    "Pre-op screening overlopen",
+    "Team en rolverdeling bevestigd",
+    "Post-op plan afgesproken"
+  ],
+  "costs": [
+    { "label": "Pre-operatieve voorbereiding", "amount": 60 },
+    { "label": "Kleine chirurgische ingreep", "amount": 140 },
+    { "label": "Grote chirurgische ingreep", "amount": 280 },
+    { "label": "Sedatie / anesthesie", "amount": 45 },
+    { "label": "Observatie / monitoring", "amount": 20 },
+    { "label": "Nazorgconsult", "amount": 25 }
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "selects": {
+    "caseOrigin": [
+      "Chirurgie",
+      "Spoed / ambulance",
+      "Controle consult",
+      "Opname",
+      "Interne doorverwijzing",
+      "Andere"
+    ],
+    "urgency": [
+      "Vandaag",
+      "Binnen 24 uur",
+      "Binnen 72 uur",
+      "Gepland traject"
+    ],
+    "injuryType": [
+      "Fractuur",
+      "Spierletsel",
+      "Pees / ligamentletsel",
+      "Post-operatief herstel",
+      "Chronische mobiliteitsklacht",
+      "Andere"
+    ],
+    "mobilityLevel": [
+      "Vrij mobiel",
+      "Beperkt mobiel",
+      "Sterk beperkt",
+      "Niet mobiel"
+    ],
+    "painLevel": [
+      "Licht",
+      "Matig",
+      "Hoog",
+      "Extreem"
+    ],
+    "stability": [
+      "Stabiel",
+      "Matig stabiel",
+      "Onstabiel"
+    ],
+    "weightBearing": [
+      "Volledig",
+      "Beperkt",
+      "Niet toegestaan",
+      "Onbekend"
+    ],
+    "healingPhase": [
+      "Acute fase",
+      "Vroege herstel fase",
+      "Actieve revalidatie",
+      "Opvolgfase"
+    ],
+    "supportAid": [
+      "Geen",
+      "Brace",
+      "Krukken",
+      "Rolstoel",
+      "Immobilisatie",
+      "Combinatie"
+    ],
+    "trajectoryIntensity": [
+      "Kort advies",
+      "Beperkt traject",
+      "Standaard traject",
+      "Intensief traject"
+    ],
+    "outcomeStatus": [
+      "Goed herstel",
+      "Voorzichtig herstel",
+      "Weinig vooruitgang",
+      "Nieuwe evaluatie nodig"
+    ],
+    "referralDepartment": [
+      "Geen",
+      "Chirurgie",
+      "Spoed",
+      "Opname",
+      "Psychologie",
+      "Nieuwe ortho controle"
+    ]
+  },
+  "checklist": [
+    "Letseltype en betrokken zone bevestigd",
+    "Mobiliteit en belastbaarheid getest",
+    "Pijn en stabiliteit ingeschat",
+    "Hulpmiddelen-nood bepaald",
+    "Beperkingen en activiteitenadvies uitgelegd",
+    "Controle- of opvolgmoment afgesproken",
+    "Doorverwijzing indien nodig vastgelegd"
+  ],
+  "costs": [
+    {
+      "label": "Eerste ortho / revalidatie intake",
+      "amount": 40
+    },
+    {
+      "label": "Mobiliteitscheck",
+      "amount": 20
+    },
+    {
+      "label": "Brace / immobilisatie",
+      "amount": 35
+    },
+    {
+      "label": "Krukken of rolstoelvoorziening",
+      "amount": 30
+    },
+    {
+      "label": "Revalidatiesessie",
+      "amount": 45
+    },
+    {
+      "label": "Opvolgconsult",
+      "amount": 20
+    }
+  ]
+}

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spoedoperatie aanvraag - EMS Tools</title>
+
+  <link rel="stylesheet" href="../../assets/styles/theme.css" />
+  <link rel="stylesheet" href="../../assets/styles/base.css" />
+  <link rel="stylesheet" href="../../assets/styles/layout.css" />
+  <link rel="stylesheet" href="../../assets/styles/components.css" />
+  <link rel="stylesheet" href="../../assets/styles/utilities.css" />
+  <link rel="stylesheet" href="../../assets/styles/aanvragen.css" />
+</head>
+<body class="request-page">
+  <div class="app-shell">
+    <header class="site-header">
+      <img src="../../assets/images/Banner.png" alt="EMS Tools Hub banner" class="site-banner" />
+    </header>
+
+    <main class="page-container">
+      <section class="request-hero-card">
+        <div class="request-hero-card__content">
+          <h1>Spoedoperatie aanvraag</h1>
+          <p>
+            Gebruik dit formulier wanneer een patiënt dringend naar chirurgie moet voor een
+            onmiddellijke ingreep. De output combineert aanvraag + pre-op screening.
+          </p>
+
+          <nav class="request-subnav" aria-label="Snelle navigatie">
+            <a class="request-subnav__link" href="../../index.html">🏠 Home medewerkers</a>
+            <a class="request-subnav__link" href="../portaal-chirurgie/index.html">🔬 Portaal chirurgie</a>
+            <a class="request-subnav__link" href="../operatie-tool/index.html">🛠️ Operatie-assistent</a>
+            <a class="request-subnav__link" href="../rapport-operatie/index.html">📝 Operatierapport</a>
+          </nav>
+        </div>
+      </section>
+
+      <section class="request-layout">
+        <section class="request-form-card">
+          <div class="section-heading">
+            <div>
+              <h2>Aanvraaggegevens</h2>
+              <p class="text-soft">Acute indicatie, stabiliteit en noodzakelijke voorbereiding.</p>
+            </div>
+          </div>
+
+          <form id="requestForm" class="request-form">
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="patientName">Naam patiënt</label>
+                <input class="form-input" id="patientName" type="text" placeholder="Naam patiënt" />
+              </div>
+
+              <div class="form-field">
+                <label for="patientDob">Geboortedatum</label>
+                <input class="form-input" id="patientDob" type="date" />
+              </div>
+
+              <div class="form-field">
+                <label for="aanvrager">Aanvragende EMS'er</label>
+                <input class="form-input" id="aanvrager" type="text" placeholder="Naam behandelaar" />
+              </div>
+
+              <div class="form-field">
+                <label for="roepnummer">Roepnummer</label>
+                <input class="form-input" id="roepnummer" type="text" placeholder="Bijv. 214" />
+              </div>
+
+              <div class="form-field">
+                <label for="locatie">Huidige locatie patiënt</label>
+                <input class="form-input" id="locatie" type="text" placeholder="Bijv. Pillbox spoed / OK prep" />
+              </div>
+
+              <div class="form-field">
+                <label for="urgentie">Urgentie</label>
+                <select class="form-select" id="urgentie">
+                  <option value="">Maak een keuze</option>
+                  <option>Onmiddellijk</option>
+                  <option>Binnen 30 minuten</option>
+                  <option>Binnen 1 uur</option>
+                </select>
+              </div>
+
+              <div class="form-field">
+                <label for="stabiliteit">Huidige stabiliteit</label>
+                <select class="form-select" id="stabiliteit">
+                  <option value="">Maak een keuze</option>
+                  <option>Stabiel</option>
+                  <option>Matig stabiel</option>
+                  <option>Onstabiel</option>
+                  <option>Kritiek</option>
+                </select>
+              </div>
+
+              <div class="form-field">
+                <label for="ingreepType">Vermoed type ingreep</label>
+                <select class="form-select" id="ingreepType">
+                  <option value="">Maak een keuze</option>
+                  <option>Trauma-operatie</option>
+                  <option>Exploratieve ingreep</option>
+                  <option>Wondherstel / hechten</option>
+                  <option>Orthopedische ingreep</option>
+                  <option>Interne bloeding / abdominale ingreep</option>
+                  <option>Andere</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-field mt-2">
+              <label for="diagnose">Situatieschets / vermoedelijke diagnose</label>
+              <textarea class="form-textarea" id="diagnose" rows="4" placeholder="Wat is er mis en waarom is chirurgie dringend nodig?"></textarea>
+            </div>
+
+            <div class="form-grid mt-2">
+              <div class="form-field">
+                <label for="bewustzijn">Bewustzijn</label>
+                <select class="form-select" id="bewustzijn">
+                  <option value="">Maak een keuze</option>
+                  <option>Bij bewustzijn</option>
+                  <option>Verlaagd bewustzijn</option>
+                  <option>Buiten bewustzijn</option>
+                </select>
+              </div>
+
+              <div class="form-field">
+                <label for="pols">Pols</label>
+                <select class="form-select" id="pols">
+                  <option value="">Maak een keuze</option>
+                  <option>Traag</option>
+                  <option>Normaal</option>
+                  <option>Snel</option>
+                  <option>Geen voelbare pols</option>
+                </select>
+              </div>
+
+              <div class="form-field">
+                <label for="ademhaling">Ademhaling</label>
+                <select class="form-select" id="ademhaling">
+                  <option value="">Maak een keuze</option>
+                  <option>Vrij</option>
+                  <option>Moeizaam</option>
+                  <option>Ondersteuning nodig</option>
+                </select>
+              </div>
+
+              <div class="form-field">
+                <label for="bloedverlies">Bloedverlies</label>
+                <select class="form-select" id="bloedverlies">
+                  <option value="">Maak een keuze</option>
+                  <option>Weinig</option>
+                  <option>Matig</option>
+                  <option>Veel</option>
+                  <option>Ernstig</option>
+                </select>
+              </div>
+
+              <div class="form-field">
+                <label for="allergieen">Allergieën / bijzonderheden</label>
+                <input class="form-input" id="allergieen" type="text" placeholder="Bijv. medicatie-allergie, onbekend, ..." />
+              </div>
+
+              <div class="form-field">
+                <label for="nuchter">Nuchterstatus</label>
+                <select class="form-select" id="nuchter">
+                  <option value="">Maak een keuze</option>
+                  <option>Ja</option>
+                  <option>Nee</option>
+                  <option>Onbekend</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-field mt-2">
+              <label for="preopActies">Reeds uitgevoerde pre-op acties</label>
+              <textarea class="form-textarea" id="preopActies" rows="4" placeholder="Bijv. stabilisatie, infuus, pijnstilling, beeldvorming, bloedproducten, immobilisatie..."></textarea>
+            </div>
+
+            <div class="form-field mt-2">
+              <label for="extraInfo">Extra info voor chirurgie</label>
+              <textarea class="form-textarea" id="extraInfo" rows="4" placeholder="Assistentie nodig, risico's, context van incident, RP-opmerkingen..."></textarea>
+            </div>
+
+            <div class="request-actions">
+              <button type="button" class="btn btn-primary" id="generateBtn">Genereer aanvraag</button>
+              <button type="reset" class="btn btn-secondary" id="resetBtn">Reset</button>
+            </div>
+          </form>
+        </section>
+
+        <aside class="request-output-card">
+          <div class="section-heading">
+            <div>
+              <h2>Gegenereerde output</h2>
+              <p class="text-soft">Klaar voor doorsturing of kopiëren naar operatie-assistent.</p>
+            </div>
+          </div>
+
+          <div id="requestStatus" class="status-box status-info">Vul het formulier in en klik op “Genereer aanvraag”.</div>
+
+          <div class="form-field mt-2">
+            <label for="output">Samenvatting</label>
+            <textarea class="form-textarea request-output" id="output" rows="20" readonly placeholder="Hier verschijnt de aanvraag..."></textarea>
+          </div>
+
+          <div class="request-actions">
+            <button type="button" class="btn btn-primary" id="copyBtn">Kopieer tekst</button>
+          </div>
+        </aside>
+      </section>
+    </main>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>

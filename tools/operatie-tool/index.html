@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Operatie-assistent - EMS Tools</title>
+
+  <link rel="stylesheet" href="../../assets/styles/theme.css" />
+  <link rel="stylesheet" href="../../assets/styles/base.css" />
+  <link rel="stylesheet" href="../../assets/styles/layout.css" />
+  <link rel="stylesheet" href="../../assets/styles/components.css" />
+  <link rel="stylesheet" href="../../assets/styles/utilities.css" />
+  <link rel="stylesheet" href="../../assets/styles/operatie.css" />
+  <link rel="stylesheet" href="../../assets/styles/operatie-tool.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="site-header">
+      <img src="../../assets/images/Banner.png" alt="EMS Tools Hub banner" class="site-banner" />
+    </header>
+
+    <div class="page-container">
+      <section class="intro panel">
+        <h1>Operatie-assistent</h1>
+        <p>Referentiemodule voor chirurgie: van indicatie en pre-op screening tot checklist, kostenselectie en samenvatting voor het operatierapport.</p>
+      </section>
+
+      <div class="tool-nav chirurgie-nav">
+        <a href="../../index.html">← Home medewerkers</a>
+        <a href="../portaal-chirurgie/index.html">Portaal chirurgie</a>
+        <a href="../aanvraag-spoedoperatie/index.html">Spoedaanvraag</a>
+        <a href="../aanvraag-operatieplanning/index.html">Planning</a>
+        <a href="../rapport-operatie/index.html">Operatierapport</a>
+      </div>
+
+      <section class="panel patient-panel">
+        <div class="panel-header"><h2>Patiëntgegevens</h2></div>
+        <div class="panel-body">
+          <div class="form-row form-row--3">
+            <div class="field">
+              <label for="patientName">Naam patiënt</label>
+              <input id="patientName" type="text" placeholder="Naam patiënt" />
+            </div>
+            <div class="field">
+              <label for="patientDob">Geboortedatum</label>
+              <input id="patientDob" type="date" />
+            </div>
+            <div class="field">
+              <label for="treatingSurgeon">Chirurg / verantwoordelijke</label>
+              <input id="treatingSurgeon" type="text" placeholder="Naam behandelaar" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="workspace-grid">
+        <div class="tool-form-column">
+          <details class="accordion-section" open>
+            <summary>1. Casus en indicatie</summary>
+            <div class="accordion-content">
+              <div class="form-row form-row--2">
+                <div class="field">
+                  <label for="caseOrigin">Herkomst casus</label>
+                  <select id="caseOrigin"></select>
+                </div>
+                <div class="field">
+                  <label for="urgency">Urgentie</label>
+                  <select id="urgency"></select>
+                </div>
+                <div class="field">
+                  <label for="operationType">Type ingreep</label>
+                  <select id="operationType"></select>
+                </div>
+                <div class="field">
+                  <label for="stability">Patiëntstabiliteit</label>
+                  <select id="stability"></select>
+                </div>
+              </div>
+              <div class="field">
+                <label for="diagnosis">Situatieschets / diagnose</label>
+                <textarea id="diagnosis" rows="4" placeholder="Wat is er mis en wat moet er operatief gebeuren?"></textarea>
+              </div>
+              <div class="field">
+                <label for="surgicalGoal">Doel van de ingreep</label>
+                <textarea id="surgicalGoal" rows="3" placeholder="Bijv. bloeding stoppen, letsel exploreren, bot stabiliseren, wond herstellen..."></textarea>
+              </div>
+            </div>
+          </details>
+
+          <details class="accordion-section" open>
+            <summary>2. Pre-op screening</summary>
+            <div class="accordion-content">
+              <div class="form-row form-row--3">
+                <div class="field"><label for="consciousness">Bewustzijn</label><select id="consciousness"></select></div>
+                <div class="field"><label for="pulse">Pols</label><select id="pulse"></select></div>
+                <div class="field"><label for="breathing">Ademhaling</label><select id="breathing"></select></div>
+                <div class="field"><label for="bloodLoss">Bloedverlies</label><select id="bloodLoss"></select></div>
+                <div class="field"><label for="painLevel">Pijnniveau</label><select id="painLevel"></select></div>
+                <div class="field"><label for="npoStatus">Nuchterstatus</label><select id="npoStatus"></select></div>
+              </div>
+              <div class="form-row form-row--2">
+                <div class="field"><label for="allergies">Allergieën / risico's</label><input id="allergies" type="text" placeholder="Bijv. onbekend, allergie, bloedingsrisico" /></div>
+                <div class="field"><label for="assistantName">Operatie-assistent</label><input id="assistantName" type="text" placeholder="Naam assistent" /></div>
+              </div>
+              <div class="field">
+                <label for="preOpActions">Reeds uitgevoerde voorbereiding</label>
+                <textarea id="preOpActions" rows="4" placeholder="Stabilisatie, medicatie, infuus, beeldvorming, immobilisatie, bloedproducten..."></textarea>
+              </div>
+            </div>
+          </details>
+
+          <details class="accordion-section" open>
+            <summary>3. Operatie-checklist</summary>
+            <div class="accordion-content checklist-grid" id="checklistGrid"></div>
+          </details>
+
+          <details class="accordion-section" open>
+            <summary>4. Ingreep en benodigdheden</summary>
+            <div class="accordion-content">
+              <div class="form-row form-row--2">
+                <div class="field"><label for="anesthesia">Anesthesie / sedatie</label><select id="anesthesia"></select></div>
+                <div class="field"><label for="operationComplexity">Complexiteit</label><select id="operationComplexity"></select></div>
+              </div>
+              <div class="field">
+                <label for="requiredMaterials">Benodigde materialen / medicatie</label>
+                <textarea id="requiredMaterials" rows="4" placeholder="Bijv. hechtset, bloed, saline, brace, gips, wondzorgmateriaal..."></textarea>
+              </div>
+              <div class="field">
+                <label for="rpSteps">RP-stappen van de ingreep</label>
+                <textarea id="rpSteps" rows="5" placeholder="Stap voor stap beschrijving van wat men uitspreelt of uitbeeldt tijdens de ingreep..."></textarea>
+              </div>
+            </div>
+          </details>
+
+          <details class="accordion-section" open>
+            <summary>5. Post-op en nazorg</summary>
+            <div class="accordion-content">
+              <div class="form-row form-row--2">
+                <div class="field"><label for="postOpStatus">Onmiddellijke post-op status</label><select id="postOpStatus"></select></div>
+                <div class="field"><label for="followupDepartment">Doorverwijzing / vervolgafdeling</label><select id="followupDepartment"></select></div>
+              </div>
+              <div class="field">
+                <label for="postOpPlan">Post-op plan</label>
+                <textarea id="postOpPlan" rows="4" placeholder="Monitoring, medicatie, rust, opname, controle, revalidatie..."></textarea>
+              </div>
+              <div class="field">
+                <label for="complications">Complicaties / aandachtspunten</label>
+                <textarea id="complications" rows="3" placeholder="Bijv. nabloeding, instabiliteit, infectierisico, geen complicaties..."></textarea>
+              </div>
+            </div>
+          </details>
+
+          <details class="accordion-section" open>
+            <summary>6. Chirurgische kostenblok</summary>
+            <div class="accordion-content">
+              <p class="soft-text">Selecteer enkel de relevante chirurgische kosten. Deze blok kan later gekoppeld worden aan je kostencalculator.</p>
+              <div class="cost-grid" id="costGrid"></div>
+            </div>
+          </details>
+        </div>
+
+        <div class="tool-output-column">
+          <section class="panel output-actions-panel">
+            <div class="button-row button-row--compact">
+              <button id="generateBtn" class="btn btn-primary" type="button">Genereer samenvatting</button>
+              <button id="copyBtn" class="btn btn-secondary btn-compact" type="button">Kopieer</button>
+              <button id="resetBtn" class="btn btn-secondary btn-compact" type="button">Reset</button>
+            </div>
+            <div id="statusBox" class="status-box status-info">Vul de operatie-assistent in en genereer daarna de output.</div>
+          </section>
+
+          <section class="panel output-panel">
+            <div class="output-panel__header">
+              <h2>Snelle beoordeling</h2>
+              <p class="muted-line">Handige indicatoren voor operatieflow en overdracht.</p>
+            </div>
+            <div class="quick-badge-grid">
+              <div class="quick-badge-card"><span class="quick-badge-card__label">Prioriteit</span><strong id="priorityBadge">Nog niet berekend</strong></div>
+              <div class="quick-badge-card"><span class="quick-badge-card__label">Checklist</span><strong id="checklistBadge">0% voltooid</strong></div>
+              <div class="quick-badge-card"><span class="quick-badge-card__label">Kostenschatting</span><strong id="costBadge">€0</strong></div>
+            </div>
+            <ul id="warningList" class="warning-list"><li>Nog geen waarschuwingen.</li></ul>
+          </section>
+
+          <section class="panel output-panel">
+            <div class="output-panel__header">
+              <h2>Gegenereerde tekst</h2>
+              <p class="muted-line">Gebruik deze output als bouwsteen voor rapport, briefing of Discord-overdracht.</p>
+            </div>
+            <div class="output-canvas">
+              <textarea id="summaryOutput" class="output-canvas__textarea" readonly placeholder="Hier verschijnt de operatie-samenvatting..."></textarea>
+            </div>
+          </section>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>

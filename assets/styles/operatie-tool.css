@@ -1,0 +1,91 @@
+.chirurgie-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.chirurgie-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0.65rem 0.95rem;
+  border-radius: 999px;
+  text-decoration: none;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.checklist-grid,
+.cost-grid,
+.quick-badge-grid {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.checklist-grid,
+.cost-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.quick-badge-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 1rem;
+}
+
+.check-card,
+.cost-card,
+.quick-badge-card {
+  border: 1px solid rgba(139, 10, 10, 0.14);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  background: rgba(139, 10, 10, 0.04);
+}
+
+.check-card,
+.cost-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+}
+
+.check-card input,
+.cost-card input {
+  margin-top: 0.18rem;
+}
+
+.cost-card {
+  justify-content: space-between;
+}
+
+.cost-card__title {
+  font-weight: 700;
+}
+
+.cost-card__amount,
+.quick-badge-card__label {
+  color: var(--color-text-soft);
+}
+
+.quick-badge-card strong {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 1.05rem;
+}
+
+.warning-list {
+  margin: 0;
+  padding-left: 1.15rem;
+}
+
+.warning-list li + li {
+  margin-top: 0.45rem;
+}
+
+@media (max-width: 900px) {
+  .quick-badge-grid {
+    grid-template-columns: 1fr;
+  }
+}
