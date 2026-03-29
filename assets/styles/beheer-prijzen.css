@@ -1,0 +1,81 @@
+.price-amount {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.1;
+  margin: 0.5rem 0 1rem;
+}
+
+.checkbox-stack {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem 1rem;
+  padding: 0.5rem 0;
+}
+
+.checkbox-stack label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.help-block {
+  margin: 0.25rem 0 0.75rem;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+#prices-table-wrap .admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#prices-table-wrap .admin-table th,
+#prices-table-wrap .admin-table td {
+  vertical-align: top;
+  padding: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+#prices-table-wrap .admin-table input,
+#prices-table-wrap .admin-table select,
+#prices-table-wrap .admin-table textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#prices-table-wrap .table-responsive {
+  overflow-x: auto;
+}
+
+#prices-table-wrap .table-toolbar,
+#prices-table-wrap .table-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+#prices-table-wrap .btn-small {
+  padding: 0.35rem 0.6rem;
+}
+
+#prices-table-wrap .btn-danger {
+  border-color: #b42318;
+}
+
+.preview-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+@media (max-width: 900px) {
+  .checkbox-stack {
+    grid-template-columns: 1fr;
+  }
+}

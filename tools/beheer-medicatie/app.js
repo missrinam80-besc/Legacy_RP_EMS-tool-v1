@@ -1,447 +1,471 @@
-let ADMIN_CONFIG = null;
-let adminData = null;
-let filteredItems = [];
-let selectedId = null;
+(function () {
+  const ACTOR = 'beheer_medicatie_ui';
 
-const elements = {
-  statsGrid: document.getElementById('statsGrid'),
-  statusMessage: document.getElementById('statusMessage'),
-  itemList: document.getElementById('itemList'),
-  emptyState: document.getElementById('emptyState'),
-  resultCount: document.getElementById('resultCount'),
-  searchInput: document.getElementById('searchInput'),
-  typeFilter: document.getElementById('typeFilter'),
-  categoryFilter: document.getElementById('categoryFilter'),
-  departmentFilter: document.getElementById('departmentFilter'),
-  routeFilter: document.getElementById('routeFilter'),
-  activeFilter: document.getElementById('activeFilter'),
-  newItemBtn: document.getElementById('newItemBtn'),
-  exportBtn: document.getElementById('exportBtn'),
-  importInput: document.getElementById('importInput'),
-  resetDefaultsBtn: document.getElementById('resetDefaultsBtn'),
-  reloadBtn: document.getElementById('reloadBtn'),
-  itemForm: document.getElementById('itemForm'),
-  itemId: document.getElementById('itemId'),
-  nameInput: document.getElementById('nameInput'),
-  typeInput: document.getElementById('typeInput'),
-  categoryInput: document.getElementById('categoryInput'),
-  dosageInput: document.getElementById('dosageInput'),
-  routeInput: document.getElementById('routeInput'),
-  priceInput: document.getElementById('priceInput'),
-  indicationInput: document.getElementById('indicationInput'),
-  contraInput: document.getElementById('contraInput'),
-  departmentCheckboxes: document.getElementById('departmentCheckboxes'),
-  warningsInput: document.getElementById('warningsInput'),
-  activeInput: document.getElementById('activeInput'),
-  notesInput: document.getElementById('notesInput'),
-  clearFormBtn: document.getElementById('clearFormBtn'),
-  previewTitle: document.getElementById('previewTitle'),
-  previewPrice: document.getElementById('previewPrice'),
-  previewChips: document.getElementById('previewChips'),
-  previewMeta: document.getElementById('previewMeta'),
-  previewWarnings: document.getElementById('previewWarnings')
-};
-
-init();
-
-async function init() {
-  try {
-    ADMIN_CONFIG = await AdminStore.fetchJson('config.json');
-    adminData = await AdminStore.loadAdminData(ADMIN_CONFIG.storageKey, ADMIN_CONFIG.defaultDataPath);
-    normalizeData();
-    populateFilters();
-    renderDepartmentCheckboxes();
-    bindEvents();
-    applyFilters();
-    resetForm();
-    AdminUI.showToast('Medicatiebeheer geladen.', 'success');
-  } catch (error) {
-    console.error(error);
-    AdminUI.showToast(`Fout bij laden: ${error.message}`, 'danger');
-  }
-}
-
-function normalizeData() {
-  adminData.types = uniqueSorted(adminData.types || []);
-  adminData.routes = uniqueSorted(adminData.routes || []);
-  adminData.departments = uniqueSorted(adminData.departments || []);
-  adminData.items = Array.isArray(adminData.items) ? adminData.items.map(normalizeItem) : [];
-}
-
-function normalizeItem(item) {
-  return {
-    id: item.id || AdminUtils.generateId('med'),
-    name: item.name || '',
-    type: item.type || adminData.types[0] || 'medicatie',
-    category: item.category || '',
-    dosage: item.dosage || '',
-    route: item.route || adminData.routes[0] || 'n.v.t.',
-    indication: item.indication || '',
-    contraNote: item.contraNote || '',
-    price: Number(item.price) || 0,
-    departments: uniqueSorted(AdminUtils.normalizeArray(item.departments)),
-    active: Boolean(item.active),
-    warnings: AdminUtils.normalizeArray(item.warnings),
-    notes: item.notes || ''
+  const state = {
+    originalRows: [],
+    rows: [],
+    filteredRows: [],
+    loading: false,
+    saving: false,
+    search: '',
+    filters: {
+      type: '',
+      category: '',
+      department: '',
+      active: 'all'
+    }
   };
-}
 
-function uniqueSorted(values) {
-  return [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b, 'nl'));
-}
+  const els = {
+    form: document.getElementById('medication-form'),
+    search: document.getElementById('medication-search'),
+    typeFilter: document.getElementById('medication-type-filter'),
+    categoryFilter: document.getElementById('medication-category-filter'),
+    departmentFilter: document.getElementById('medication-department-filter'),
+    activeFilter: document.getElementById('medication-active-filter'),
+    status: document.getElementById('medication-status'),
+    tableWrap: document.getElementById('medication-table-wrap'),
+    refreshBtn: document.getElementById('refresh-medication-btn'),
+    resetBtn: document.getElementById('reset-medication-btn'),
+    saveBtn: document.getElementById('save-medication-btn')
+  };
 
-function bindEvents() {
-  [
-    elements.searchInput,
-    elements.typeFilter,
-    elements.categoryFilter,
-    elements.departmentFilter,
-    elements.routeFilter,
-    elements.activeFilter
-  ].forEach((element) => element.addEventListener('input', applyFilters));
+  const TYPE_OPTIONS = ['medication', 'fluid', 'bandage', 'tool', 'equipment'];
+  const CATEGORY_OPTIONS = ['pain', 'cardio', 'sedation', 'blood', 'saline', 'woundcare', 'airway', 'monitoring', 'transport', 'surgery'];
+  const DEPARTMENT_OPTIONS = ['general', 'command', 'spoed', 'ambulance', 'chirurgie', 'psychologie', 'ortho', 'forensisch', 'labo'];
 
-  elements.newItemBtn.addEventListener('click', resetForm);
-  elements.clearFormBtn.addEventListener('click', resetForm);
-  elements.exportBtn.addEventListener('click', exportData);
-  elements.importInput.addEventListener('change', importData);
-  elements.resetDefaultsBtn.addEventListener('click', resetToDefaults);
-  elements.reloadBtn.addEventListener('click', reloadData);
-  elements.itemForm.addEventListener('submit', handleSubmit);
-}
+  function clone(value) {
+    return JSON.parse(JSON.stringify(value));
+  }
 
-function populateFilters() {
-  fillSelect(elements.typeFilter, ['all', ...adminData.types], 'Alle types');
-  fillSelect(elements.routeFilter, ['all', ...adminData.routes], 'Alle routes');
-  fillSelect(elements.departmentFilter, ['all', ...adminData.departments], 'Alle afdelingen');
-  fillSelect(elements.typeInput, adminData.types, null);
-  fillSelect(elements.routeInput, adminData.routes, null);
-  populateCategoryFilter();
-}
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
 
-function populateCategoryFilter() {
-  const categories = uniqueSorted(adminData.items.map((item) => item.category));
-  fillSelect(elements.categoryFilter, ['all', ...categories], 'Alle categorieën');
-}
+  function normalizeString(value) {
+    return String(value ?? '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim();
+  }
 
-function fillSelect(selectElement, values, placeholderLabel = null) {
-  if (!selectElement) return;
-  selectElement.innerHTML = '';
-  values.forEach((value, index) => {
-    const option = document.createElement('option');
-    option.value = value;
-    option.textContent = index === 0 && placeholderLabel ? placeholderLabel : humanizeValue(value);
-    selectElement.appendChild(option);
-  });
-}
+  function toPipeString(value) {
+    if (Array.isArray(value)) {
+      return value.map((item) => String(item).trim()).filter(Boolean).join('|');
+    }
 
-function renderDepartmentCheckboxes() {
-  elements.departmentCheckboxes.innerHTML = '';
-  adminData.departments.forEach((department) => {
-    const id = `department_${department}`;
-    const label = document.createElement('label');
-    label.innerHTML = `<input type="checkbox" value="${department}" id="${id}" /> ${humanizeValue(department)}`;
-    elements.departmentCheckboxes.appendChild(label);
-  });
-}
+    return String(value ?? '')
+      .split('|')
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .join('|');
+  }
 
-function applyFilters() {
-  const query = elements.searchInput.value.trim().toLowerCase();
-  const selectedType = elements.typeFilter.value;
-  const selectedCategory = elements.categoryFilter.value;
-  const selectedDepartment = elements.departmentFilter.value;
-  const selectedRoute = elements.routeFilter.value;
-  const activeState = elements.activeFilter.value;
+  function toBoolean(value) {
+    if (value === true || value === false) return value;
+    return String(value).toLowerCase() === 'true';
+  }
 
-  filteredItems = [...adminData.items]
-    .filter((item) => {
-      const searchable = [
-        item.name,
-        item.type,
-        item.category,
-        item.dosage,
-        item.route,
-        item.indication,
-        item.contraNote,
-        item.notes,
-        (item.warnings || []).join(' '),
-        (item.departments || []).join(' ')
-      ].join(' ').toLowerCase();
-      return !query || searchable.includes(query);
-    })
-    .filter((item) => selectedType === 'all' || item.type === selectedType)
-    .filter((item) => selectedCategory === 'all' || item.category === selectedCategory)
-    .filter((item) => selectedDepartment === 'all' || item.departments.includes(selectedDepartment))
-    .filter((item) => selectedRoute === 'all' || item.route === selectedRoute)
-    .filter((item) => {
-      if (activeState === 'active') return item.active;
-      if (activeState === 'inactive') return !item.active;
-      return true;
-    })
-    .sort((a, b) => a.name.localeCompare(b.name, 'nl'));
+  function toNumber(value, fallback = 0) {
+    const num = Number(String(value).replace(',', '.'));
+    return Number.isFinite(num) ? num : fallback;
+  }
 
-  renderStats();
-  renderItemList();
-}
+  function normalizeRow(row) {
+    return {
+      id: String(row.id ?? '').trim(),
+      name: String(row.name ?? '').trim(),
+      type: String(row.type ?? '').trim(),
+      category: String(row.category ?? '').trim(),
+      dosage: String(row.dosage ?? '').trim(),
+      route: String(row.route ?? '').trim(),
+      indication: String(row.indication ?? '').trim(),
+      contraNote: String(row.contraNote ?? '').trim(),
+      price: toNumber(row.price, 0),
+      departments: toPipeString(row.departments),
+      active: toBoolean(row.active),
+      warnings: toPipeString(row.warnings),
+      notes: String(row.notes ?? '').trim()
+    };
+  }
 
-function renderStats() {
-  const items = adminData.items;
-  const activeCount = items.filter((item) => item.active).length;
-  const medicationCount = items.filter((item) => item.type === 'medicatie').length;
-  const toolsCount = items.filter((item) => item.type === 'hulpmiddel').length;
-  const coveredDepartments = new Set(items.flatMap((item) => item.departments || [])).size;
-  const totalValue = items.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
+  function setStatus(message, tone = 'info') {
+    if (!els.status) return;
+    els.status.className = `status-box status-${tone}`;
+    els.status.textContent = message;
+  }
 
-  elements.statsGrid.innerHTML = `
-    <div class="stat-card"><span>Totaal items</span><strong>${items.length}</strong></div>
-    <div class="stat-card"><span>Actief</span><strong>${activeCount}</strong></div>
-    <div class="stat-card"><span>Medicatie</span><strong>${medicationCount}</strong></div>
-    <div class="stat-card"><span>Hulpmiddelen</span><strong>${toolsCount}</strong></div>
-    <div class="stat-card"><span>Afdelingen gedekt</span><strong>${coveredDepartments}</strong></div>
-    <div class="stat-card"><span>Som van prijzen</span><strong>${AdminUtils.formatCurrency(totalValue)}</strong></div>
-  `;
-}
+  function setLoading(isLoading) {
+    state.loading = isLoading;
+    if (els.saveBtn) els.saveBtn.disabled = isLoading || state.saving;
+    if (els.refreshBtn) els.refreshBtn.disabled = isLoading || state.saving;
+    if (els.resetBtn) els.resetBtn.disabled = isLoading || state.saving;
+  }
 
-function renderItemList() {
-  elements.itemList.innerHTML = '';
-  elements.resultCount.textContent = `${filteredItems.length} resultaten`;
-  elements.emptyState.hidden = filteredItems.length > 0;
+  function setSaving(isSaving) {
+    state.saving = isSaving;
+    if (els.saveBtn) els.saveBtn.disabled = isSaving || state.loading;
+    if (els.refreshBtn) els.refreshBtn.disabled = isSaving || state.loading;
+    if (els.resetBtn) els.resetBtn.disabled = isSaving || state.loading;
+  }
 
-  filteredItems.forEach((item) => {
-    const row = document.createElement('li');
-    row.className = 'price-card';
-    row.innerHTML = `
-      <div class="price-card__top">
-        <div>
-          <h3>${escapeHtml(item.name)}</h3>
-          <div class="price-card__meta">
-            <span class="meta-chip">${humanizeValue(item.type)}</span>
-            <span class="meta-chip">${escapeHtml(item.category)}</span>
-            <span class="meta-chip">${humanizeValue(item.route)}</span>
-          </div>
-        </div>
-        <div class="price-amount">${AdminUtils.formatCurrency(item.price || 0)}</div>
+  function buildSelectOptions(options, selectedValue, allowEmpty = true) {
+    const selected = String(selectedValue ?? '');
+    const parts = [];
+
+    if (allowEmpty) {
+      parts.push('<option value="">-</option>');
+    }
+
+    options.forEach((option) => {
+      parts.push(
+        `<option value="${escapeHtml(option)}"${option === selected ? ' selected' : ''}>${escapeHtml(option)}</option>`
+      );
+    });
+
+    return parts.join('');
+  }
+
+  function getRowSearchText(row) {
+    return normalizeString([
+      row.id,
+      row.name,
+      row.type,
+      row.category,
+      row.dosage,
+      row.route,
+      row.indication,
+      row.contraNote,
+      row.departments,
+      row.warnings,
+      row.notes
+    ].join(' '));
+  }
+
+  function rowMatchesFilters(row) {
+    if (state.filters.type && row.type !== state.filters.type) return false;
+    if (state.filters.category && row.category !== state.filters.category) return false;
+
+    if (state.filters.department) {
+      const deps = row.departments.split('|').map((item) => item.trim()).filter(Boolean);
+      if (!deps.includes(state.filters.department)) return false;
+    }
+
+    if (state.filters.active === 'active' && !row.active) return false;
+    if (state.filters.active === 'inactive' && row.active) return false;
+
+    if (state.search && !getRowSearchText(row).includes(normalizeString(state.search))) return false;
+
+    return true;
+  }
+
+  function applyFilter() {
+    state.filteredRows = state.rows.filter(rowMatchesFilters);
+    renderTable();
+  }
+
+  function renderFilterOptions() {
+    if (els.typeFilter) {
+      els.typeFilter.innerHTML = '<option value="">Alle types</option>' +
+        TYPE_OPTIONS.map((item) => `<option value="${escapeHtml(item)}">${escapeHtml(item)}</option>`).join('');
+    }
+
+    if (els.categoryFilter) {
+      els.categoryFilter.innerHTML = '<option value="">Alle categorieën</option>' +
+        CATEGORY_OPTIONS.map((item) => `<option value="${escapeHtml(item)}">${escapeHtml(item)}</option>`).join('');
+    }
+
+    if (els.departmentFilter) {
+      els.departmentFilter.innerHTML = '<option value="">Alle afdelingen</option>' +
+        DEPARTMENT_OPTIONS.map((item) => `<option value="${escapeHtml(item)}">${escapeHtml(item)}</option>`).join('');
+    }
+
+    if (els.activeFilter) {
+      els.activeFilter.innerHTML = `
+        <option value="all">Alles</option>
+        <option value="active">Enkel actief</option>
+        <option value="inactive">Enkel inactief</option>
+      `;
+    }
+  }
+
+  function renderTable() {
+    if (!els.tableWrap) return;
+
+    if (!state.filteredRows.length) {
+      els.tableWrap.innerHTML = '<div class="status-box status-info">Geen medicatieregels gevonden.</div>';
+      return;
+    }
+
+    const rowsHtml = state.filteredRows.map((row) => {
+      const absoluteIndex = state.rows.findIndex((item) => item.id === row.id);
+
+      return `
+        <tr data-row-index="${absoluteIndex}">
+          <td><input type="checkbox" data-field="active" ${row.active ? 'checked' : ''}></td>
+          <td><input type="text" data-field="id" value="${escapeHtml(row.id)}"></td>
+          <td><input type="text" data-field="name" value="${escapeHtml(row.name)}"></td>
+          <td><select data-field="type">${buildSelectOptions(TYPE_OPTIONS, row.type, false)}</select></td>
+          <td><select data-field="category">${buildSelectOptions(CATEGORY_OPTIONS, row.category, false)}</select></td>
+          <td><input type="text" data-field="dosage" value="${escapeHtml(row.dosage)}"></td>
+          <td><input type="text" data-field="route" value="${escapeHtml(row.route)}"></td>
+          <td><textarea data-field="indication" rows="2">${escapeHtml(row.indication)}</textarea></td>
+          <td><textarea data-field="contraNote" rows="2">${escapeHtml(row.contraNote)}</textarea></td>
+          <td><input type="number" step="0.01" data-field="price" value="${escapeHtml(row.price)}"></td>
+          <td><input type="text" data-field="departments" value="${escapeHtml(row.departments)}"></td>
+          <td><input type="text" data-field="warnings" value="${escapeHtml(row.warnings)}"></td>
+          <td><textarea data-field="notes" rows="2">${escapeHtml(row.notes)}</textarea></td>
+          <td>
+            <div class="table-actions">
+              <button type="button" class="btn-small btn-danger" data-action="delete-row">Verwijder</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    els.tableWrap.innerHTML = `
+      <div class="table-toolbar">
+        <button type="button" id="add-medication-row-btn">Nieuwe medicatieregel</button>
+        <span>${state.filteredRows.length} regels zichtbaar</span>
       </div>
-      <div class="price-card__badges">
-        ${item.active ? AdminUI.renderStatusBadge('Actief', 'success') : AdminUI.renderStatusBadge('Inactief', 'danger')}
-        ${(item.departments || []).slice(0, 3).map((department) => AdminUI.renderStatusBadge(humanizeValue(department), 'info')).join('')}
-        ${(item.warnings || []).length ? AdminUI.renderStatusBadge(`${item.warnings.length} waarschuwingen`, 'warning') : ''}
-      </div>
-      <div class="price-card__bottom">
-        <small class="small-muted">${escapeHtml(item.indication || 'Geen indicatie ingevuld')}</small>
-        <div class="button-row">
-          <button class="btn btn-secondary" type="button" data-action="edit" data-id="${item.id}">Bewerk</button>
-          <button class="btn btn-secondary" type="button" data-action="delete" data-id="${item.id}">Verwijder</button>
-        </div>
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Actief</th>
+              <th>ID</th>
+              <th>Naam</th>
+              <th>Type</th>
+              <th>Categorie</th>
+              <th>Dosering</th>
+              <th>Route</th>
+              <th>Indicatie</th>
+              <th>Contra / waarschuwing</th>
+              <th>Prijs</th>
+              <th>Afdelingen</th>
+              <th>Warnings</th>
+              <th>Notities</th>
+              <th>Acties</th>
+            </tr>
+          </thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
       </div>
     `;
 
-    row.querySelector('[data-action="edit"]').addEventListener('click', () => selectItem(item.id));
-    row.querySelector('[data-action="delete"]').addEventListener('click', () => deleteItem(item.id));
-    elements.itemList.appendChild(row);
-  });
-}
-
-function selectItem(id) {
-  const item = adminData.items.find((entry) => entry.id === id);
-  if (!item) return;
-  selectedId = item.id;
-
-  elements.itemId.value = item.id;
-  elements.nameInput.value = item.name;
-  elements.typeInput.value = item.type;
-  elements.categoryInput.value = item.category;
-  elements.dosageInput.value = item.dosage;
-  elements.routeInput.value = item.route;
-  elements.priceInput.value = item.price;
-  elements.indicationInput.value = item.indication;
-  elements.contraInput.value = item.contraNote;
-  elements.warningsInput.value = (item.warnings || []).join(', ');
-  elements.activeInput.checked = !!item.active;
-  elements.notesInput.value = item.notes;
-
-  const selectedDepartments = new Set(item.departments || []);
-  elements.departmentCheckboxes.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => {
-    checkbox.checked = selectedDepartments.has(checkbox.value);
-  });
-
-  renderPreview(item);
-}
-
-function resetForm() {
-  selectedId = null;
-  elements.itemForm.reset();
-  elements.itemId.value = '';
-  if (adminData?.types?.length) elements.typeInput.value = adminData.types[0];
-  if (adminData?.routes?.length) elements.routeInput.value = adminData.routes.includes('n.v.t.') ? 'n.v.t.' : adminData.routes[0];
-  elements.priceInput.value = 0;
-  elements.activeInput.checked = true;
-  elements.departmentCheckboxes.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => {
-    checkbox.checked = false;
-  });
-  renderPreview(null);
-}
-
-function handleSubmit(event) {
-  event.preventDefault();
-
-  const payload = normalizeItem({
-    id: elements.itemId.value || AdminUtils.generateId('med'),
-    name: elements.nameInput.value.trim(),
-    type: elements.typeInput.value,
-    category: elements.categoryInput.value.trim(),
-    dosage: elements.dosageInput.value.trim(),
-    route: elements.routeInput.value,
-    price: Number(elements.priceInput.value) || 0,
-    indication: elements.indicationInput.value.trim(),
-    contraNote: elements.contraInput.value.trim(),
-    departments: Array.from(elements.departmentCheckboxes.querySelectorAll('input:checked')).map((input) => input.value),
-    warnings: AdminUtils.normalizeArray(elements.warningsInput.value),
-    active: elements.activeInput.checked,
-    notes: elements.notesInput.value.trim()
-  });
-
-  if (!payload.name || !payload.category) {
-    AdminUI.showToast('Naam en categorie zijn verplicht.', 'danger');
-    return;
+    const addBtn = document.getElementById('add-medication-row-btn');
+    if (addBtn) {
+      addBtn.addEventListener('click', addEmptyRow);
+    }
   }
 
-  const existingIndex = adminData.items.findIndex((item) => item.id === payload.id);
-  if (existingIndex >= 0) {
-    adminData.items[existingIndex] = payload;
-  } else {
-    adminData.items.push(payload);
+  function addEmptyRow() {
+    state.rows.push(normalizeRow({
+      id: '',
+      name: '',
+      type: 'medication',
+      category: 'pain',
+      dosage: '',
+      route: '',
+      indication: '',
+      contraNote: '',
+      price: 0,
+      departments: 'spoed|ambulance',
+      active: true,
+      warnings: '',
+      notes: ''
+    }));
+
+    applyFilter();
+    setStatus('Nieuwe lege medicatieregel toegevoegd.', 'info');
   }
 
-  persistData('Medicatie-item opgeslagen.');
-  populateCategoryFilter();
-  applyFilters();
-  selectItem(payload.id);
-}
-
-function deleteItem(id) {
-  const item = adminData.items.find((entry) => entry.id === id);
-  if (!item) return;
-
-  const confirmed = window.confirm(`Wil je "${item.name}" verwijderen?`);
-  if (!confirmed) return;
-
-  adminData.items = adminData.items.filter((entry) => entry.id !== id);
-  persistData('Medicatie-item verwijderd.');
-  populateCategoryFilter();
-  applyFilters();
-
-  if (selectedId === id) {
-    resetForm();
-  }
-}
-
-function persistData(successMessage) {
-  adminData.lastUpdated = new Date().toISOString();
-  AdminStore.saveAdminData(ADMIN_CONFIG.storageKey, adminData);
-  AdminUI.showToast(successMessage, 'success');
-}
-
-async function reloadData() {
-  try {
-    adminData = await AdminStore.loadAdminData(ADMIN_CONFIG.storageKey, ADMIN_CONFIG.defaultDataPath);
-    normalizeData();
-    populateFilters();
-    renderDepartmentCheckboxes();
-    applyFilters();
-    resetForm();
-    AdminUI.showToast('Medicatieconfig opnieuw geladen.', 'success');
-  } catch (error) {
-    AdminUI.showToast(`Herladen mislukt: ${error.message}`, 'danger');
-  }
-}
-
-async function resetToDefaults() {
-  const confirmed = window.confirm('Wil je de volledige medicatielijst resetten naar de standaardconfiguratie?');
-  if (!confirmed) return;
-
-  try {
-    adminData = await AdminStore.resetAdminData(ADMIN_CONFIG.storageKey, ADMIN_CONFIG.defaultDataPath);
-    normalizeData();
-    populateFilters();
-    renderDepartmentCheckboxes();
-    applyFilters();
-    resetForm();
-    AdminUI.showToast('Medicatieconfig teruggezet naar standaard.', 'success');
-  } catch (error) {
-    AdminUI.showToast(`Reset mislukt: ${error.message}`, 'danger');
-  }
-}
-
-function exportData() {
-  adminData.lastUpdated = new Date().toISOString();
-  AdminStore.exportAdminData(adminData, ADMIN_CONFIG.exportFilename || 'ems-medicatie-export.json');
-  AdminUI.showToast('Medicatieconfig geëxporteerd.', 'success');
-}
-
-async function importData(event) {
-  const file = event.target.files?.[0];
-  if (!file) return;
-
-  try {
-    const importedData = await AdminStore.importAdminData(file);
-    adminData = {
-      ...adminData,
-      ...importedData,
-      items: Array.isArray(importedData.items) ? importedData.items.map(normalizeItem) : adminData.items
-    };
-    normalizeData();
-    AdminStore.saveAdminData(ADMIN_CONFIG.storageKey, adminData);
-    populateFilters();
-    renderDepartmentCheckboxes();
-    applyFilters();
-    resetForm();
-    AdminUI.showToast('Medicatieconfig geïmporteerd.', 'success');
-  } catch (error) {
-    AdminUI.showToast(`Import mislukt: ${error.message}`, 'danger');
-  } finally {
-    elements.importInput.value = '';
-  }
-}
-
-function renderPreview(item) {
-  if (!item) {
-    elements.previewTitle.textContent = 'Nog geen selectie';
-    elements.previewPrice.textContent = AdminUtils.formatCurrency(0);
-    elements.previewChips.innerHTML = '';
-    elements.previewMeta.innerHTML = '';
-    elements.previewWarnings.textContent = 'Selecteer of bewerk een item om hier de preview te zien.';
-    return;
+  function deleteRow(index) {
+    if (index < 0 || index >= state.rows.length) return;
+    state.rows.splice(index, 1);
+    applyFilter();
+    setStatus('Medicatieregel verwijderd uit de huidige bewerking.', 'warning');
   }
 
-  elements.previewTitle.textContent = item.name;
-  elements.previewPrice.textContent = AdminUtils.formatCurrency(item.price || 0);
-  elements.previewChips.innerHTML = [
-    `<span class="preview-chip">${humanizeValue(item.type)}</span>`,
-    `<span class="preview-chip">${escapeHtml(item.category)}</span>`,
-    `<span class="preview-chip">${humanizeValue(item.route)}</span>`,
-    item.active ? `<span class="preview-chip">Actief</span>` : `<span class="preview-chip">Inactief</span>`
-  ].join('');
+  function syncTableToState() {
+    const rows = Array.from(els.tableWrap.querySelectorAll('tbody tr'));
 
-  elements.previewMeta.innerHTML = `
-    <li><strong>Afdelingen</strong><br>${(item.departments || []).length ? item.departments.map(humanizeValue).join(', ') : 'Geen afdelingen gekozen'}</li>
-    <li><strong>Indicatie</strong><br>${escapeHtml(item.indication || 'Geen indicatie ingevuld')}</li>
-    <li><strong>Dosering / gebruik</strong><br>${escapeHtml(item.dosage || 'Niet ingevuld')}</li>
-    <li><strong>Contra-opmerking</strong><br>${escapeHtml(item.contraNote || 'Geen waarschuwing ingevuld')}</li>
-  `;
+    rows.forEach((tr) => {
+      const index = Number(tr.dataset.rowIndex);
+      const row = state.rows[index];
+      if (!row) return;
 
-  const warnings = (item.warnings || []).length ? item.warnings.join(' • ') : 'Geen extra waarschuwingen.';
-  elements.previewWarnings.textContent = `Waarschuwingen: ${warnings}${item.notes ? ` — Nota: ${item.notes}` : ''}`;
-}
+      tr.querySelectorAll('[data-field]').forEach((fieldEl) => {
+        const field = fieldEl.dataset.field;
+        let value = fieldEl.type === 'checkbox' ? fieldEl.checked : fieldEl.value;
 
-function humanizeValue(value = '') {
-  return String(value).replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
-}
+        if (field === 'active') {
+          row[field] = !!value;
+        } else if (field === 'price') {
+          row[field] = toNumber(value, 0);
+        } else if (field === 'departments' || field === 'warnings') {
+          row[field] = toPipeString(value);
+        } else {
+          row[field] = String(value ?? '').trim();
+        }
+      });
+    });
+  }
 
-function escapeHtml(value = '') {
-  return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
+  function validateRows(rows) {
+    const ids = new Set();
+
+    rows.forEach((row, index) => {
+      const rowLabel = `rij ${index + 1}`;
+
+      if (!row.id) throw new Error(`Medicatieregel ${rowLabel}: id ontbreekt.`);
+      if (!row.name) throw new Error(`Medicatieregel ${rowLabel}: naam ontbreekt.`);
+      if (!row.type) throw new Error(`Medicatieregel ${rowLabel}: type ontbreekt.`);
+      if (!row.category) throw new Error(`Medicatieregel ${rowLabel}: categorie ontbreekt.`);
+
+      if (ids.has(row.id)) {
+        throw new Error(`Dubbele medicatie-id gevonden: ${row.id}`);
+      }
+      ids.add(row.id);
+    });
+  }
+
+  async function loadMedication() {
+    setLoading(true);
+    setStatus('Medicatie laden...', 'info');
+
+    try {
+      const rows = await window.EMSAdminStore.get('medication', { forceRefresh: true });
+      state.originalRows = rows.map(normalizeRow);
+      state.rows = clone(state.originalRows);
+      applyFilter();
+      setStatus(`Medicatie geladen: ${state.rows.length}`, 'success');
+    } catch (error) {
+      console.error(error);
+      setStatus(`Fout bij laden van medicatie: ${error.message}`, 'danger');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function resetMedication() {
+    state.rows = clone(state.originalRows);
+    applyFilter();
+    setStatus('Wijzigingen teruggezet naar laatst geladen data.', 'info');
+  }
+
+  async function saveMedication() {
+    syncTableToState();
+
+    const cleanedRows = state.rows.map(normalizeRow);
+    validateRows(cleanedRows);
+
+    setSaving(true);
+    setStatus('Medicatie opslaan...', 'info');
+
+    try {
+      await window.EMSAdminStore.save('medication', cleanedRows, ACTOR);
+      state.originalRows = clone(cleanedRows);
+      state.rows = clone(cleanedRows);
+      applyFilter();
+      setStatus('Medicatie succesvol opgeslagen.', 'success');
+    } catch (error) {
+      console.error(error);
+      setStatus(`Fout bij opslaan van medicatie: ${error.message}`, 'danger');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function handleTableClick(event) {
+    const button = event.target.closest('[data-action]');
+    if (!button) return;
+
+    const tr = button.closest('tr');
+    if (!tr) return;
+
+    syncTableToState();
+
+    const index = Number(tr.dataset.rowIndex);
+    const action = button.dataset.action;
+
+    if (action === 'delete-row') {
+      deleteRow(index);
+    }
+  }
+
+  function bindEvents() {
+    if (els.search) {
+      els.search.addEventListener('input', () => {
+        syncTableToState();
+        state.search = els.search.value;
+        applyFilter();
+      });
+    }
+
+    if (els.typeFilter) {
+      els.typeFilter.addEventListener('change', () => {
+        syncTableToState();
+        state.filters.type = els.typeFilter.value;
+        applyFilter();
+      });
+    }
+
+    if (els.categoryFilter) {
+      els.categoryFilter.addEventListener('change', () => {
+        syncTableToState();
+        state.filters.category = els.categoryFilter.value;
+        applyFilter();
+      });
+    }
+
+    if (els.departmentFilter) {
+      els.departmentFilter.addEventListener('change', () => {
+        syncTableToState();
+        state.filters.department = els.departmentFilter.value;
+        applyFilter();
+      });
+    }
+
+    if (els.activeFilter) {
+      els.activeFilter.addEventListener('change', () => {
+        syncTableToState();
+        state.filters.active = els.activeFilter.value;
+        applyFilter();
+      });
+    }
+
+    if (els.refreshBtn) {
+      els.refreshBtn.addEventListener('click', loadMedication);
+    }
+
+    if (els.resetBtn) {
+      els.resetBtn.addEventListener('click', resetMedication);
+    }
+
+    if (els.form) {
+      els.form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        await saveMedication();
+      });
+    }
+
+    if (els.tableWrap) {
+      els.tableWrap.addEventListener('click', handleTableClick);
+    }
+  }
+
+  async function init() {
+    renderFilterOptions();
+    bindEvents();
+    await loadMedication();
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+})();
