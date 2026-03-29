@@ -1,7 +1,18 @@
-{
-  "storageKey": "ems_admin_modules",
-  "defaultDataPath": "../../data/admin/default-modules.json",
-  "title": "Beheer modules",
-  "entityLabel": "module",
-  "exportFilename": "ems-modules-export.json"
-}
+[
+  {
+    "id": "personeelslijst",
+    "name": "Personeelslijst",
+    "type": "tool",
+    "department": "general",
+    "url": "tools/personeelslijst/index.html",
+    "icon": "👥",
+    "badge": "",
+    "status": "actief",
+    "description": "Overzicht van EMS medewerkers",
+    "keywords": "personeel|medewerkers|status",
+    "contexts": "home.medewerker.algemene_info|home.command.algemene_info",
+    "order": 10,
+    "enabled": true,
+    "notes": ""
+  }
+]

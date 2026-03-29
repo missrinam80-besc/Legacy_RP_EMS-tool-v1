@@ -1,383 +1,439 @@
-let ADMIN_CONFIG = null;
-let adminData = null;
-let filteredItems = [];
-let selectedId = null;
+(function () {
+  const ACTOR = 'beheer_modules_ui';
 
-const elements = {
-  statsGrid: document.getElementById('statsGrid'),
-  statusMessage: document.getElementById('statusMessage'),
-  moduleList: document.getElementById('moduleList'),
-  emptyState: document.getElementById('emptyState'),
-  resultCount: document.getElementById('resultCount'),
-  searchInput: document.getElementById('searchInput'),
-  typeFilter: document.getElementById('typeFilter'),
-  departmentFilter: document.getElementById('departmentFilter'),
-  statusFilter: document.getElementById('statusFilter'),
-  visibilityFilter: document.getElementById('visibilityFilter'),
-  enabledFilter: document.getElementById('enabledFilter'),
-  newItemBtn: document.getElementById('newItemBtn'),
-  exportBtn: document.getElementById('exportBtn'),
-  importInput: document.getElementById('importInput'),
-  resetDefaultsBtn: document.getElementById('resetDefaultsBtn'),
-  reloadBtn: document.getElementById('reloadBtn'),
-  moduleForm: document.getElementById('moduleForm'),
-  itemId: document.getElementById('itemId'),
-  nameInput: document.getElementById('nameInput'),
-  typeInput: document.getElementById('typeInput'),
-  departmentInput: document.getElementById('departmentInput'),
-  statusInput: document.getElementById('statusInput'),
-  urlInput: document.getElementById('urlInput'),
-  orderInput: document.getElementById('orderInput'),
-  rolesInput: document.getElementById('rolesInput'),
-  enabledInput: document.getElementById('enabledInput'),
-  visibleHomeInput: document.getElementById('visibleHomeInput'),
-  visibleCommandInput: document.getElementById('visibleCommandInput'),
-  visiblePortalInput: document.getElementById('visiblePortalInput'),
-  notesInput: document.getElementById('notesInput'),
-  clearFormBtn: document.getElementById('clearFormBtn'),
-  previewTitle: document.getElementById('previewTitle'),
-  previewAmount: document.getElementById('previewAmount'),
-  previewChips: document.getElementById('previewChips'),
-  previewMeta: document.getElementById('previewMeta'),
-  previewNotes: document.getElementById('previewNotes')
-};
-
-document.addEventListener('DOMContentLoaded', init);
-
-async function init() {
-  try {
-    ADMIN_CONFIG = await loadConfig();
-    adminData = await AdminStore.loadAdminData(ADMIN_CONFIG.storageKey, ADMIN_CONFIG.defaultDataPath);
-    adminData.items = Array.isArray(adminData.items) ? adminData.items.map(normalizeItem) : [];
-    populateSelects();
-    bindEvents();
-    resetForm();
-    updateStats();
-    applyFilters();
-    AdminUI.showToast('Moduleconfig geladen.', 'success');
-  } catch (error) {
-    console.error(error);
-    AdminUI.showToast(error.message || 'Er liep iets mis bij het laden van de moduleconfig.', 'danger');
-  }
-}
-
-async function loadConfig() {
-  const response = await fetch('config.json', { cache: 'no-store' });
-  if (!response.ok) throw new Error('Config van beheer-modules kon niet geladen worden.');
-  return response.json();
-}
-
-function normalizeItem(item = {}) {
-  return {
-    id: item.id || AdminUtils.generateId('module'),
-    name: item.name || 'Nieuwe module',
-    type: item.type || adminData?.types?.[0] || 'tool',
-    department: item.department || adminData?.departments?.[0] || 'algemeen',
-    url: item.url || '',
-    enabled: item.enabled !== false,
-    visibleOnHome: !!item.visibleOnHome,
-    visibleOnCommand: !!item.visibleOnCommand,
-    visibleInPortal: !!item.visibleInPortal,
-    status: item.status || adminData?.statuses?.[0] || 'live',
-    roles: Array.isArray(item.roles) ? item.roles : AdminUtils.normalizeArray(item.roles),
-    order: Number(item.order) || 100,
-    notes: item.notes || ''
+  const state = {
+    originalRows: [],
+    rows: [],
+    filteredRows: [],
+    loading: false,
+    saving: false,
+    search: ''
   };
-}
 
-function populateSelects() {
-  populateSelect(elements.typeFilter, ['all', ...(adminData.types || [])], 'Alle types');
-  populateSelect(elements.departmentFilter, ['all', ...(adminData.departments || [])], 'Alle afdelingen');
-  populateSelect(elements.statusFilter, ['all', ...(adminData.statuses || [])], 'Alle statussen');
-  populateSelect(elements.typeInput, adminData.types || [], 'Kies type');
-  populateSelect(elements.departmentInput, adminData.departments || [], 'Kies afdeling');
-  populateSelect(elements.statusInput, adminData.statuses || [], 'Kies status');
-}
+  const els = {
+    form: document.getElementById('modules-form'),
+    search: document.getElementById('modules-search'),
+    status: document.getElementById('modules-status'),
+    tableWrap: document.getElementById('modules-table-wrap'),
+    refreshBtn: document.getElementById('refresh-modules-btn'),
+    resetBtn: document.getElementById('reset-modules-btn'),
+    saveBtn: document.getElementById('save-modules-btn')
+  };
 
-function populateSelect(target, values, defaultLabel) {
-  target.innerHTML = '';
-  values.forEach((value) => {
-    const option = document.createElement('option');
-    option.value = value;
-    option.textContent = value === 'all' ? defaultLabel : formatLabel(value);
-    target.appendChild(option);
-  });
-}
+  const TYPE_OPTIONS = ['tool', 'portal', 'form', 'info', 'link', 'admin'];
+  const DEPARTMENT_OPTIONS = ['general', 'command', 'spoed', 'ambulance', 'chirurgie', 'psychologie', 'ortho', 'forensisch', 'labo'];
 
-function bindEvents() {
-  [
-    elements.searchInput,
-    elements.typeFilter,
-    elements.departmentFilter,
-    elements.statusFilter,
-    elements.visibilityFilter,
-    elements.enabledFilter
-  ].forEach((element) => element.addEventListener('input', applyFilters));
+  function clone(value) {
+    return JSON.parse(JSON.stringify(value));
+  }
 
-  elements.newItemBtn.addEventListener('click', resetForm);
-  elements.clearFormBtn.addEventListener('click', resetForm);
-  elements.reloadBtn.addEventListener('click', reloadData);
-  elements.exportBtn.addEventListener('click', handleExport);
-  elements.resetDefaultsBtn.addEventListener('click', handleResetDefaults);
-  elements.importInput.addEventListener('change', handleImport);
-  elements.moduleForm.addEventListener('submit', handleSubmit);
-}
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
 
-function applyFilters() {
-  const query = elements.searchInput.value.trim().toLowerCase();
-  filteredItems = [...adminData.items].filter((item) => {
-    const matchesQuery = !query || [item.name, item.url, item.notes, item.department, item.type]
-      .join(' ')
+  function normalizeString(value) {
+    return String(value ?? '')
       .toLowerCase()
-      .includes(query);
-    const matchesType = elements.typeFilter.value === 'all' || item.type === elements.typeFilter.value;
-    const matchesDepartment = elements.departmentFilter.value === 'all' || item.department === elements.departmentFilter.value;
-    const matchesStatus = elements.statusFilter.value === 'all' || item.status === elements.statusFilter.value;
-    const visibilityMode = elements.visibilityFilter.value;
-    const matchesVisibility = visibilityMode === 'all'
-      || (visibilityMode === 'home' && item.visibleOnHome)
-      || (visibilityMode === 'command' && item.visibleOnCommand)
-      || (visibilityMode === 'portal' && item.visibleInPortal)
-      || (visibilityMode === 'hidden' && !item.visibleOnHome && !item.visibleOnCommand && !item.visibleInPortal);
-    const enabledMode = elements.enabledFilter.value;
-    const matchesEnabled = enabledMode === 'all'
-      || (enabledMode === 'enabled' && item.enabled)
-      || (enabledMode === 'disabled' && !item.enabled);
-    return matchesQuery && matchesType && matchesDepartment && matchesStatus && matchesVisibility && matchesEnabled;
-  }).sort((a, b) => a.order - b.order || a.name.localeCompare(b.name, 'nl'));
-
-  renderList();
-  updateStats();
-}
-
-function renderList() {
-  elements.moduleList.innerHTML = '';
-  elements.resultCount.textContent = `${filteredItems.length} resultaten`;
-  elements.emptyState.hidden = filteredItems.length > 0;
-
-  filteredItems.forEach((item) => {
-    const li = document.createElement('li');
-    li.className = 'price-card';
-    li.innerHTML = `
-      <div class="price-card__top">
-        <div>
-          <h3>${escapeHtml(item.name)}</h3>
-          <div class="price-card__meta">
-            <span class="meta-chip">${escapeHtml(formatLabel(item.type))}</span>
-            <span class="meta-chip">${escapeHtml(formatLabel(item.department))}</span>
-            <span class="meta-chip">${escapeHtml(item.url)}</span>
-          </div>
-          <div class="price-card__badges">
-            <span class="preview-chip">Status: ${escapeHtml(formatLabel(item.status))}</span>
-            <span class="preview-chip">${item.enabled ? 'Actief' : 'Uitgeschakeld'}</span>
-            ${item.visibleOnHome ? '<span class="preview-chip">Home</span>' : ''}
-            ${item.visibleOnCommand ? '<span class="preview-chip">Command</span>' : ''}
-            ${item.visibleInPortal ? '<span class="preview-chip">Portaal</span>' : ''}
-          </div>
-        </div>
-        <div class="button-row">
-          <button class="btn btn-secondary" type="button" data-action="edit" data-id="${item.id}">Bewerken</button>
-          <button class="btn btn-danger" type="button" data-action="delete" data-id="${item.id}">Verwijderen</button>
-        </div>
-      </div>
-      ${item.notes ? `<p class="small-muted">${escapeHtml(item.notes)}</p>` : ''}
-    `;
-    elements.moduleList.appendChild(li);
-  });
-
-  elements.moduleList.querySelectorAll('[data-action="edit"]').forEach((button) => {
-    button.addEventListener('click', () => selectItem(button.dataset.id));
-  });
-  elements.moduleList.querySelectorAll('[data-action="delete"]').forEach((button) => {
-    button.addEventListener('click', () => deleteItem(button.dataset.id));
-  });
-}
-
-function updateStats() {
-  const items = adminData?.items || [];
-  const cards = [
-    ['Totaal modules', items.length],
-    ['Actief', items.filter((item) => item.enabled).length],
-    ['Op command', items.filter((item) => item.visibleOnCommand).length],
-    ['In opbouw', items.filter((item) => item.status === 'in-opbouw').length]
-  ];
-  elements.statsGrid.innerHTML = cards
-    .map(([label, value]) => `<div class="stat-card"><span>${label}</span><strong>${value}</strong></div>`)
-    .join('');
-}
-
-function selectItem(id) {
-  const item = adminData.items.find((entry) => entry.id === id);
-  if (!item) return;
-  selectedId = item.id;
-  elements.itemId.value = item.id;
-  elements.nameInput.value = item.name;
-  elements.typeInput.value = item.type;
-  elements.departmentInput.value = item.department;
-  elements.statusInput.value = item.status;
-  elements.urlInput.value = item.url;
-  elements.orderInput.value = item.order;
-  elements.rolesInput.value = (item.roles || []).join(', ');
-  elements.enabledInput.checked = !!item.enabled;
-  elements.visibleHomeInput.checked = !!item.visibleOnHome;
-  elements.visibleCommandInput.checked = !!item.visibleOnCommand;
-  elements.visiblePortalInput.checked = !!item.visibleInPortal;
-  elements.notesInput.value = item.notes || '';
-  renderPreview(item);
-}
-
-function resetForm() {
-  selectedId = null;
-  elements.moduleForm.reset();
-  elements.itemId.value = '';
-  if (adminData?.types?.length) elements.typeInput.value = adminData.types[0];
-  if (adminData?.departments?.length) elements.departmentInput.value = adminData.departments[0];
-  if (adminData?.statuses?.length) elements.statusInput.value = adminData.statuses[0];
-  elements.orderInput.value = 100;
-  elements.enabledInput.checked = true;
-  elements.visibleHomeInput.checked = true;
-  elements.visibleCommandInput.checked = true;
-  elements.visiblePortalInput.checked = false;
-  renderPreview(null);
-}
-
-function renderPreview(item) {
-  if (!item) {
-    elements.previewTitle.textContent = 'Nog geen selectie';
-    elements.previewAmount.textContent = 'Selecteer of bewerk een module om hier de preview te zien.';
-    elements.previewChips.innerHTML = '';
-    elements.previewMeta.innerHTML = '';
-    elements.previewNotes.textContent = 'Geen notities beschikbaar.';
-    return;
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim();
   }
 
-  elements.previewTitle.textContent = item.name;
-  elements.previewAmount.textContent = item.url;
-  elements.previewChips.innerHTML = [
-    item.type,
-    item.department,
-    item.status,
-    item.enabled ? 'actief' : 'uitgeschakeld'
-  ].map((value) => `<span class="preview-chip">${escapeHtml(formatLabel(value))}</span>`).join('');
-
-  elements.previewMeta.innerHTML = [
-    ['Home', item.visibleOnHome ? 'Ja' : 'Nee'],
-    ['Command', item.visibleOnCommand ? 'Ja' : 'Nee'],
-    ['Portaal', item.visibleInPortal ? 'Ja' : 'Nee'],
-    ['Rollen', (item.roles || []).join(', ') || 'n.v.t.'],
-    ['Sorteervolgorde', String(item.order)]
-  ].map(([label, value]) => `<li><strong>${label}</strong><br>${escapeHtml(value)}</li>`).join('');
-
-  elements.previewNotes.textContent = item.notes || 'Geen notities beschikbaar.';
-}
-
-function handleSubmit(event) {
-  event.preventDefault();
-  const payload = normalizeItem({
-    id: elements.itemId.value || AdminUtils.generateId('module'),
-    name: elements.nameInput.value.trim(),
-    type: elements.typeInput.value,
-    department: elements.departmentInput.value,
-    status: elements.statusInput.value,
-    url: elements.urlInput.value.trim(),
-    order: Number(elements.orderInput.value) || 100,
-    roles: AdminUtils.normalizeArray(elements.rolesInput.value),
-    enabled: elements.enabledInput.checked,
-    visibleOnHome: elements.visibleHomeInput.checked,
-    visibleOnCommand: elements.visibleCommandInput.checked,
-    visibleInPortal: elements.visiblePortalInput.checked,
-    notes: elements.notesInput.value.trim()
-  });
-
-  if (!payload.name || !payload.url) {
-    AdminUI.showToast('Naam en URL zijn verplicht.', 'danger');
-    return;
+  function toPipeString(value) {
+    if (Array.isArray(value)) {
+      return value.map((item) => String(item).trim()).filter(Boolean).join('|');
+    }
+    return String(value ?? '')
+      .split('|')
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .join('|');
   }
 
-  const existingIndex = adminData.items.findIndex((item) => item.id === payload.id);
-  if (existingIndex >= 0) adminData.items[existingIndex] = payload;
-  else adminData.items.push(payload);
+  function toBoolean(value) {
+    if (value === true || value === false) return value;
+    return String(value).toLowerCase() === 'true';
+  }
 
-  persistData('Module opgeslagen.');
-  applyFilters();
-  selectItem(payload.id);
-}
+  function toNumber(value, fallback = 9999) {
+    const num = Number(value);
+    return Number.isFinite(num) ? num : fallback;
+  }
 
-function deleteItem(id) {
-  const item = adminData.items.find((entry) => entry.id === id);
-  if (!item) return;
-  if (!window.confirm(`Weet je zeker dat je "${item.name}" wil verwijderen?`)) return;
-  adminData.items = adminData.items.filter((entry) => entry.id !== id);
-  if (selectedId === id) resetForm();
-  persistData('Module verwijderd.');
-  applyFilters();
-}
-
-async function reloadData() {
-  adminData = await AdminStore.loadAdminData(ADMIN_CONFIG.storageKey, ADMIN_CONFIG.defaultDataPath);
-  adminData.items = Array.isArray(adminData.items) ? adminData.items.map(normalizeItem) : [];
-  populateSelects();
-  resetForm();
-  applyFilters();
-  AdminUI.showToast('Moduleconfig herladen.', 'success');
-}
-
-function persistData(message) {
-  adminData.lastUpdated = new Date().toISOString();
-  AdminStore.saveAdminData(ADMIN_CONFIG.storageKey, adminData);
-  updateStats();
-  AdminUI.showToast(message, 'success');
-}
-
-function handleExport() {
-  AdminStore.exportAdminData(adminData, ADMIN_CONFIG.exportFilename || 'ems-modules-export.json');
-  AdminUI.showToast('Moduleconfig geëxporteerd.', 'success');
-}
-
-async function handleImport(event) {
-  const [file] = event.target.files || [];
-  if (!file) return;
-  try {
-    const imported = await AdminStore.importAdminData(file);
-    imported.items = Array.isArray(imported.items) ? imported.items.map(normalizeItem) : [];
-    adminData = {
-      version: imported.version || adminData.version,
-      statuses: Array.isArray(imported.statuses) && imported.statuses.length ? imported.statuses : adminData.statuses,
-      types: Array.isArray(imported.types) && imported.types.length ? imported.types : adminData.types,
-      departments: Array.isArray(imported.departments) && imported.departments.length ? imported.departments : adminData.departments,
-      items: imported.items
+  function normalizeRow(row) {
+    return {
+      id: String(row.id ?? '').trim(),
+      name: String(row.name ?? '').trim(),
+      type: String(row.type ?? '').trim(),
+      department: String(row.department ?? '').trim(),
+      url: String(row.url ?? '').trim(),
+      icon: String(row.icon ?? '').trim(),
+      badge: String(row.badge ?? '').trim(),
+      status: String(row.status ?? '').trim(),
+      description: String(row.description ?? '').trim(),
+      keywords: toPipeString(row.keywords),
+      contexts: toPipeString(row.contexts),
+      order: toNumber(row.order, 9999),
+      enabled: toBoolean(row.enabled),
+      notes: String(row.notes ?? '').trim()
     };
-    AdminStore.saveAdminData(ADMIN_CONFIG.storageKey, adminData);
-    populateSelects();
-    resetForm();
-    applyFilters();
-    AdminUI.showToast('Moduleconfig geïmporteerd.', 'success');
-  } catch (error) {
-    AdminUI.showToast(error.message || 'Import van moduleconfig mislukt.', 'danger');
-  } finally {
-    event.target.value = '';
   }
-}
 
-async function handleResetDefaults() {
-  if (!window.confirm('Wil je alle lokale modulewijzigingen resetten naar de standaardconfig?')) return;
-  adminData = await AdminStore.resetAdminData(ADMIN_CONFIG.storageKey, ADMIN_CONFIG.defaultDataPath);
-  adminData.items = Array.isArray(adminData.items) ? adminData.items.map(normalizeItem) : [];
-  populateSelects();
-  resetForm();
-  applyFilters();
-  AdminUI.showToast('Moduleconfig werd gereset naar standaard.', 'success');
-}
+  function setStatus(message, tone = 'info') {
+    if (!els.status) return;
+    els.status.className = `status-box status-${tone}`;
+    els.status.textContent = message;
+  }
 
-function formatLabel(value) {
-  return String(value).replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
-}
+  function setLoading(isLoading) {
+    state.loading = isLoading;
+    if (els.saveBtn) els.saveBtn.disabled = isLoading || state.saving;
+    if (els.refreshBtn) els.refreshBtn.disabled = isLoading || state.saving;
+    if (els.resetBtn) els.resetBtn.disabled = isLoading || state.saving;
+  }
 
-function escapeHtml(value = '') {
-  return String(value)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
-}
+  function setSaving(isSaving) {
+    state.saving = isSaving;
+    if (els.saveBtn) els.saveBtn.disabled = isSaving || state.loading;
+    if (els.refreshBtn) els.refreshBtn.disabled = isSaving || state.loading;
+    if (els.resetBtn) els.resetBtn.disabled = isSaving || state.loading;
+  }
+
+  function getRowSearchText(row) {
+    return normalizeString([
+      row.id,
+      row.name,
+      row.type,
+      row.department,
+      row.url,
+      row.badge,
+      row.status,
+      row.description,
+      row.keywords,
+      row.contexts,
+      row.notes
+    ].join(' '));
+  }
+
+  function applyFilter() {
+    const query = normalizeString(state.search);
+
+    if (!query) {
+      state.filteredRows = [...state.rows];
+    } else {
+      state.filteredRows = state.rows.filter((row) => getRowSearchText(row).includes(query));
+    }
+
+    renderTable();
+  }
+
+  function buildSelectOptions(options, selectedValue, allowEmpty = true) {
+    const normalizedSelected = String(selectedValue ?? '');
+    const parts = [];
+
+    if (allowEmpty) {
+      parts.push(`<option value="">-</option>`);
+    }
+
+    options.forEach((option) => {
+      const selected = option === normalizedSelected ? ' selected' : '';
+      parts.push(`<option value="${escapeHtml(option)}"${selected}>${escapeHtml(option)}</option>`);
+    });
+
+    return parts.join('');
+  }
+
+  function renderTable() {
+    if (!els.tableWrap) return;
+
+    if (!state.filteredRows.length) {
+      els.tableWrap.innerHTML = '<div class="status-box status-info">Geen modules gevonden.</div>';
+      return;
+    }
+
+    const rowsHtml = state.filteredRows.map((row, filteredIndex) => {
+      const absoluteIndex = state.rows.findIndex((item) => item.id === row.id);
+
+      return `
+        <tr data-row-index="${absoluteIndex}">
+          <td><input type="checkbox" data-field="enabled" ${row.enabled ? 'checked' : ''}></td>
+          <td><input type="text" data-field="id" value="${escapeHtml(row.id)}"></td>
+          <td><input type="text" data-field="name" value="${escapeHtml(row.name)}"></td>
+          <td>
+            <select data-field="type">
+              ${buildSelectOptions(TYPE_OPTIONS, row.type, false)}
+            </select>
+          </td>
+          <td>
+            <select data-field="department">
+              ${buildSelectOptions(DEPARTMENT_OPTIONS, row.department, true)}
+            </select>
+          </td>
+          <td><input type="text" data-field="url" value="${escapeHtml(row.url)}"></td>
+          <td><input type="text" data-field="icon" value="${escapeHtml(row.icon)}"></td>
+          <td><input type="text" data-field="badge" value="${escapeHtml(row.badge)}"></td>
+          <td><input type="text" data-field="status" value="${escapeHtml(row.status)}"></td>
+          <td><textarea data-field="description" rows="2">${escapeHtml(row.description)}</textarea></td>
+          <td><input type="text" data-field="keywords" value="${escapeHtml(row.keywords)}"></td>
+          <td><input type="text" data-field="contexts" value="${escapeHtml(row.contexts)}"></td>
+          <td><input type="number" data-field="order" value="${escapeHtml(row.order)}"></td>
+          <td><textarea data-field="notes" rows="2">${escapeHtml(row.notes)}"></textarea></td>
+          <td>
+            <div class="table-actions">
+              <button type="button" class="btn-small" data-action="move-up">↑</button>
+              <button type="button" class="btn-small" data-action="move-down">↓</button>
+              <button type="button" class="btn-small btn-danger" data-action="delete-row">Verwijder</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    els.tableWrap.innerHTML = `
+      <div class="table-toolbar">
+        <button type="button" id="add-module-row-btn">Nieuwe module</button>
+        <span>${state.filteredRows.length} modules zichtbaar</span>
+      </div>
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Aan</th>
+              <th>ID</th>
+              <th>Naam</th>
+              <th>Type</th>
+              <th>Afdeling</th>
+              <th>URL</th>
+              <th>Icoon</th>
+              <th>Badge</th>
+              <th>Status</th>
+              <th>Beschrijving</th>
+              <th>Keywords</th>
+              <th>Contexts</th>
+              <th>Volgorde</th>
+              <th>Notities</th>
+              <th>Acties</th>
+            </tr>
+          </thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+      </div>
+    `;
+
+    const addBtn = document.getElementById('add-module-row-btn');
+    if (addBtn) {
+      addBtn.addEventListener('click', addEmptyRow);
+    }
+  }
+
+  function addEmptyRow() {
+    state.rows.push(normalizeRow({
+      id: '',
+      name: '',
+      type: 'tool',
+      department: 'general',
+      url: '',
+      icon: '🔗',
+      badge: '',
+      status: 'actief',
+      description: '',
+      keywords: '',
+      contexts: '',
+      order: getNextOrder(),
+      enabled: true,
+      notes: ''
+    }));
+
+    applyFilter();
+    setStatus('Nieuwe lege moduleregel toegevoegd.', 'info');
+  }
+
+  function getNextOrder() {
+    if (!state.rows.length) return 10;
+    const max = Math.max(...state.rows.map((row) => Number(row.order) || 0));
+    return max + 10;
+  }
+
+  function deleteRow(index) {
+    if (index < 0 || index >= state.rows.length) return;
+    state.rows.splice(index, 1);
+    applyFilter();
+    setStatus('Module verwijderd uit de huidige bewerking.', 'warning');
+  }
+
+  function moveRow(index, direction) {
+    const targetIndex = index + direction;
+    if (index < 0 || targetIndex < 0 || index >= state.rows.length || targetIndex >= state.rows.length) {
+      return;
+    }
+
+    const temp = state.rows[index];
+    state.rows[index] = state.rows[targetIndex];
+    state.rows[targetIndex] = temp;
+
+    state.rows.forEach((row, rowIndex) => {
+      row.order = (rowIndex + 1) * 10;
+    });
+
+    applyFilter();
+  }
+
+  function syncTableToState() {
+    const rows = Array.from(els.tableWrap.querySelectorAll('tbody tr'));
+
+    rows.forEach((tr) => {
+      const index = Number(tr.dataset.rowIndex);
+      const row = state.rows[index];
+      if (!row) return;
+
+      tr.querySelectorAll('[data-field]').forEach((fieldEl) => {
+        const field = fieldEl.dataset.field;
+        let value;
+
+        if (fieldEl.type === 'checkbox') {
+          value = fieldEl.checked;
+        } else {
+          value = fieldEl.value;
+        }
+
+        if (field === 'enabled') {
+          row[field] = !!value;
+        } else if (field === 'order') {
+          row[field] = toNumber(value, 9999);
+        } else if (field === 'keywords' || field === 'contexts') {
+          row[field] = toPipeString(value);
+        } else {
+          row[field] = String(value ?? '').trim();
+        }
+      });
+    });
+  }
+
+  function validateRows(rows) {
+    const ids = new Set();
+
+    rows.forEach((row, index) => {
+      const rowLabel = `rij ${index + 1}`;
+
+      if (!row.id) throw new Error(`Module ${rowLabel}: id ontbreekt.`);
+      if (!row.name) throw new Error(`Module ${rowLabel}: naam ontbreekt.`);
+      if (!row.type) throw new Error(`Module ${rowLabel}: type ontbreekt.`);
+      if (!row.url) throw new Error(`Module ${rowLabel}: url ontbreekt.`);
+      if (!row.contexts) throw new Error(`Module ${rowLabel}: contexts ontbreekt.`);
+
+      if (ids.has(row.id)) {
+        throw new Error(`Dubbele module-id gevonden: ${row.id}`);
+      }
+      ids.add(row.id);
+    });
+  }
+
+  async function loadModules() {
+    setLoading(true);
+    setStatus('Modules laden...', 'info');
+
+    try {
+      const rows = await window.EMSAdminStore.get('modules', { forceRefresh: true });
+      state.originalRows = rows.map(normalizeRow);
+      state.rows = clone(state.originalRows);
+      state.search = els.search ? els.search.value : '';
+      applyFilter();
+      setStatus(`Modules geladen: ${state.rows.length}`, 'success');
+    } catch (error) {
+      console.error(error);
+      setStatus(`Fout bij laden van modules: ${error.message}`, 'danger');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function resetModules() {
+    state.rows = clone(state.originalRows);
+    applyFilter();
+    setStatus('Wijzigingen teruggezet naar laatst geladen data.', 'info');
+  }
+
+  async function saveModules() {
+    syncTableToState();
+
+    const cleanedRows = state.rows.map(normalizeRow);
+    validateRows(cleanedRows);
+
+    setSaving(true);
+    setStatus('Modules opslaan...', 'info');
+
+    try {
+      await window.EMSAdminStore.save('modules', cleanedRows, ACTOR);
+      state.originalRows = clone(cleanedRows);
+      state.rows = clone(cleanedRows);
+      applyFilter();
+      setStatus('Modules succesvol opgeslagen.', 'success');
+    } catch (error) {
+      console.error(error);
+      setStatus(`Fout bij opslaan van modules: ${error.message}`, 'danger');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function handleTableClick(event) {
+    const button = event.target.closest('[data-action]');
+    if (!button) return;
+
+    const tr = button.closest('tr');
+    if (!tr) return;
+
+    syncTableToState();
+
+    const index = Number(tr.dataset.rowIndex);
+    const action = button.dataset.action;
+
+    if (action === 'delete-row') {
+      deleteRow(index);
+    } else if (action === 'move-up') {
+      moveRow(index, -1);
+    } else if (action === 'move-down') {
+      moveRow(index, 1);
+    }
+  }
+
+  function bindEvents() {
+    if (els.search) {
+      els.search.addEventListener('input', () => {
+        syncTableToState();
+        state.search = els.search.value;
+        applyFilter();
+      });
+    }
+
+    if (els.refreshBtn) {
+      els.refreshBtn.addEventListener('click', loadModules);
+    }
+
+    if (els.resetBtn) {
+      els.resetBtn.addEventListener('click', resetModules);
+    }
+
+    if (els.form) {
+      els.form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        await saveModules();
+      });
+    }
+
+    if (els.tableWrap) {
+      els.tableWrap.addEventListener('click', handleTableClick);
+    }
+  }
+
+  async function init() {
+    bindEvents();
+    await loadModules();
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+})();
