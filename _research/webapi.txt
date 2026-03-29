@@ -1,0 +1,5 @@
+webapp
+https://script.google.com/macros/s/AKfycbxCKvLhdVTGJXbCArfS13vGpJl-ntbXVd4gsYKH0H8LrM6YJheJj0-aUle__ISX_D8PNA/exec
+
+discord webhooks (test)
+https://discord.com/api/webhooks/1481738745760976967/GeLaYb4WLNxYls-rslbSqz8eekLzl12Yus0Ng3GKcjvzxTvXLac5pWhKb_149GmsLU_1
