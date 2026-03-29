@@ -15,17 +15,17 @@
 <body>
   <div class="admin-page">
     <header class="site-header">
-      <img src="../../assets/images/Banner.png" alt="EMS Tools Hub banner" class="site-banner" />
+      <img src="../../assets/images/Banner.png" alt="EMS Tools Hub banner" class="site-banner" data-site-banner />
     </header>
 
     <main class="admin-app">
       <section class="admin-card">
         <div class="admin-header">
           <div class="admin-header__meta">
-            <h1>Beheer thema</h1>
+            <h1 data-site-title>Beheer thema</h1>
             <p>
               Beheer centraal de branding, kleuren en basisinstellingen van de EMS-suite.
-              Dit thema kan via de theme-loader op meerdere pagina's worden toegepast.
+              Dit thema wordt centraal opgeslagen en toegepast op alle tools.
             </p>
           </div>
 
@@ -37,16 +37,23 @@
 
         <div class="stats-grid" id="statsGrid"></div>
 
-        <div class="admin-toolbar">
-          <button id="applyBtn" class="btn btn-primary" type="button">Toepassen & bewaren</button>
-          <button id="exportBtn" class="btn btn-secondary" type="button">Export JSON</button>
-          <label class="btn btn-secondary" for="importInput">Import JSON</label>
-          <input id="importInput" class="file-input" type="file" accept="application/json,.json" />
-          <button id="resetDefaultsBtn" class="btn btn-secondary" type="button">Reset naar standaard</button>
-          <button id="reloadBtn" class="btn btn-secondary" type="button">Herlaad</button>
-        </div>
+        <form id="theme-form">
+          <div class="admin-toolbar">
+            <button id="refresh-theme-btn" class="btn btn-secondary" type="button">Verversen</button>
+            <button id="reset-theme-btn" class="btn btn-secondary" type="button">Herstellen</button>
+            <button id="save-theme-btn" class="btn btn-primary" type="submit">Opslaan</button>
 
-        <div id="statusMessage" class="status status--info">Themaconfig wordt geladen...</div>
+            <button id="exportBtn" class="btn btn-secondary" type="button">Export JSON</button>
+            <label class="btn btn-secondary" for="importInput">Import JSON</label>
+            <input id="importInput" class="file-input" type="file" accept="application/json,.json" />
+            <button id="resetDefaultsBtn" class="btn btn-secondary" type="button">Reset naar standaard</button>
+            <button id="reloadBtn" class="btn btn-secondary" type="button">Herlaad</button>
+          </div>
+
+          <div id="theme-status" class="status-box status-info" aria-live="polite">
+            Themaconfig wordt geladen...
+          </div>
+        </form>
       </section>
 
       <section class="admin-layout">
@@ -58,50 +65,42 @@
             </div>
           </div>
 
-          <form id="themeForm" class="form-grid-admin">
+          <form id="theme-form" class="form-grid-admin">
             <div class="form-field full-width">
               <label for="siteTitleInput">Sitetitel</label>
-              <input id="siteTitleInput" class="form-input" type="text" required />
+              <input id="siteTitleInput" class="form-input" type="text" />
             </div>
+
             <div class="form-field full-width">
               <label for="siteSubtitleInput">Subtitel</label>
               <input id="siteSubtitleInput" class="form-input" type="text" />
             </div>
+
             <div class="form-field">
               <label for="logoPathInput">Logo pad</label>
               <input id="logoPathInput" class="form-input" type="text" />
             </div>
+
             <div class="form-field">
               <label for="bannerPathInput">Banner pad</label>
               <input id="bannerPathInput" class="form-input" type="text" />
             </div>
 
-            <div class="form-field"><label for="backgroundInput">Achtergrond</label><input id="backgroundInput" class="form-input" type="color" /></div>
-            <div class="form-field"><label for="surfaceInput">Surface</label><input id="surfaceInput" class="form-input" type="color" /></div>
-            <div class="form-field"><label for="surfaceSoftInput">Surface soft</label><input id="surfaceSoftInput" class="form-input" type="color" /></div>
-            <div class="form-field"><label for="textInput">Tekst</label><input id="textInput" class="form-input" type="color" /></div>
-            <div class="form-field"><label for="textSoftInput">Tekst soft</label><input id="textSoftInput" class="form-input" type="color" /></div>
-            <div class="form-field"><label for="primaryInput">Primary</label><input id="primaryInput" class="form-input" type="color" /></div>
-            <div class="form-field"><label for="primaryDarkInput">Primary dark</label><input id="primaryDarkInput" class="form-input" type="color" /></div>
-            <div class="form-field"><label for="primaryLightInput">Primary light</label><input id="primaryLightInput" class="form-input" type="color" /></div>
-            <div class="form-field"><label for="borderInput">Border</label><input id="borderInput" class="form-input" type="color" /></div>
-            <div class="form-field"><label for="successInput">Success</label><input id="successInput" class="form-input" type="color" /></div>
-            <div class="form-field"><label for="warningInput">Warning</label><input id="warningInput" class="form-input" type="color" /></div>
-            <div class="form-field"><label for="dangerInput">Danger</label><input id="dangerInput" class="form-input" type="color" /></div>
-            <div class="form-field"><label for="infoInput">Info</label><input id="infoInput" class="form-input" type="color" /></div>
+            <!-- kleuren -->
+            <div class="form-field"><label>Primary</label><input id="colorPrimaryInput" type="color" /></div>
+            <div class="form-field"><label>Background</label><input id="colorBackgroundInput" type="color" /></div>
+            <div class="form-field"><label>Surface</label><input id="colorSurfaceInput" type="color" /></div>
+            <div class="form-field"><label>Text</label><input id="colorTextInput" type="color" /></div>
+            <div class="form-field"><label>Accent</label><input id="colorAccentInput" type="color" /></div>
+            <div class="form-field"><label>Success</label><input id="colorSuccessInput" type="color" /></div>
+            <div class="form-field"><label>Warning</label><input id="colorWarningInput" type="color" /></div>
+            <div class="form-field"><label>Danger</label><input id="colorDangerInput" type="color" /></div>
 
             <div class="form-field">
               <label for="borderRadiusInput">Border radius</label>
               <input id="borderRadiusInput" class="form-input" type="text" placeholder="16px" />
             </div>
-            <div class="form-field">
-              <label for="shadowStyleInput">Shadowstijl</label>
-              <select id="shadowStyleInput" class="form-select">
-                <option value="soft">Soft</option>
-                <option value="medium">Medium</option>
-                <option value="strong">Strong</option>
-              </select>
-            </div>
+
             <div class="form-field full-width">
               <label><input id="compactModeInput" type="checkbox" /> Compact mode</label>
             </div>
@@ -132,18 +131,22 @@
 
           <hr class="soft-divider" />
           <p class="small-muted">
-            Het thema wordt opgeslagen onder <code>ems_admin_theme</code>. Pagina's die
-            <code>theme-loader.js</code> inladen, gebruiken automatisch de laatst opgeslagen instellingen.
+            Dit thema wordt centraal opgeslagen en automatisch toegepast op alle tools.
           </p>
         </section>
       </section>
     </main>
   </div>
 
+  <!-- BELANGRIJK: juiste volgorde -->
+  <script src="../../assets/scripts/store-config.js"></script>
+  <script src="../../assets/scripts/api-client.js"></script>
+  <script src="../../assets/scripts/admin-store.js"></script>
+
   <script src="../../assets/scripts/theme-loader.js"></script>
   <script src="../../assets/scripts/admin-utils.js"></script>
-  <script src="../../assets/scripts/admin-store.js"></script>
   <script src="../../assets/scripts/admin-ui.js"></script>
+
   <script src="app.js"></script>
 </body>
 </html>
