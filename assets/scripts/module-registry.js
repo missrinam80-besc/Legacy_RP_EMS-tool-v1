@@ -1,30 +1,10 @@
 (function (global) {
-  const STORAGE_KEY = 'ems_admin_modules';
-  const DEFAULT_PATH = global.__MODULES_DEFAULT_PATH__ || 'data/admin/default-modules.json';
-
   function normalize(value) {
     return String(value || '')
       .toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .trim();
-  }
-
-  async function loadModuleData() {
-    if (global.AdminStore && typeof global.AdminStore.loadAdminData === 'function') {
-      return global.AdminStore.loadAdminData(STORAGE_KEY, DEFAULT_PATH);
-    }
-    const response = await fetch(DEFAULT_PATH, { cache: 'no-store' });
-    if (!response.ok) throw new Error('Kon moduleconfig niet laden.');
-    return response.json();
-  }
-
-  function getStatusTone(status = '') {
-    const value = normalize(status);
-    if (value === 'actief' || value === 'live') return 'success';
-    if (value === 'nieuw') return 'warning';
-    if (value === 'in opbouw' || value === 'in-opbouw') return 'warning';
-    return '';
   }
 
   function toSafeText(value) {
@@ -35,8 +15,62 @@
       .replace(/"/g, '&quot;');
   }
 
+  function asArray(value) {
+    if (Array.isArray(value)) return value.filter(Boolean);
+
+    if (typeof value === 'string') {
+      return value
+        .split('|')
+        .map((part) => part.trim())
+        .filter(Boolean);
+    }
+
+    return [];
+  }
+
+  function normalizeModuleRow(item) {
+    return {
+      ...item,
+      keywords: Array.isArray(item.keywords)
+        ? item.keywords.join(' ')
+        : String(item.keywords || ''),
+      contexts: asArray(item.contexts),
+      enabled: item.enabled !== false && String(item.enabled).toLowerCase() !== 'false',
+      order: Number(item.order) || 9999
+    };
+  }
+
+  async function loadModuleData() {
+    if (!global.EMSAdminStore) {
+      throw new Error('EMSAdminStore ontbreekt.');
+    }
+
+    const raw = await global.EMSAdminStore.get('modules');
+    const items = Array.isArray(raw)
+      ? raw
+      : Array.isArray(raw?.items)
+        ? raw.items
+        : [];
+
+    return {
+      items: items.map(normalizeModuleRow)
+    };
+  }
+
+  function getStatusTone(status = '') {
+    const value = normalize(status);
+
+    if (value === 'actief' || value === 'live') return 'success';
+    if (value === 'nieuw') return 'warning';
+    if (value === 'in opbouw' || value === 'in-opbouw' || value === 'beta') return 'warning';
+    if (value === 'intern') return 'info';
+
+    return '';
+  }
+
   function itemMatchesContext(item, context) {
-    return Array.isArray(item.contexts) && item.contexts.includes(context) && item.enabled !== false;
+    const contexts = asArray(item.contexts);
+    return contexts.includes(context) && item.enabled !== false;
   }
 
   function sortItems(items) {
@@ -44,7 +78,20 @@
   }
 
   function buildQuickAction(item) {
-    return `<a class="quick-action-card module-card" href="${toSafeText(item.url)}" data-name="${toSafeText(item.name)}" data-category="${toSafeText(item.type)}" data-status="${toSafeText(item.status)}" data-keywords="${toSafeText(item.keywords)}"><span class="quick-action-card__icon" aria-hidden="true">${toSafeText(item.icon || '🔗')}</span><div><strong>${toSafeText(item.name)}</strong><p class="text-soft mt-1">${toSafeText(item.description)}</p></div></a>`;
+    return `
+      <a class="quick-action-card module-card"
+         href="${toSafeText(item.url)}"
+         data-name="${toSafeText(item.name)}"
+         data-category="${toSafeText(item.type)}"
+         data-status="${toSafeText(item.status)}"
+         data-keywords="${toSafeText(item.keywords)}">
+        <span class="quick-action-card__icon" aria-hidden="true">${toSafeText(item.icon || '🔗')}</span>
+        <div>
+          <strong>${toSafeText(item.name)}</strong>
+          <p class="text-soft mt-1">${toSafeText(item.description)}</p>
+        </div>
+      </a>
+    `;
   }
 
   function buildToolCard(item, variant = 'hub') {
@@ -55,8 +102,33 @@
     const badgeClass = variant === 'portal' ? 'portal-card__badge' : 'tool-badge';
     const statusClass = variant === 'portal' ? 'portal-card__status' : 'tool-status';
     const tone = getStatusTone(item.status);
-    const footer = variant === 'portal' ? '<div class="portal-card__footer"><span class="portal-card__link">Openen →</span></div>' : '';
-    return `<a class="${baseClass} module-card" href="${toSafeText(item.url)}" data-name="${toSafeText(item.name)}" data-category="${toSafeText(item.type)} ${toSafeText(item.department)}" data-status="${toSafeText(item.status)}" data-keywords="${toSafeText(item.keywords)}"><div class="${topClass}"><span class="${badgeClass}">${toSafeText(item.badge || item.type)}</span><span class="${statusClass}${tone ? ` ${statusClass}--${tone}` : ''}">${toSafeText(item.status || '')}</span></div><div class="${titleClass}"><span class="${iconClass}" aria-hidden="true">${toSafeText(item.icon || '🔗')}</span>${variant === 'portal' ? `<div><h3>${toSafeText(item.name)}</h3></div>` : `<h3>${toSafeText(item.name)}</h3>`}</div><p>${toSafeText(item.description)}</p>${footer}</a>`;
+    const footer = variant === 'portal'
+      ? '<div class="portal-card__footer"><span class="portal-card__link">Openen →</span></div>'
+      : '';
+
+    return `
+      <a class="${baseClass} module-card"
+         href="${toSafeText(item.url)}"
+         data-name="${toSafeText(item.name)}"
+         data-category="${toSafeText(item.type)} ${toSafeText(item.department)}"
+         data-status="${toSafeText(item.status)}"
+         data-keywords="${toSafeText(item.keywords)}">
+        <div class="${topClass}">
+          <span class="${badgeClass}">${toSafeText(item.badge || item.type)}</span>
+          <span class="${statusClass}${tone ? ` ${statusClass}--${tone}` : ''}">
+            ${toSafeText(item.status || '')}
+          </span>
+        </div>
+        <div class="${titleClass}">
+          <span class="${iconClass}" aria-hidden="true">${toSafeText(item.icon || '🔗')}</span>
+          ${variant === 'portal'
+            ? `<div><h3>${toSafeText(item.name)}</h3></div>`
+            : `<h3>${toSafeText(item.name)}</h3>`}
+        </div>
+        <p>${toSafeText(item.description)}</p>
+        ${footer}
+      </a>
+    `;
   }
 
   function renderRegion(context, container) {
@@ -70,13 +142,17 @@
       return 0;
     }
 
-    container.innerHTML = items.map((item) => type === 'quick' ? buildQuickAction(item) : buildToolCard(item, variant)).join('');
+    container.innerHTML = items
+      .map((item) => (type === 'quick' ? buildQuickAction(item) : buildToolCard(item, variant)))
+      .join('');
+
     return items.length;
   }
 
   function filterCards(searchInputSelector, cardSelector, sectionSelector, statusSelector, emptyMessage) {
     const searchInput = document.querySelector(searchInputSelector);
     const statusBox = document.querySelector(statusSelector);
+
     if (!searchInput) return;
 
     const applyFilter = () => {
@@ -92,13 +168,16 @@
           card.dataset.keywords,
           card.textContent
         ].join(' '));
+
         const match = !query || haystack.includes(query);
         card.hidden = !match;
         if (match) visibleCount += 1;
       });
 
       Array.from(document.querySelectorAll(sectionSelector)).forEach((section) => {
-        const visibleChildren = Array.from(section.querySelectorAll(cardSelector)).filter((card) => !card.hidden).length;
+        const visibleChildren = Array.from(section.querySelectorAll(cardSelector))
+          .filter((card) => !card.hidden).length;
+
         section.hidden = visibleChildren === 0;
       });
 
@@ -121,20 +200,27 @@
         searchInput.blur();
       }
     });
+
     applyFilter();
   }
 
   async function renderPageRegions() {
     global.__EMS_MODULES__ = await loadModuleData();
+
     const regions = Array.from(document.querySelectorAll('[data-module-context]'));
-    regions.forEach((container) => renderRegion(container.dataset.moduleContext, container));
+    regions.forEach((container) => {
+      renderRegion(container.dataset.moduleContext, container);
+    });
+
     return global.__EMS_MODULES__;
   }
 
   global.ModuleRegistry = {
     loadModuleData,
     renderPageRegions,
+    renderRegion,
     filterCards,
-    sortItems
+    sortItems,
+    normalizeModuleRow
   };
 })(window);
