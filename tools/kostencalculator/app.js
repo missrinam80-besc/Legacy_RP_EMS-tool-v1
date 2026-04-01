@@ -1,3 +1,4 @@
+
 let APP_CONFIG = null;
 
 const injuryRows = document.getElementById("injuryRows");
@@ -21,21 +22,55 @@ const costCustom = document.getElementById("costCustom");
 const costTotal = document.getElementById("costTotal");
 const costBreakdownList = document.getElementById("costBreakdownList");
 const summaryOutput = document.getElementById("summaryOutput");
+const statusMessage = document.querySelector(".status-message");
 
 const injuryRowTemplate = document.getElementById("injuryRowTemplate");
 const customRowTemplate = document.getElementById("customRowTemplate");
+
+const DEPARTMENT_UI_MAP = {
+  general: "algemeen",
+  spoed: "spoed",
+  chirurgie: "chirurgie",
+  psychologie: "psychologie",
+  ortho: "ortho-revalidatie"
+};
+
+const LEGACY_ITEM_ALIAS_MAP = {
+  morphine: ["morphine", "med_morphine"],
+  epinephrine: ["epinephrine", "med_epinephrine", "adrenaline"],
+  propofol: ["propofol", "med_propofol"],
+  tourniquet: ["tourniquet", "tool_tourniquet"],
+  field_dressing: ["field_dressing", "sup_bandage", "verband"],
+  elastic_bandage: ["elastic_bandage", "elastisch_verband"],
+  quick_clot: ["quick_clot"],
+  packing_bandage: ["packing_bandage"],
+  sewing_kit: ["sewing_kit", "kit_suturing", "hechtset"],
+  painkillers: ["painkillers", "painkiller", "analgesie"],
+  blood250ml: ["blood250ml", "blood_250", "bloed_250"],
+  blood500ml: ["blood500ml", "blood_500", "bloed_500"],
+  saline250ml: ["saline250ml", "saline_250"],
+  saline500ml: ["saline500ml", "saline_500"],
+  neckbrace: ["neckbrace", "brace_nek"],
+  armsplint: ["armsplint", "splint_arm"],
+  legsplint: ["legsplint", "splint_leg", "splint"],
+  armcast: ["armcast", "gips_arm"],
+  legcast: ["legcast", "gips_leg"],
+  crutch: ["crutch", "tool_krukken", "krukken"],
+  cane: ["cane", "wandelstok"],
+  wheelchair: ["wheelchair", "rolstoel"]
+};
 
 document.addEventListener("DOMContentLoaded", initApp);
 
 async function initApp() {
   try {
-    const response = await fetch("config.json");
+    const response = await fetch("config.json", { cache: "no-store" });
     if (!response.ok) {
       throw new Error(`Config kon niet geladen worden (${response.status})`);
     }
 
     APP_CONFIG = await response.json();
-    await applyCentralPriceConfig();
+    await applyCentralData();
 
     renderDepartmentSelect();
     renderItemCheckboxes();
@@ -43,58 +78,119 @@ async function initApp() {
     renderDepartmentExtras();
     addInjuryRow();
     bindEvents();
+    updateStatus("Klaar. Centrale prijs- en medicatiegegevens zijn geladen.");
   } catch (error) {
     console.error("Fout bij laden van de kostencalculator:", error);
+    updateStatus("De calculator werkt met lokale fallbackgegevens.");
     alert("Fout bij laden van de kostencalculator. Controleer config.json en het pad.");
   }
 }
 
+async function applyCentralData() {
+  const [pricesData, medicationData] = await Promise.all([
+    loadCentralType("prices"),
+    loadCentralType("medication")
+  ]);
 
-async function applyCentralPriceConfig() {
+  if (pricesData?.items?.length) {
+    applyCentralPriceConfig(pricesData);
+  }
+
+  if (medicationData?.items?.length) {
+    applyCentralMedicationConfig(medicationData);
+  }
+}
+
+async function loadCentralType(type) {
   try {
-    const adminDefaultPath = '../../data/admin/default-prices.json';
-    const localRaw = localStorage.getItem('ems_admin_prices');
-    let priceData = null;
+    if (window.EMSAdminStore?.get) {
+      return await window.EMSAdminStore.get(type);
+    }
+  } catch (error) {
+    console.warn(`[Kostencalculator] Centrale ${type}-store niet beschikbaar, fallback wordt gebruikt.`, error);
+  }
 
-    if (localRaw) {
-      priceData = JSON.parse(localRaw);
-    } else {
-      const response = await fetch(adminDefaultPath, { cache: 'no-store' });
-      if (response.ok) {
-        priceData = await response.json();
-      }
+  const fallbackMap = {
+    prices: "../../data/admin/default-prices.json",
+    medication: "../../data/admin/default-medication.json"
+  };
+
+  const path = fallbackMap[type];
+  if (!path) return null;
+
+  try {
+    const response = await fetch(path, { cache: "no-store" });
+    if (!response.ok) return null;
+    return await response.json();
+  } catch (error) {
+    console.warn(`[Kostencalculator] Fallbackbestand voor ${type} kon niet geladen worden.`, error);
+    return null;
+  }
+}
+
+function applyCentralMedicationConfig(payload) {
+  const items = Array.isArray(payload?.items) ? payload.items : [];
+  const activeItems = items.filter((item) => item.active !== false);
+
+  activeItems.forEach((item) => {
+    const targetCode = getLegacyItemCode(item);
+    APP_CONFIG.itemLabels[targetCode] = item.name || item.label || targetCode;
+
+    if (!APP_CONFIG.costs.items[targetCode] && Number(item.price) > 0) {
+      APP_CONFIG.costs.items[targetCode] = Number(item.price);
+    }
+  });
+}
+
+function applyCentralPriceConfig(payload) {
+  const items = Array.isArray(payload?.items) ? payload.items : [];
+  const activeItems = items
+    .filter((item) => item.active !== false)
+    .filter((item) => item.visibleInCalculator !== false);
+
+  const extrasByDepartment = {
+    general: [],
+    spoed: [],
+    chirurgie: [],
+    psychologie: [],
+    ortho: []
+  };
+
+  const investigationMap = { ...(APP_CONFIG.costs.investigations || {}) };
+
+  activeItems.forEach((item) => {
+    const departmentKey = toUiDepartmentKey(item.department);
+    const amount = Number(item.defaultPrice) || 0;
+    if (!departmentKey || !amount) return;
+
+    const documentTypes = Array.isArray(item.documentTypes) ? item.documentTypes : [];
+    const supportsCalculator = !documentTypes.length || documentTypes.includes("kostencalculator");
+
+    if (!supportsCalculator) return;
+
+    if (item.category === "onderzoek") {
+      investigationMap[getInvestigationCode(item)] = amount;
+      return;
     }
 
-    if (!priceData || !Array.isArray(priceData.items)) return;
-
-    const departmentMap = {
-      general: 'algemeen',
-      spoed: 'spoed',
-      chirurgie: 'chirurgie',
-      psychologie: 'psychologie',
-      ortho: 'ortho-revalidatie'
-    };
-
-    Object.keys(APP_CONFIG.departmentExtras || {}).forEach((configDepartmentKey) => {
-      const adminDepartment = departmentMap[configDepartmentKey];
-      const extras = priceData.items
-        .filter((item) => item.active !== false)
-        .filter((item) => item.visibleInCalculator !== false)
-        .filter((item) => item.department === adminDepartment)
-        .map((item) => ({
-          code: item.code || item.id,
-          label: item.label,
-          amount: Number(item.defaultPrice) || 0
-        }))
-        .sort((a, b) => a.label.localeCompare(b.label, 'nl'));
-
-      if (extras.length) {
-        APP_CONFIG.departmentExtras[configDepartmentKey] = extras;
-      }
+    extrasByDepartment[departmentKey].push({
+      code: item.code || item.id,
+      label: item.label,
+      amount
     });
-  } catch (error) {
-    console.warn('Centrale prijsconfig kon niet toegepast worden op de kostencalculator.', error);
-  }
+  });
+
+  APP_CONFIG.costs.investigations = investigationMap;
+
+  Object.keys(extrasByDepartment).forEach((departmentKey) => {
+    const merged = [
+      ...(Array.isArray(APP_CONFIG.departmentExtras?.[departmentKey]) ? APP_CONFIG.departmentExtras[departmentKey] : []),
+      ...extrasByDepartment[departmentKey]
+    ];
+
+    APP_CONFIG.departmentExtras[departmentKey] = dedupeByCode(merged)
+      .sort((a, b) => String(a.label || "").localeCompare(String(b.label || ""), "nl"));
+  });
 }
 
 function bindEvents() {
@@ -126,13 +222,13 @@ function renderDepartmentSelect() {
 
 function renderItemCheckboxes() {
   itemOptions.innerHTML = Object.entries(APP_CONFIG.itemLabels)
-    .map(([code, label]) => buildCheckboxHtml(`item-${code}`, code, label, "itemOption"))
+    .map(([code, label]) => buildCheckboxHtml(`item-${code}`, code, `${label}${APP_CONFIG.costs.items?.[code] ? ` (€ ${APP_CONFIG.costs.items[code]})` : ""}`, "itemOption"))
     .join("");
 }
 
 function renderInvestigationCheckboxes() {
   investigationOptions.innerHTML = Object.entries(APP_CONFIG.costs.investigations)
-    .map(([code, amount]) => buildCheckboxHtml(`investigation-${code}`, code, `${capitalize(code)} (€ ${amount})`, "investigationOption"))
+    .map(([code, amount]) => buildCheckboxHtml(`investigation-${code}`, code, `${beautifyInvestigationLabel(code)} (€ ${amount})`, "investigationOption"))
     .join("");
 }
 
@@ -220,7 +316,7 @@ function calculateCosts() {
 
   getCheckedValues("investigationOption").forEach((code) => {
     const amount = APP_CONFIG.costs.investigations[code] ?? 0;
-    addBreakdownLine(breakdown, totals, "investigations", capitalize(code), amount);
+    addBreakdownLine(breakdown, totals, "investigations", beautifyInvestigationLabel(code), amount);
   });
 
   const departmentKey = departmentSelect.value || "general";
@@ -331,6 +427,7 @@ function handleReset() {
     breakdown: [],
     summary: ""
   });
+  updateStatus("De calculator is gereset.");
 }
 
 function handleCopySummary() {
@@ -343,6 +440,55 @@ function handleCopySummary() {
   navigator.clipboard.writeText(text)
     .then(() => alert("Kostenoverzicht gekopieerd."))
     .catch(() => alert("Kopiëren is niet gelukt."));
+}
+
+function toUiDepartmentKey(adminDepartment) {
+  const normalized = String(adminDepartment || "").trim().toLowerCase();
+  return Object.entries(DEPARTMENT_UI_MAP).find(([, value]) => value === normalized)?.[0] || null;
+}
+
+function getLegacyItemCode(item) {
+  const normalized = String(item?.id || item?.name || item?.label || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+  const match = Object.entries(LEGACY_ITEM_ALIAS_MAP).find(([, aliases]) => aliases.includes(normalized));
+  if (match) return match[0];
+  return normalized || "item_onbekend";
+}
+
+function getInvestigationCode(item) {
+  const base = String(item.code || item.label || item.id || "onderzoek")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+  if (base.includes("ct")) return "ct";
+  if (base.includes("rx") || base.includes("röntgen") || base.includes("rontgen")) return "rx";
+  if (base.includes("observ")) return "observatie";
+  if (base.includes("beeld")) return "beeldvorming";
+  return base || "onderzoek";
+}
+
+function dedupeByCode(entries) {
+  const map = new Map();
+  entries.forEach((entry) => {
+    if (!entry?.code) return;
+    map.set(entry.code, entry);
+  });
+  return Array.from(map.values());
+}
+
+function beautifyInvestigationLabel(value) {
+  const text = String(value || "");
+  if (!text) return "Onderzoek";
+  if (text.toLowerCase() === "rx") return "RX";
+  if (text.toLowerCase() === "ct") return "CT";
+  return text
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
 function getWoundLabel(woundValue) {
@@ -364,9 +510,10 @@ function formatCurrency(amount) {
   return `€ ${Number(amount || 0).toLocaleString("nl-BE")}`;
 }
 
-function capitalize(value) {
-  const text = String(value || "");
-  return text.charAt(0).toUpperCase() + text.slice(1);
+function updateStatus(text) {
+  if (statusMessage) {
+    statusMessage.textContent = text;
+  }
 }
 
 function escapeHtml(value) {

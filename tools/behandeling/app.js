@@ -1,5 +1,97 @@
 let APP_CONFIG = null;
 
+
+const CENTRAL_ITEM_ALIAS_MAP = {
+  morphine: ["morphine", "med_morphine"],
+  epinephrine: ["epinephrine", "med_epinephrine", "adrenaline"],
+  propofol: ["propofol", "med_propofol"],
+  tourniquet: ["tourniquet", "tool_tourniquet"],
+  field_dressing: ["field_dressing", "sup_bandage", "bandage", "verband"],
+  elastic_bandage: ["elastic_bandage", "elastisch_verband"],
+  quick_clot: ["quick_clot"],
+  packing_bandage: ["packing_bandage"],
+  sewing_kit: ["sewing_kit", "kit_suturing", "hechtset"],
+  painkillers: ["painkillers", "analgesie", "painkiller"],
+  morphine: ["morphine", "med_morphine"],
+  blood250ml: ["blood250ml", "blood_250", "bloed_250"],
+  blood500ml: ["blood500ml", "blood_500", "bloed_500"],
+  saline250ml: ["saline250ml", "saline_250"],
+  saline500ml: ["saline500ml", "saline_500"],
+  neckbrace: ["neckbrace", "brace_nek"],
+  armsplint: ["armsplint", "splint_arm"],
+  legsplint: ["legsplint", "splint_leg", "splint"],
+  armcast: ["armcast", "gips_arm"],
+  legcast: ["legcast", "gips_leg"],
+  crutch: ["crutch", "tool_krukken", "krukken"],
+  cane: ["cane", "wandelstok"],
+  wheelchair: ["wheelchair", "rolstoel"]
+};
+
+const NL_TO_UI_DEPARTMENT = {
+  algemeen: "Spoed/Ambulance",
+  spoed: "Spoed/Ambulance",
+  ambulance: "Spoed/Ambulance",
+  chirurgie: "Chirurgie",
+  psychologie: "Psychologie",
+  "ortho-revalidatie": "Ortho/Revalidatie",
+  forensisch: "Forensisch",
+  labo: "Labo"
+};
+
+const UI_TO_NL_DEPARTMENT = {
+  "Spoed/Ambulance": "spoed",
+  Chirurgie: "chirurgie",
+  Psychologie: "psychologie",
+  "Ortho/Revalidatie": "ortho-revalidatie",
+  Forensisch: "forensisch",
+  Labo: "labo"
+};
+
+const CENTRAL_SEVERITY_MAP = {
+  licht: { select: "light", score: 1 },
+  matig: { select: "moderate", score: 2 },
+  ernstig: { select: "severe", score: 4 },
+  kritiek: { select: "critical", score: 6 },
+  laag: { select: "light", score: 1 },
+  hoog: { select: "severe", score: 4 },
+  extreem: { select: "critical", score: 6 }
+};
+
+const RULE_VALUE_TRANSLATIONS = {
+  consciousness: {
+    buiten_bewustzijn: "unconscious",
+    verminderd: "reduced",
+    bij_bewustzijn: "alert"
+  },
+  bloodloss: {
+    laag: "light",
+    matig: "moderate",
+    ernstig: "high",
+    extreem: "extreme",
+    geen: "none"
+  },
+  pain: {
+    licht: "light",
+    matig: "moderate",
+    hoog: "high",
+    extreem: "extreme"
+  },
+  pulse: {
+    zwak: "weak",
+    snel: "fast",
+    traag: "slow",
+    normaal: "normal"
+  },
+  triage: {
+    kritiek: "critical",
+    urgent: "urgent",
+    niet_urgent: "non-urgent",
+    geen: "none"
+  }
+};
+
+
+
 /* =========================================================
    DOM
 ========================================================= */
@@ -74,12 +166,13 @@ document.addEventListener("DOMContentLoaded", initApp);
 
 async function initApp() {
   try {
-    const response = await fetch("config.json");
+    const response = await fetch("config.json", { cache: "no-store" });
     if (!response.ok) {
       throw new Error(`Config kon niet geladen worden (${response.status})`);
     }
 
     APP_CONFIG = await response.json();
+    await applyCentralMedicalConfig();
 
     renderStaticSelects();
     renderBodyPartInputs();
@@ -92,6 +185,397 @@ async function initApp() {
     alert("Fout bij laden van de behandeltool. Controleer config.json en het pad.");
   }
 }
+
+
+async function applyCentralMedicalConfig() {
+  const [medicationData, injuriesData, treatmentRulesData, pricesData] = await Promise.all([
+    loadCentralType("medication"),
+    loadCentralType("injuries"),
+    loadCentralType("treatmentRules"),
+    loadCentralType("prices")
+  ]);
+
+  if (medicationData?.items?.length) {
+    mergeCentralMedication(medicationData.items);
+  }
+
+  if (injuriesData?.items?.length) {
+    mergeCentralInjuries(injuriesData.items);
+  }
+
+  if (treatmentRulesData?.items?.length) {
+    APP_CONFIG.centralTreatmentRules = treatmentRulesData.items.filter((item) => item.active !== false && item.visibleInOutput !== false);
+  } else {
+    APP_CONFIG.centralTreatmentRules = [];
+  }
+
+  if (pricesData?.items?.length) {
+    mergeCentralPrices(pricesData.items);
+  }
+}
+
+async function loadCentralType(type) {
+  try {
+    if (window.EMSAdminStore?.get) {
+      return await window.EMSAdminStore.get(type);
+    }
+  } catch (error) {
+    console.warn(`[Behandeltool] Centrale ${type}-store niet beschikbaar, fallback wordt gebruikt.`, error);
+  }
+
+  const fallbackMap = {
+    medication: "../../data/admin/default-medication.json",
+    injuries: "../../data/admin/default-injuries.json",
+    treatmentRules: "../../data/admin/default-treatment-rules.json",
+    prices: "../../data/admin/default-prices.json"
+  };
+
+  const path = fallbackMap[type];
+  if (!path) return null;
+
+  try {
+    const response = await fetch(path, { cache: "no-store" });
+    if (!response.ok) return null;
+    return await response.json();
+  } catch (error) {
+    console.warn(`[Behandeltool] Fallbackbestand voor ${type} kon niet geladen worden.`, error);
+    return null;
+  }
+}
+
+function mergeCentralMedication(items) {
+  const activeItems = items.filter((item) => item.active !== false);
+
+  activeItems.forEach((item) => {
+    const code = getCanonicalItemCode(item.id || item.name || item.label);
+    APP_CONFIG.itemLabels[code] = item.name || item.label || code;
+
+    if (Number(item.price) > 0) {
+      APP_CONFIG.costs.items[code] = Number(item.price);
+    }
+  });
+}
+
+function mergeCentralInjuries(items) {
+  const activeItems = items.filter((item) => item.active !== false);
+  const grouped = new Map();
+
+  activeItems.forEach((item) => {
+    const category = String(item.category || item.id || "").trim().toLowerCase();
+    if (!category) return;
+    if (!grouped.has(category)) grouped.set(category, []);
+    grouped.get(category).push(item);
+  });
+
+  const localLabels = Object.fromEntries((APP_CONFIG.woundOptions || []).map((option) => [option.value, option.label]));
+  const woundOptions = [{ value: "", label: "Geen wond" }];
+  const woundRules = { ...(APP_CONFIG.woundRules || {}) };
+
+  grouped.forEach((entries, category) => {
+    const sorted = entries.slice().sort((a, b) => getCentralSeverityScore(a.severity) - getCentralSeverityScore(b.severity));
+    const mostSevere = sorted[sorted.length - 1];
+    woundOptions.push({
+      value: category,
+      label: localLabels[category] || mostSevere.label || prettifyCode(category)
+    });
+
+    woundRules[category] = buildCentralWoundRule(category, entries, woundRules[category]);
+  });
+
+  APP_CONFIG.woundOptions = dedupeOptions(woundOptions);
+  APP_CONFIG.woundRules = woundRules;
+}
+
+function mergeCentralPrices(items) {
+  const activeItems = items
+    .filter((item) => item.active !== false)
+    .filter((item) => item.visibleInCalculator !== false);
+
+  const extraGroups = [];
+
+  activeItems.forEach((item) => {
+    const amount = Number(item.defaultPrice) || 0;
+    if (!amount) return;
+
+    if (item.category === "onderzoek") {
+      APP_CONFIG.costs.investigations[getInvestigationCostCode(item)] = amount;
+      return;
+    }
+
+    const uiDepartment = NL_TO_UI_DEPARTMENT[String(item.department || "").trim().toLowerCase()];
+    if (!uiDepartment) return;
+
+    const groupCode = String(item.department || "algemeen").trim().toLowerCase();
+    let group = extraGroups.find((entry) => entry.code === groupCode);
+    if (!group) {
+      group = {
+        code: groupCode,
+        label: prettifyDepartmentLabel(groupCode),
+        departments: [uiDepartment],
+        profiles: buildProfilesFromDocumentTypes(item.documentTypes),
+        items: []
+      };
+      extraGroups.push(group);
+    }
+
+    group.items.push({
+      code: item.code || item.id,
+      label: item.label,
+      amount
+    });
+  });
+
+  if (extraGroups.length) {
+    APP_CONFIG.extraCostGroups = mergeExtraCostGroups(APP_CONFIG.extraCostGroups || [], extraGroups);
+  }
+}
+
+function buildCentralWoundRule(category, entries, existingRule = {}) {
+  const maxSeverity = entries.reduce((maxValue, item) => Math.max(maxValue, getCentralSeverityScore(item.severity)), 1);
+  const defaultTreatments = entries.flatMap((item) => splitPipe(item.defaultTreatments).map(getCanonicalItemCode));
+  const bleedingImpacts = entries.map((item) => String(item.bleedingImpact || "").toLowerCase());
+  const painImpacts = entries.map((item) => String(item.painImpact || "").toLowerCase());
+  const suturingNeeded = entries.some((item) => item.needsSuturing === true || String(item.needsSuturing).toLowerCase() === "true");
+  const highRiskFracture = entries.some((item) => ["matig", "hoog"].includes(String(item.fractureRisk || "").toLowerCase()));
+  const severeCategory = ["gunshot", "avulsion", "crush"].includes(category);
+
+  const actions = new Set(existingRule.actions || []);
+  const steps = new Set(existingRule.steps || []);
+  const warnings = new Set(existingRule.warnings || []);
+  const followUp = new Set(existingRule.followUp || []);
+  const investigations = new Set(existingRule.investigations || []);
+  const items = new Set([...(existingRule.items || []), ...defaultTreatments.filter(Boolean)]);
+  const departments = new Set(existingRule.departments || ["Spoed/Ambulance"]);
+
+  steps.add("Controleer en stabiliseer het letsel");
+  actions.add(`Behandel ${existingRule.label || prettifyCode(category).toLowerCase()} volgens ernst en toestand`);
+
+  if (bleedingImpacts.includes("hoog") || bleedingImpacts.includes("extreem")) {
+    steps.add("Stop actieve bloeding als prioriteit");
+    warnings.add("Actieve bloeding kan snelle stabilisatie vereisen");
+    items.add("quick_clot");
+  }
+
+  if (painImpacts.includes("hoog") || painImpacts.includes("extreem")) {
+    actions.add("Voorzie passende pijnstilling indien toestand dit toelaat");
+    items.add("morphine");
+  }
+
+  if (suturingNeeded) {
+    actions.add("Beoordeel nood aan wondsluiting of hechting");
+    followUp.add("Controleer wondsluiting en verdere genezing");
+    items.add("sewing_kit");
+  }
+
+  if (highRiskFracture) {
+    actions.add("Overweeg stabilisatie en bijkomende beeldvorming");
+    investigations.add("RX van betrokken zone");
+    departments.add("Spoed/Ambulance");
+  }
+
+  if (severeCategory || maxSeverity >= 4) {
+    departments.add("Chirurgie");
+    warnings.add("Complex letsel kan chirurgische opvolging vereisen");
+  }
+
+  return {
+    severity: Math.max(Number(existingRule.severity || 0), maxSeverity),
+    steps: Array.from(steps),
+    actions: Array.from(actions),
+    items: Array.from(items),
+    warnings: Array.from(warnings),
+    investigations: Array.from(investigations),
+    followUp: Array.from(followUp),
+    departments: Array.from(departments)
+  };
+}
+
+function mergeExtraCostGroups(existingGroups, centralGroups) {
+  const map = new Map();
+
+  [...existingGroups, ...centralGroups].forEach((group) => {
+    if (!group?.code) return;
+    if (!map.has(group.code)) {
+      map.set(group.code, {
+        code: group.code,
+        label: group.label,
+        departments: Array.from(new Set(group.departments || [])),
+        profiles: Array.from(new Set(group.profiles || [])),
+        items: []
+      });
+    }
+
+    const current = map.get(group.code);
+    current.label = current.label || group.label;
+    current.departments = Array.from(new Set([...(current.departments || []), ...(group.departments || [])]));
+    current.profiles = Array.from(new Set([...(current.profiles || []), ...(group.profiles || [])]));
+
+    (group.items || []).forEach((item) => {
+      if (!current.items.find((entry) => entry.code === item.code)) {
+        current.items.push(item);
+      }
+    });
+  });
+
+  return Array.from(map.values());
+}
+
+function applyCentralTreatmentRules(formData, ctx) {
+  const rules = Array.isArray(APP_CONFIG.centralTreatmentRules) ? APP_CONFIG.centralTreatmentRules : [];
+  if (!rules.length) return;
+
+  const selectedDepartment = formData.filter.department;
+  rules.forEach((rule) => {
+    const uiDepartment = NL_TO_UI_DEPARTMENT[String(rule.department || "").trim().toLowerCase()] || "Spoed/Ambulance";
+    if (selectedDepartment !== "all" && uiDepartment !== selectedDepartment) return;
+    if (!ruleMatchesForm(rule, formData)) return;
+
+    const departments = [uiDepartment];
+    const adviceType = String(rule.adviceType || "").trim().toLowerCase();
+    const adviceValue = String(rule.adviceValue || "").trim();
+
+    if (adviceType === "medication" || adviceType === "tool" || adviceType === "treatment") {
+      const code = getCanonicalItemCode(adviceValue);
+      addTaggedItems(ctx.uniqueItems, [code], departments);
+    } else if (adviceType === "step") {
+      addTaggedText(ctx.uniqueSteps, "", [humanizeRuleAdvice(adviceValue)], departments);
+    } else if (adviceType === "warning") {
+      addTaggedText(ctx.uniqueWarnings, "", [humanizeRuleAdvice(adviceValue)], departments);
+    } else if (adviceType === "triage") {
+      ctx.priorityAlerts.add(`Centrale regel: ${humanizeRuleAdvice(adviceValue)}`);
+    }
+  });
+}
+
+function ruleMatchesForm(rule, formData) {
+  const group = String(rule.conditionGroup || "").trim().toLowerCase();
+  const field = String(rule.conditionField || "").trim().toLowerCase();
+  const operator = String(rule.operator || "equals").trim().toLowerCase();
+  const ruleValueRaw = String(rule.conditionValue || "").trim().toLowerCase();
+
+  let currentValue = "";
+  let translatedRuleValue = ruleValueRaw;
+
+  if (group === "bloodloss" || field === "bloodloss") {
+    currentValue = formData.condition.bleedingLevel;
+    translatedRuleValue = RULE_VALUE_TRANSLATIONS.bloodloss[ruleValueRaw] || ruleValueRaw;
+  } else if (group === "pain" || field === "pain") {
+    currentValue = formData.condition.painLevel;
+    translatedRuleValue = RULE_VALUE_TRANSLATIONS.pain[ruleValueRaw] || ruleValueRaw;
+  } else if (group === "consciousness" || field === "consciousness") {
+    currentValue = formData.condition.consciousness;
+    translatedRuleValue = RULE_VALUE_TRANSLATIONS.consciousness[ruleValueRaw] || ruleValueRaw;
+  } else if (field === "pulse") {
+    currentValue = formData.condition.pulse;
+    translatedRuleValue = RULE_VALUE_TRANSLATIONS.pulse[ruleValueRaw] || ruleValueRaw;
+  } else if (field === "triage") {
+    currentValue = formData.condition.triage;
+    translatedRuleValue = RULE_VALUE_TRANSLATIONS.triage[ruleValueRaw] || ruleValueRaw;
+  } else {
+    return false;
+  }
+
+  if (operator === "equals") {
+    return currentValue === translatedRuleValue;
+  }
+
+  if (operator === "gte") {
+    return compareSeverityValue(field || group, currentValue, translatedRuleValue) >= 0;
+  }
+
+  return false;
+}
+
+function compareSeverityValue(kind, currentValue, ruleValue) {
+  const maps = {
+    pain: { light: 1, moderate: 2, high: 3, extreme: 4 },
+    bloodloss: { none: 0, light: 1, moderate: 2, high: 3, extreme: 4 }
+  };
+
+  const map = maps[kind] || maps.pain;
+  return Number(map[currentValue] || 0) - Number(map[ruleValue] || 0);
+}
+
+function buildProfilesFromDocumentTypes(documentTypes) {
+  const values = Array.isArray(documentTypes) ? documentTypes : [];
+  const profiles = [];
+
+  values.forEach((value) => {
+    if (value === "rapport-operatie") profiles.push("operation_report");
+    else if (value === "rapport-forensisch") profiles.push("forensic_report");
+    else if (value === "rapport-trauma") profiles.push("trauma_report");
+    else if (value === "rapport-opname") profiles.push("admission_report");
+    else if (value === "rapport-coma") profiles.push("coma_report");
+    else profiles.push("all");
+  });
+
+  return Array.from(new Set(profiles.length ? profiles : ["all"]));
+}
+
+function getInvestigationCostCode(item) {
+  const base = String(item.code || item.label || item.id || "onderzoek")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+  if (base.includes("ct")) return "ct";
+  if (base.includes("rx") || base.includes("rontgen") || base.includes("röntgen")) return "rx";
+  if (base.includes("observ")) return "observatie";
+  if (base.includes("beeld")) return "beeldvorming";
+  if (base.includes("circul")) return "circulatie";
+  return base;
+}
+
+function getCanonicalItemCode(rawValue) {
+  const normalized = String(rawValue || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+  const match = Object.entries(CENTRAL_ITEM_ALIAS_MAP).find(([, aliases]) => aliases.includes(normalized));
+  if (match) return match[0];
+  return normalized || "item_onbekend";
+}
+
+function prettifyCode(value) {
+  return String(value || "")
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function prettifyDepartmentLabel(value) {
+  return prettifyCode(String(value || "").replace("-", " "));
+}
+
+function getCentralSeverityScore(value) {
+  return CENTRAL_SEVERITY_MAP[String(value || "").trim().toLowerCase()]?.score || 1;
+}
+
+function splitPipe(value) {
+  return String(value || "")
+    .split("|")
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+function dedupeOptions(options) {
+  const map = new Map();
+  options.forEach((option) => {
+    if (!option?.value && option?.value !== "") return;
+    map.set(option.value, option);
+  });
+  return Array.from(map.values());
+}
+
+function humanizeRuleAdvice(value) {
+  const normalized = String(value || "").trim();
+  if (APP_CONFIG.itemLabels?.[getCanonicalItemCode(normalized)]) {
+    return APP_CONFIG.itemLabels[getCanonicalItemCode(normalized)];
+  }
+  return prettifyCode(normalized);
+}
+
 
 /* =========================================================
    RENDER STATIC SELECTS
@@ -343,7 +827,7 @@ function buildTreatmentAdvice(formData) {
 
   severityScore += getGeneralSeverityScore(formData.condition);
 
-  applyGeneralConditionLogic(formData.condition, {
+  const centralRuleContext = {
     uniqueSteps,
     uniqueActions,
     uniqueItems,
@@ -353,7 +837,10 @@ function buildTreatmentAdvice(formData) {
     priorityAlerts,
     clinicalImpressions,
     imaging
-  });
+  };
+
+  applyGeneralConditionLogic(formData.condition, centralRuleContext);
+  applyCentralTreatmentRules(formData, centralRuleContext);
 
   formData.injuries.forEach((part) => {
     const hasPartInjury = part.injuries.length > 0 || part.fracture || part.needsImaging;
