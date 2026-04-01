@@ -1,4 +1,75 @@
-<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Prioritaire ortho / revalidatie aanvraag - EMS Tools</title><link rel="stylesheet" href="../../assets/styles/theme.css" /><link rel="stylesheet" href="../../assets/styles/base.css" /><link rel="stylesheet" href="../../assets/styles/layout.css" /><link rel="stylesheet" href="../../assets/styles/components.css" /><link rel="stylesheet" href="../../assets/styles/utilities.css" /><link rel="stylesheet" href="../../assets/styles/aanvragen.css" />  <link rel="stylesheet" href="../../assets/styles/flow.css" />
-</head><body class="request-page"><div class="app-shell"><header class="site-header"><img src="../../assets/images/Banner.png" class="site-banner" data-site-banner /></header><main class="page-container"><section class="request-hero-card"><div class="request-hero-card__content"><h1>Prioritaire ortho / revalidatie aanvraag</h1><p>Gebruik dit formulier wanneer een patiënt of betrokkene dringend psychologische tussenkomst nodig heeft. De output combineert aanvraag + snelle risico-inschatting.</p><nav class="request-subnav" aria-label="Snelle navigatie"><a class="request-subnav__link" href="../../index.html">🏠 Home medewerkers</a><a class="request-subnav__link" href="../portaal-ortho-revalidatie/index.html">🦴 Portaal ortho / revalidatie</a><a class="request-subnav__link" href="../revalidatie-tool/index.html">🛠️ Revalidatie-assistent</a></nav></div></section><section class="request-layout"><section class="request-form-card"><div class="section-heading"><div><h2>Aanvraaggegevens</h2><p class="text-soft">Snelle doorverwijzing voor ernstige mobiliteitsproblemen of postoperatieve opvolging.</p></div></div><form id="requestForm" class="request-form"><div class="form-grid"><div class="form-field"><label for="patientName">Naam patiënt</label><input class="form-input" id="patientName" type="text" placeholder="Naam patiënt" /></div><div class="form-field"><label for="patientDob">Geboortedatum</label><input class="form-input" id="patientDob" type="date" /></div><div class="form-field"><label for="aanvrager">Aanvragende EMS'er / arts</label><input class="form-input" id="aanvrager" type="text" placeholder="Naam behandelaar" /></div><div class="form-field"><label for="locatie">Huidige locatie</label><input class="form-input" id="locatie" type="text" placeholder="Bijv. spoed, opname, cel, straat..." /></div><div class="form-field"><label for="urgentie">Urgentie</label><select class="form-select" id="urgentie"><option value="">Maak een keuze</option><option>Onmiddellijk</option><option>Vandaag</option><option>Binnen 24 uur</option></select></div><div class="form-field"><label for="casusType">Type letsel / casus</label><select class="form-select" id="casusType"><option value="">Maak een keuze</option><option>Fractuur</option><option>Spier- of peesletsel</option><option>Post-operatief herstel</option><option>Mobiliteitsprobleem</option><option>Brace / hulpmiddel nodig</option><option>Andere</option></select></div><div class="form-field"><label for="mentaleToestand">Mobiliteit</label><select class="form-select" id="mentaleToestand"><option value="">Maak een keuze</option><option>Vrij mobiel</option><option>Beperkt mobiel</option><option>Sterk beperkt</option><option>Niet mobiel</option></select></div><div class="form-field"><label for="veiligheidsrisico">Prioriteit</label><select class="form-select" id="veiligheidsrisico"><option value="">Maak een keuze</option><option>Verhoogd</option><option>Hoog</option><option>Onmiddellijk</option></select></div></div><div class="form-field mt-2"><label for="situatie">Situatieschets</label><textarea class="form-textarea" id="situatie" rows="4" placeholder="Wat is het fysieke probleem en waarom is snelle ortho / revalidatie-opvolging nodig?"></textarea></div><div class="form-grid mt-2"><div class="form-field"><label for="cooperatie">Belastbaarheid</label><select class="form-select" id="cooperatie"><option value="">Maak een keuze</option><option>Goed</option><option>Wisselend</option><option>Moeilijk</option><option>Geen</option></select></div><div class="form-field"><label for="supportNetwerk">Betrokken zone / hulpmiddel</label><input class="form-input" id="supportNetwerk" type="text" placeholder="Familie, partner, LSPD, EMS, onbekend..." /></div><div class="form-field"><label for="reedsGedaan">Reeds ondernomen zorgen</label><input class="form-input" id="reedsGedaan" type="text" placeholder="Bijv. gesprek, sedatie, observatie, beveiliging..." /></div><div class="form-field"><label for="doorverwijzing">Verwachte vervolgflow</label><select class="form-select" id="doorverwijzing"><option value="">Maak een keuze</option><option>Revalidatie-intake</option><option>Hulpmiddelenbeoordeling</option><option>Chirurgische controle</option><option>Gepland hersteltraject</option></select></div></div><div class="form-field mt-2"><label for="extraInfo">Extra info</label><textarea class="form-textarea" id="extraInfo" rows="4" placeholder="Trigger, voorgeschiedenis, RP-opmerkingen of waarschuwingen..."></textarea></div><div class="request-actions"><button type="button" class="btn btn-primary" id="generateBtn">Genereer aanvraag</button><button type="reset" class="btn btn-secondary" id="resetBtn">Reset</button></div></form></section><aside class="request-output-card"><div class="section-heading"><div><h2>Gegenereerde output</h2><p class="text-soft">Klaar voor doorsturing of kopiëren naar de psychologie-assistent.</p></div></div><div id="requestStatus" class="status-box status-info">Vul het formulier in en klik op “Genereer aanvraag”.</div><div class="form-field mt-2"><label for="output">Samenvatting</label><textarea class="form-textarea request-output" id="output" rows="20" readonly placeholder="Hier verschijnt de aanvraag..."></textarea></div><div class="request-actions"><button type="button" class="btn btn-primary" id="copyBtn">Kopieer tekst</button></div></aside></section></main></div><script src="./app.js"></script>  <script src="../../assets/scripts/department-flow.js"></script>
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prioritaire ortho / revalidatie aanvraag - EMS Tools</title>
+  <link rel="stylesheet" href="../../assets/styles/theme.css" />
+  <link rel="stylesheet" href="../../assets/styles/base.css" />
+  <link rel="stylesheet" href="../../assets/styles/layout.css" />
+  <link rel="stylesheet" href="../../assets/styles/components.css" />
+  <link rel="stylesheet" href="../../assets/styles/utilities.css" />
+  <link rel="stylesheet" href="../../assets/styles/aanvragen.css" />
+  <link rel="stylesheet" href="../../assets/styles/flow.css" />
+</head>
+<body class="request-page">
+  <div class="app-shell">
+    <header class="site-header">
+      <img src="../../assets/images/Banner.png" class="site-banner" data-site-banner alt="EMS Tools banner" />
+    </header>
+    <main class="page-container">
+      <section class="request-hero-card">
+        <div class="request-hero-card__content">
+          <h1>Prioritaire ortho / revalidatie aanvraag</h1>
+          <p>Gebruik dit formulier voor dringende opvolging bij ernstige mobiliteitsproblemen, acute nazorg of snelle doorverwijzing naar ortho / revalidatie.</p>
+          <nav class="request-subnav" aria-label="Snelle navigatie">
+            <a class="request-subnav__link" href="../../index.html">🏠 Home medewerkers</a>
+            <a class="request-subnav__link" href="../portaal-ortho-revalidatie/index.html">🦴 Portaal ortho / revalidatie</a>
+            <a class="request-subnav__link" href="../revalidatie-tool/index.html">🛠️ Revalidatie-assistent</a>
+            <a class="request-subnav__link" href="../rapport-revalidatie/index.html">📝 Revalidatierapport</a>
+          </nav>
+        </div>
+      </section>
+      <section class="request-layout">
+        <section class="request-form-card">
+          <div class="section-heading"><div><h2>Aanvraaggegevens</h2><p class="text-soft">Vul de relevante gegevens in en genereer een nette overdrachtstekst.</p></div></div>
+          <form id="requestForm" class="request-form">
+            <div class="form-grid">
+  <div class="form-field"><label for="patientName">Naam patiënt</label><input class="form-input" id="patientName" type="text" placeholder="Naam patiënt" /></div>
+  <div class="form-field"><label for="patientDob">Geboortedatum</label><input class="form-input" id="patientDob" type="date" /></div>
+  <div class="form-field"><label for="aanvrager">Aanvragende EMS'er / arts</label><input class="form-input" id="aanvrager" type="text" placeholder="Naam behandelaar" /></div>
+  <div class="form-field"><label for="locatie">Huidige locatie</label><input class="form-input" id="locatie" type="text" placeholder="Bijv. spoed, opname, straat, cellencomplex..." /></div>
+  <div class="form-field"><label for="urgentie">Urgentie</label><select class="form-select" id="urgentie"><option value="">Maak een keuze</option><option>Onmiddellijk</option><option>Vandaag</option><option>Binnen 24 uur</option></select></div>
+  <div class="form-field"><label for="casusType">Type letsel / casus</label><select class="form-select" id="casusType"><option value="">Maak een keuze</option><option>Fractuur</option><option>Spier- of peesletsel</option><option>Post-operatief herstel</option><option>Mobiliteitsprobleem</option><option>Brace / hulpmiddel nodig</option><option>Andere</option></select></div>
+  <div class="form-field"><label for="mobiliteit">Mobiliteit</label><select class="form-select" id="mobiliteit"><option value="">Maak een keuze</option><option>Vrij mobiel</option><option>Beperkt mobiel</option><option>Sterk beperkt</option><option>Niet mobiel</option></select></div>
+  <div class="form-field"><label for="prioriteit">Prioriteit</label><select class="form-select" id="prioriteit"><option value="">Maak een keuze</option><option>Verhoogd</option><option>Hoog</option><option>Onmiddellijk</option></select></div>
+</div>
+<div class="form-field mt-2"><label for="situatie">Situatieschets</label><textarea class="form-textarea" id="situatie" rows="4" placeholder="Wat is het fysieke probleem en waarom is snelle ortho / revalidatie-opvolging nodig?"></textarea></div>
+<div class="form-grid mt-2">
+  <div class="form-field"><label for="belastbaarheid">Belastbaarheid</label><select class="form-select" id="belastbaarheid"><option value="">Maak een keuze</option><option>Goed</option><option>Wisselend</option><option>Moeilijk</option><option>Geen</option></select></div>
+  <div class="form-field"><label for="betrokkenZone">Betrokken zone / hulpmiddel</label><input class="form-input" id="betrokkenZone" type="text" placeholder="Bijv. linkerbeen, brace, rolstoel, krukken..." /></div>
+  <div class="form-field"><label for="reedsGedaan">Reeds ondernomen zorgen</label><input class="form-input" id="reedsGedaan" type="text" placeholder="Bijv. immobilisatie, pijnstilling, controle, gips..." /></div>
+  <div class="form-field"><label for="doorverwijzing">Verwachte vervolgflow</label><select class="form-select" id="doorverwijzing"><option value="">Maak een keuze</option><option>Revalidatie-intake</option><option>Hulpmiddelenbeoordeling</option><option>Chirurgische controle</option><option>Gepland hersteltraject</option></select></div>
+</div>
+<div class="form-field mt-2"><label for="extraInfo">Extra info</label><textarea class="form-textarea" id="extraInfo" rows="4" placeholder="Extra context, waarschuwingen of RP-opmerkingen..."></textarea></div>
+            <div class="request-actions">
+              <button type="button" class="btn btn-primary" id="generateBtn">Genereer aanvraag</button>
+              <button type="reset" class="btn btn-secondary" id="resetBtn">Reset</button>
+            </div>
+          </form>
+        </section>
+        <aside class="request-output-card">
+          <div class="section-heading"><div><h2>Gegenereerde output</h2><p class="text-soft">Klaar voor doorsturing of kopiëren naar revalidatie-assistent en rapport.</p></div></div>
+          <div id="requestStatus" class="status-box status-info">Vul het formulier in en klik op “Genereer aanvraag”.</div>
+          <div class="form-field mt-2"><label for="output">Samenvatting</label><textarea class="form-textarea request-output" id="output" rows="20" readonly placeholder="Hier verschijnt de aanvraag..."></textarea></div>
+          <div class="request-actions"><button type="button" class="btn btn-primary" id="copyBtn">Kopieer tekst</button></div>
+        </aside>
+      </section>
+    </main>
+  </div>
+  <script src="../../assets/scripts/request-form.js"></script>
+  <script src="../../assets/scripts/department-flow.js"></script>
   <script src="../../assets/scripts/theme-loader.js"></script>
-</body></html>
+  <script src="./app.js"></script>
+</body>
+</html>

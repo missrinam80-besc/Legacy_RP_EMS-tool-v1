@@ -36,7 +36,7 @@
     return String(value || '')
       .toLowerCase()
       .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[̀-ͯ]/g, '')
       .trim();
   }
 
@@ -50,9 +50,7 @@
       .replace(/^home\.medewerker\./, 'home.')
       .replace(/^home\.command\./, 'command.')
       .replace(/^command\.high-command\./, 'command.')
-      .replace(/algemene-info/g, 'algemene-info')
       .replace(/algemene_info/g, 'algemene-info')
-      .replace(/quick-actions/g, 'quick')
       .replace(/quick_actions/g, 'quick');
 
     return cleaned;
@@ -68,14 +66,9 @@
 
   function asArray(value) {
     if (Array.isArray(value)) return value.filter(Boolean);
-
     if (typeof value === 'string') {
-      return value
-        .split('|')
-        .map((part) => part.trim())
-        .filter(Boolean);
+      return value.split('|').map((part) => part.trim()).filter(Boolean);
     }
-
     return [];
   }
 
@@ -84,33 +77,40 @@
     return path.includes('/tools/') ? '../../' : '';
   }
 
+  function normalizeUrlPath(path) {
+    return String(path || '')
+      .replace(/\/g, '/')
+      .replace(/^\.\//, '')
+      .replace(/\/+/g, '/')
+      .trim();
+  }
+
   function absolutizeAppUrl(path) {
-    const raw = String(path || '').trim();
+    const raw = normalizeUrlPath(path);
     if (!raw || raw === '#') return '#';
     if (/^(https?:|mailto:|tel:|#)/i.test(raw)) return raw;
 
     const prefix = getPageDepthPrefix();
 
     if (raw.startsWith('../')) {
-      if (prefix) return raw;
-      return raw.replace(/^\.\.\//, 'tools/');
+      return prefix ? raw : raw.replace(/^\.\.\//, 'tools/');
     }
-
     if (raw.startsWith('./')) {
       return raw;
     }
-
     if (raw.startsWith('tools/') || raw.startsWith('data/') || raw.startsWith('assets/')) {
       return `${prefix}${raw}`;
     }
-
+    if (raw.startsWith('/tools/') || raw.startsWith('/data/') || raw.startsWith('/assets/')) {
+      return `${prefix}${raw.replace(/^\//, '')}`;
+    }
     return raw;
   }
 
   function resolveModuleUrl(url) {
-    const raw = String(url || '').trim();
+    const raw = normalizeUrlPath(url);
     if (!raw) return '#';
-    const aliased = URL_ALIASES[raw] || raw;
+    const aliased = URL_ALIASES[raw] || URL_ALIASES[raw.replace(/^\//, '')] || raw;
     return absolutizeAppUrl(aliased);
   }
 
@@ -118,9 +118,7 @@
     return {
       ...item,
       url: resolveModuleUrl(item.url),
-      keywords: Array.isArray(item.keywords)
-        ? item.keywords.join(' ')
-        : String(item.keywords || ''),
+      keywords: Array.isArray(item.keywords) ? item.keywords.join(' ') : String(item.keywords || ''),
       contexts: asArray(item.contexts).map(normalizeContext),
       enabled: item.enabled !== false && String(item.enabled).toLowerCase() !== 'false',
       order: Number(item.order) || 9999
@@ -128,30 +126,17 @@
   }
 
   async function loadModuleData() {
-    if (!global.EMSAdminStore) {
-      throw new Error('EMSAdminStore ontbreekt.');
-    }
-
+    if (!global.EMSAdminStore) throw new Error('EMSAdminStore ontbreekt.');
     const raw = await global.EMSAdminStore.get('modules');
-    const items = Array.isArray(raw)
-      ? raw
-      : Array.isArray(raw?.items)
-        ? raw.items
-        : [];
-
-    return {
-      items: items.map(normalizeModuleRow)
-    };
+    const items = Array.isArray(raw) ? raw : Array.isArray(raw?.items) ? raw.items : [];
+    return { items: items.map(normalizeModuleRow) };
   }
 
   function getStatusTone(status = '') {
     const value = normalize(status);
-
     if (value === 'actief' || value === 'live') return 'success';
-    if (value === 'nieuw') return 'warning';
-    if (value === 'in opbouw' || value === 'in-opbouw' || value === 'beta') return 'warning';
+    if (value === 'nieuw' || value === 'in opbouw' || value === 'in-opbouw' || value === 'beta') return 'warning';
     if (value === 'intern') return 'info';
-
     return '';
   }
 
@@ -167,12 +152,7 @@
 
   function buildQuickAction(item) {
     return `
-      <a class="quick-action-card module-card"
-         href="${toSafeText(item.url)}"
-         data-name="${toSafeText(item.name)}"
-         data-category="${toSafeText(item.type)}"
-         data-status="${toSafeText(item.status)}"
-         data-keywords="${toSafeText(item.keywords)}">
+      <a class="quick-action-card module-card" href="${toSafeText(item.url)}" data-name="${toSafeText(item.name)}" data-category="${toSafeText(item.type)}" data-status="${toSafeText(item.status)}" data-keywords="${toSafeText(item.keywords)}">
         <span class="quick-action-card__icon" aria-hidden="true">${toSafeText(item.icon || '🔗')}</span>
         <div>
           <strong>${toSafeText(item.name)}</strong>
@@ -190,28 +170,16 @@
     const badgeClass = variant === 'portal' ? 'portal-card__badge' : 'tool-badge';
     const statusClass = variant === 'portal' ? 'portal-card__status' : 'tool-status';
     const tone = getStatusTone(item.status);
-    const footer = variant === 'portal'
-      ? '<div class="portal-card__footer"><span class="portal-card__link">Openen →</span></div>'
-      : '';
-
+    const footer = variant === 'portal' ? '<div class="portal-card__footer"><span class="portal-card__link">Openen →</span></div>' : '';
     return `
-      <a class="${baseClass} module-card"
-         href="${toSafeText(item.url)}"
-         data-name="${toSafeText(item.name)}"
-         data-category="${toSafeText(item.type)} ${toSafeText(item.department)}"
-         data-status="${toSafeText(item.status)}"
-         data-keywords="${toSafeText(item.keywords)}">
+      <a class="${baseClass} module-card" href="${toSafeText(item.url)}" data-name="${toSafeText(item.name)}" data-category="${toSafeText(item.type)} ${toSafeText(item.department)}" data-status="${toSafeText(item.status)}" data-keywords="${toSafeText(item.keywords)}">
         <div class="${topClass}">
           <span class="${badgeClass}">${toSafeText(item.badge || item.type)}</span>
-          <span class="${statusClass}${tone ? ` ${statusClass}--${tone}` : ''}">
-            ${toSafeText(item.status || '')}
-          </span>
+          <span class="${statusClass}${tone ? ` ${statusClass}--${tone}` : ''}">${toSafeText(item.status || '')}</span>
         </div>
         <div class="${titleClass}">
           <span class="${iconClass}" aria-hidden="true">${toSafeText(item.icon || '🔗')}</span>
-          ${variant === 'portal'
-            ? `<div><h3>${toSafeText(item.name)}</h3></div>`
-            : `<h3>${toSafeText(item.name)}</h3>`}
+          ${variant === 'portal' ? `<div><h3>${toSafeText(item.name)}</h3></div>` : `<h3>${toSafeText(item.name)}</h3>`}
         </div>
         <p>${toSafeText(item.description)}</p>
         ${footer}
@@ -224,91 +192,35 @@
     const items = sortItems(all.filter((item) => itemMatchesContext(item, context)));
     const variant = container.dataset.variant || 'hub';
     const type = container.dataset.renderType || 'cards';
-
     if (!items.length) {
       container.innerHTML = '<div class="status-box status-info">Geen modules beschikbaar in deze sectie.</div>';
       return 0;
     }
-
-    container.innerHTML = items
-      .map((item) => (type === 'quick' ? buildQuickAction(item) : buildToolCard(item, variant)))
-      .join('');
-
+    container.innerHTML = items.map((item) => (type === 'quick' ? buildQuickAction(item) : buildToolCard(item, variant))).join('');
     return items.length;
   }
 
   function filterCards(searchInputSelector, cardSelector, sectionSelector, statusSelector, emptyMessage) {
     const searchInput = document.querySelector(searchInputSelector);
     const statusBox = document.querySelector(statusSelector);
-
     if (!searchInput) return;
-
     const applyFilter = () => {
       const query = normalize(searchInput.value);
       const cards = Array.from(document.querySelectorAll(cardSelector));
       let visibleCount = 0;
-
       cards.forEach((card) => {
-        const haystack = normalize([
-          card.dataset.name,
-          card.dataset.category,
-          card.dataset.status,
-          card.dataset.keywords,
-          card.textContent
-        ].join(' '));
-
+        const haystack = normalize([card.dataset.name, card.dataset.category, card.dataset.status, card.dataset.keywords, card.textContent].join(' '));
         const match = !query || haystack.includes(query);
-        card.hidden = !match;
+        card.style.display = match ? '' : 'none';
         if (match) visibleCount += 1;
       });
-
-      Array.from(document.querySelectorAll(sectionSelector)).forEach((section) => {
-        const visibleChildren = Array.from(section.querySelectorAll(cardSelector))
-          .filter((card) => !card.hidden).length;
-
-        section.hidden = visibleChildren === 0;
-      });
-
       if (statusBox) {
-        if (!query) {
-          statusBox.textContent = `Klaar om te starten. ${cards.length} links en modules beschikbaar.`;
-        } else if (!visibleCount) {
-          statusBox.textContent = emptyMessage || `Geen resultaten voor "${searchInput.value}".`;
-        } else {
-          statusBox.textContent = `${visibleCount} resultaten gevonden voor "${searchInput.value}".`;
-        }
+        statusBox.textContent = visibleCount ? `${visibleCount} module${visibleCount === 1 ? '' : 's'} zichtbaar.` : (emptyMessage || 'Geen modules gevonden voor deze zoekopdracht.');
       }
     };
-
     searchInput.addEventListener('input', applyFilter);
-    searchInput.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') {
-        searchInput.value = '';
-        applyFilter();
-        searchInput.blur();
-      }
-    });
-
     applyFilter();
   }
 
-  async function renderPageRegions() {
-    global.__EMS_MODULES__ = await loadModuleData();
-
-    const regions = Array.from(document.querySelectorAll('[data-module-context]'));
-    regions.forEach((container) => {
-      renderRegion(container.dataset.moduleContext, container);
-    });
-
-    return global.__EMS_MODULES__;
-  }
-
-  global.ModuleRegistry = {
-    loadModuleData,
-    renderPageRegions,
-    renderRegion,
-    filterCards,
-    normalizeContext,
-    resolveModuleUrl
-  };
+  global.EMSModuleRegistry = { load: loadModuleData, renderRegion, filterCards, normalizeContext, resolveModuleUrl };
 })(window);
