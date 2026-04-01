@@ -7,7 +7,29 @@
     'pages/portaal-chirurgie.html': 'tools/portaal-chirurgie/index.html',
     'pages/portaal-psychologie.html': 'tools/portaal-psychologie/index.html',
     'pages/portaal-ortho-revalidatie.html': 'tools/portaal-ortho-revalidatie/index.html',
+    'pages/portaal-ortho.html': 'tools/portaal-ortho-revalidatie/index.html',
     'pages/portaal-forensisch.html': 'tools/portaal-forensisch/index.html'
+  };
+
+  const CONTEXT_ALIASES = {
+    'home.medewerker.algemene-info': 'home.algemene-info',
+    'home.medewerker.algemene_info': 'home.algemene-info',
+    'home.medewerker.aanvragen': 'home.aanvragen',
+    'home.medewerker.afdelingen': 'home.afdelingen',
+    'home.medewerker.quick': 'home.quick',
+    'home.medewerker.quick-actions': 'home.quick',
+    'home.medewerker.quick_actions': 'home.quick',
+    'home.medewerker.tools': 'home.quick',
+    'command.high-command.beheer': 'command.beheer',
+    'command.high-command.algemene-info': 'command.algemene-info',
+    'command.high-command.algemene_info': 'command.algemene-info',
+    'command.high-command.quick': 'command.quick',
+    'command.high-command.tools': 'command.tools',
+    'portal.chirurgie': 'portal.chirurgie.tools',
+    'portal.spoed-ambu': 'portal.spoed-ambu.tools',
+    'portal.psychologie': 'portal.psychologie.tools',
+    'portal.ortho-revalidatie': 'portal.ortho-revalidatie.tools',
+    'portal.forensisch': 'portal.forensisch.tools'
   };
 
   function normalize(value) {
@@ -28,12 +50,11 @@
       .replace(/^home\.medewerker\./, 'home.')
       .replace(/^home\.command\./, 'command.')
       .replace(/^command\.high-command\./, 'command.')
-      .replace(/algemene-info/g, 'algemene-info')
       .replace(/algemene_info/g, 'algemene-info')
       .replace(/quick-actions/g, 'quick')
       .replace(/quick_actions/g, 'quick');
 
-    return cleaned;
+    return CONTEXT_ALIASES[cleaned] || cleaned;
   }
 
   function toSafeText(value) {
@@ -46,106 +67,129 @@
 
   function asArray(value) {
     if (Array.isArray(value)) return value.filter(Boolean);
-
     if (typeof value === 'string') {
-      return value
-        .split('|')
-        .map((part) => part.trim())
-        .filter(Boolean);
+      return value.split('|').map((part) => part.trim()).filter(Boolean);
     }
-
     return [];
   }
 
   function resolveModuleUrl(url) {
     const raw = String(url || '').trim();
     if (!raw) return '#';
-
     const alias = URL_ALIASES[raw] || raw;
-
     if (/^(?:https?:)?\/\//i.test(alias) || alias.startsWith('data:') || alias.startsWith('#')) {
       return alias;
     }
-
     if (global.EMS_STORE_CONFIG?.resolveSitePath) {
       return global.EMS_STORE_CONFIG.resolveSitePath(alias);
     }
-
-    try {
-      return new URL(alias, window.location.href).toString();
-    } catch (error) {
-      return alias;
-    }
+    return alias.replace(/^\.\//, '');
   }
 
   function normalizeModuleRow(item) {
-    return {
+    if (!item || typeof item !== 'object') return null;
+
+    const normalized = {
       ...item,
-      url: resolveModuleUrl(item.url),
-      keywords: Array.isArray(item.keywords)
-        ? item.keywords.join(' ')
-        : String(item.keywords || ''),
-      contexts: asArray(item.contexts).map(normalizeContext),
+      id: String(item.id || item.key || item.name || '').trim(),
+      name: String(item.name || item.title || item.label || 'Onbekende module').trim(),
+      type: String(item.type || item.category || 'link').trim(),
+      department: String(item.department || item.afdeling || '').trim(),
+      status: String(item.status || '').trim(),
+      description: String(item.description || item.omschrijving || '').trim(),
+      icon: String(item.icon || item.emoji || '🔗').trim(),
+      badge: String(item.badge || item.type || 'Link').trim(),
+      url: resolveModuleUrl(item.url || item.href || item.path),
+      keywords: Array.isArray(item.keywords) ? item.keywords.join(' ') : String(item.keywords || ''),
+      contexts: asArray(item.contexts || item.context || item.zones).map(normalizeContext),
       enabled: item.enabled !== false && String(item.enabled).toLowerCase() !== 'false',
-      order: Number(item.order) || 9999
+      order: Number(item.order ?? item.sort ?? item.volgorde) || 9999
     };
+
+    return normalized;
+  }
+
+  function dedupeModules(items) {
+    const map = new Map();
+    items.filter(Boolean).forEach((item) => {
+      const key = item.id || `${item.name}::${item.url}`;
+      if (!map.has(key)) {
+        map.set(key, item);
+        return;
+      }
+
+      const previous = map.get(key);
+      map.set(key, {
+        ...previous,
+        ...item,
+        contexts: Array.from(new Set([...(previous.contexts || []), ...(item.contexts || [])]))
+      });
+    });
+    return Array.from(map.values());
+  }
+
+  async function fetchDefaultModulesDirect() {
+    const path = global.EMS_STORE_CONFIG?.configTypes?.modules?.defaultPath;
+    if (!path) return [];
+
+    const response = await fetch(path, { cache: 'no-store' });
+    if (!response.ok) {
+      throw new Error(`Kon fallback modules niet laden (${response.status}).`);
+    }
+
+    const payload = await response.json();
+    return Array.isArray(payload) ? payload : Array.isArray(payload?.items) ? payload.items : [];
   }
 
   async function loadModuleData() {
-    if (!global.EMSAdminStore) {
-      throw new Error('EMSAdminStore ontbreekt.');
+    const normalizedItems = [];
+
+    try {
+      if (global.EMSAdminStore?.get) {
+        const raw = await global.EMSAdminStore.get('modules');
+        const items = Array.isArray(raw) ? raw : Array.isArray(raw?.items) ? raw.items : [];
+        normalizedItems.push(...items.map(normalizeModuleRow).filter(Boolean));
+      }
+    } catch (error) {
+      console.warn('[ModuleRegistry] Centrale moduleconfig niet beschikbaar, fallback wordt gebruikt.', error);
     }
 
-    const [remoteRaw, fallbackRaw] = await Promise.all([
-      global.EMSAdminStore.get('modules').catch(() => null),
-      fetch(`${getPageDepthPrefix()}data/admin/default-modules.json`)
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error('Default modules niet gevonden.');
-          }
-          return response.json();
-        })
-        .catch(() => null)
-    ]);
-
-    const remoteItems = Array.isArray(remoteRaw)
-      ? remoteRaw
-      : Array.isArray(remoteRaw?.items)
-        ? remoteRaw.items
-        : [];
-
-    const fallbackItems = Array.isArray(fallbackRaw)
-      ? fallbackRaw
-      : Array.isArray(fallbackRaw?.items)
-        ? fallbackRaw.items
-        : [];
-
-    const merged = new Map();
-    [...fallbackItems, ...remoteItems].forEach((item, index) => {
-      const key = String(item?.id || item?.name || `module-${index}`);
-      merged.set(key, normalizeModuleRow(item));
-    });
+    try {
+      const fallbackItems = await fetchDefaultModulesDirect();
+      normalizedItems.push(...fallbackItems.map(normalizeModuleRow).filter(Boolean));
+    } catch (error) {
+      console.warn('[ModuleRegistry] Lokale fallback modules niet beschikbaar.', error);
+    }
 
     return {
-      items: Array.from(merged.values())
+      items: dedupeModules(normalizedItems)
     };
   }
 
   function getStatusTone(status = '') {
     const value = normalize(status);
-
     if (value === 'actief' || value === 'live') return 'success';
     if (value === 'nieuw') return 'warning';
     if (value === 'in opbouw' || value === 'in-opbouw' || value === 'beta') return 'warning';
     if (value === 'intern') return 'info';
-
     return '';
   }
 
+  function getContextCandidates(context) {
+    const target = normalizeContext(context);
+    const candidates = new Set([target]);
+
+    if (/^portal\.[^.]+\.tools$/.test(target)) {
+      candidates.add(target.replace(/\.tools$/, ''));
+    }
+
+    return Array.from(candidates);
+  }
+
   function itemMatchesContext(item, context) {
-    const targetContext = normalizeContext(context);
+    const targets = getContextCandidates(context);
     const contexts = asArray(item.contexts).map(normalizeContext);
-    return contexts.includes(targetContext) && item.enabled !== false;
+    return item.enabled !== false && targets.some((target) => contexts.includes(target));
   }
 
   function sortItems(items) {
@@ -155,7 +199,7 @@
   function buildQuickAction(item) {
     return `
       <a class="quick-action-card module-card"
-         href="${toSafeText(resolveModuleUrl(item.url))}"
+         href="${toSafeText(item.url)}"
          data-name="${toSafeText(item.name)}"
          data-category="${toSafeText(item.type)}"
          data-status="${toSafeText(item.status)}"
@@ -183,7 +227,7 @@
 
     return `
       <a class="${baseClass} module-card"
-         href="${toSafeText(resolveModuleUrl(item.url))}"
+         href="${toSafeText(item.url)}"
          data-name="${toSafeText(item.name)}"
          data-category="${toSafeText(item.type)} ${toSafeText(item.department)}"
          data-status="${toSafeText(item.status)}"
@@ -227,7 +271,6 @@
   function filterCards(searchInputSelector, cardSelector, sectionSelector, statusSelector, emptyMessage) {
     const searchInput = document.querySelector(searchInputSelector);
     const statusBox = document.querySelector(statusSelector);
-
     if (!searchInput) return;
 
     const applyFilter = () => {
@@ -250,9 +293,7 @@
       });
 
       Array.from(document.querySelectorAll(sectionSelector)).forEach((section) => {
-        const visibleChildren = Array.from(section.querySelectorAll(cardSelector))
-          .filter((card) => !card.hidden).length;
-
+        const visibleChildren = Array.from(section.querySelectorAll(cardSelector)).filter((card) => !card.hidden).length;
         section.hidden = visibleChildren === 0;
       });
 
@@ -281,12 +322,10 @@
 
   async function renderPageRegions() {
     global.__EMS_MODULES__ = await loadModuleData();
-
     const regions = Array.from(document.querySelectorAll('[data-module-context]'));
     regions.forEach((container) => {
       renderRegion(container.dataset.moduleContext, container);
     });
-
     return global.__EMS_MODULES__;
   }
 
