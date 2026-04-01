@@ -120,6 +120,8 @@ const followUpList = document.getElementById("followUpList");
 const closingStatusBadge = document.getElementById("closingStatusBadge");
 const closingStatusText = document.getElementById("closingStatusText");
 const warningsList = document.getElementById("warningsList");
+const centralRulesList = document.getElementById("centralRulesList");
+const centralContextMeta = document.getElementById("centralContextMeta");
 const reportSummary = document.getElementById("reportSummary");
 
 const costInjuries = document.getElementById("costInjuries");
@@ -155,6 +157,7 @@ const BLOCKS = {
   closing: document.getElementById("closingBlock"),
   costs: document.getElementById("costBlock"),
   warnings: document.getElementById("warningsBlock"),
+  central: document.getElementById("centralRulesBlock"),
   report: document.getElementById("reportBlock")
 };
 
@@ -195,9 +198,13 @@ async function applyCentralMedicalConfig() {
     loadCentralType("prices")
   ]);
 
+  APP_CONFIG.centralMedicationLibrary = medicationData?.items?.filter((item) => item.active !== false) || [];
+
   if (medicationData?.items?.length) {
     mergeCentralMedication(medicationData.items);
   }
+
+  APP_CONFIG.centralInjuryLibrary = injuriesData?.items?.filter((item) => item.active !== false) || [];
 
   if (injuriesData?.items?.length) {
     mergeCentralInjuries(injuriesData.items);
@@ -422,29 +429,204 @@ function mergeExtraCostGroups(existingGroups, centralGroups) {
 
 function applyCentralTreatmentRules(formData, ctx) {
   const rules = Array.isArray(APP_CONFIG.centralTreatmentRules) ? APP_CONFIG.centralTreatmentRules : [];
-  if (!rules.length) return;
+  const injuryLibrary = Array.isArray(APP_CONFIG.centralInjuryLibrary) ? APP_CONFIG.centralInjuryLibrary : [];
+  const insights = [];
+  if (!rules.length && !injuryLibrary.length) {
+    return {
+      matchedRules: [],
+      injuryProfiles: [],
+      lines: [],
+      meta: "Geen centrale medische data beschikbaar."
+    };
+  }
 
   const selectedDepartment = formData.filter.department;
-  rules.forEach((rule) => {
-    const uiDepartment = NL_TO_UI_DEPARTMENT[String(rule.department || "").trim().toLowerCase()] || "Spoed/Ambulance";
-    if (selectedDepartment !== "all" && uiDepartment !== selectedDepartment) return;
-    if (!ruleMatchesForm(rule, formData)) return;
+  const state = buildCentralState(formData);
+  const matchedRules = (window.EMSMedicalCentral?.evaluateRules)
+    ? window.EMSMedicalCentral.evaluateRules(rules, state)
+    : rules.filter((rule) => ruleMatchesForm(rule, formData));
 
-    const departments = [uiDepartment];
+  matchedRules.forEach((rule) => {
+    const ruleDepartment = resolveRuleDepartment(rule.department || rule.departments);
+    if (selectedDepartment !== "all" && ruleDepartment && ruleDepartment !== selectedDepartment) return;
+
+    const departments = ruleDepartment ? [ruleDepartment] : ["Spoed/Ambulance"];
     const adviceType = String(rule.adviceType || "").trim().toLowerCase();
     const adviceValue = String(rule.adviceValue || "").trim();
+    const note = String(rule.notes || "").trim();
 
-    if (adviceType === "medication" || adviceType === "tool" || adviceType === "treatment") {
+    if (["medication", "tool", "treatment", "item"].includes(adviceType)) {
       const code = getCanonicalItemCode(adviceValue);
       addTaggedItems(ctx.uniqueItems, [code], departments);
+      insights.push(`Regel: ${humanizeRuleAdvice(adviceValue)}${note ? ` — ${note}` : ""}`);
     } else if (adviceType === "step") {
       addTaggedText(ctx.uniqueSteps, "", [humanizeRuleAdvice(adviceValue)], departments);
+      insights.push(`Stap: ${humanizeRuleAdvice(adviceValue)}${note ? ` — ${note}` : ""}`);
     } else if (adviceType === "warning") {
       addTaggedText(ctx.uniqueWarnings, "", [humanizeRuleAdvice(adviceValue)], departments);
+      insights.push(`Waarschuwing: ${humanizeRuleAdvice(adviceValue)}${note ? ` — ${note}` : ""}`);
+    } else if (["imaging", "investigation", "onderzoek"].includes(adviceType)) {
+      const target = inferImagingBucket(adviceValue);
+      addTaggedImaging(ctx.imaging[target], humanizeRuleAdvice(adviceValue), departments);
+      insights.push(`Onderzoek: ${humanizeRuleAdvice(adviceValue)}${note ? ` — ${note}` : ""}`);
+    } else if (["followup", "nazorg"].includes(adviceType)) {
+      addTaggedText(ctx.uniqueFollowUp, "", [humanizeRuleAdvice(adviceValue)], departments);
+      insights.push(`Nazorg: ${humanizeRuleAdvice(adviceValue)}${note ? ` — ${note}` : ""}`);
     } else if (adviceType === "triage") {
       ctx.priorityAlerts.add(`Centrale regel: ${humanizeRuleAdvice(adviceValue)}`);
+      insights.push(`Prioriteit: ${humanizeRuleAdvice(adviceValue)}${note ? ` — ${note}` : ""}`);
     }
   });
+
+  const injuryProfiles = collectCentralInjuryProfiles(formData, injuryLibrary, selectedDepartment);
+  injuryProfiles.forEach((profile) => {
+    const departments = profile.departments?.length ? profile.departments : inferDepartmentsFromBodyZone(profile.bodyZone);
+    const treatments = splitPipe(profile.defaultTreatments).map(getCanonicalItemCode).filter(Boolean);
+    if (treatments.length) {
+      addTaggedItems(ctx.uniqueItems, treatments, departments);
+    }
+    if (profile.needsSuturing === true || String(profile.needsSuturing).toLowerCase() === "true") {
+      addTaggedText(ctx.uniqueActions, profile.bodyLabel || "", ["Beoordeel wondsluiting of hechting"], departments);
+    }
+    if (["hoog", "extreem"].includes(String(profile.bleedingImpact || "").toLowerCase())) {
+      addTaggedText(ctx.uniqueWarnings, profile.bodyLabel || "", ["Centraal letselprofiel wijst op relevante bloedingskans"], departments);
+    }
+    if (["hoog", "ernstig", "kritiek"].includes(String(profile.fractureRisk || "").toLowerCase())) {
+      addTaggedImaging(ctx.imaging.rx, `${profile.bodyLabel || 'Betrokken zone'}: RX aanbevolen volgens centraal letselprofiel`, departments);
+    }
+    insights.push(`Letselprofiel: ${profile.label}${profile.bodyLabel ? ` (${profile.bodyLabel})` : ""}`);
+  });
+
+  return {
+    matchedRules,
+    injuryProfiles,
+    lines: Array.from(new Set(insights)),
+    meta: `Centrale regels: ${matchedRules.length} match(es), centrale letselprofielen: ${injuryProfiles.length}.`
+  };
+}
+
+
+function buildCentralState(formData) {
+  const hasFracture = formData.injuries.some((part) => part.fracture);
+  const wounds = formData.injuries.flatMap((part) => part.injuries.map((injury) => injury.wound));
+  return {
+    department: normalizeStateValue(getCentralDepartmentCode(formData.filter.department)),
+    bloodloss: normalizeStateValue(translateSelectValue("bloodloss", formData.condition.bleedingLevel)),
+    pain: normalizeStateValue(translateSelectValue("pain", formData.condition.painLevel)),
+    consciousness: normalizeStateValue(translateSelectValue("consciousness", formData.condition.consciousness)),
+    pulse: normalizeStateValue(translateSelectValue("pulse", formData.condition.pulse)),
+    triage: normalizeStateValue(translateSelectValue("triage", formData.condition.triage)),
+    airwayrisk: normalizeStateValue(translateSelectValue("airwayRisk", formData.condition.airwayRisk)),
+    breathingstatus: normalizeStateValue(translateSelectValue("breathingStatus", formData.condition.breathingStatus)),
+    hasfracture: hasFracture ? "true" : "false",
+    hasgunshot: wounds.includes("gunshot") ? "true" : "false",
+    haspenetrating: wounds.some((value) => ["puncture", "gunshot", "avulsion"].includes(value)) ? "true" : "false"
+  };
+}
+
+function normalizeStateValue(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[\s\/]+/g, "_")
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "");
+}
+
+function translateSelectValue(kind, value) {
+  const maps = {
+    bloodloss: { none: "geen", light: "laag", moderate: "matig", high: "ernstig", extreme: "extreem" },
+    pain: { light: "licht", moderate: "matig", high: "hoog", extreme: "extreem" },
+    consciousness: { alert: "bij_bewustzijn", reduced: "verminderd", unconscious: "buiten_bewustzijn" },
+    pulse: { normal: "normaal", weak: "zwak", fast: "snel", slow: "traag" },
+    triage: { none: "geen", "non-urgent": "niet_urgent", urgent: "urgent", critical: "kritiek" },
+    airwayRisk: { stable: "stabiel", "at-risk": "bedreigd", critical: "kritiek" },
+    breathingStatus: { normal: "normaal", disturbed: "verstoord", severe: "ernstig" }
+  };
+  return maps[kind]?.[value] || value;
+}
+
+function getCentralDepartmentCode(selectedDepartment) {
+  if (!selectedDepartment || selectedDepartment === "all") return "general";
+  return UI_TO_NL_DEPARTMENT[selectedDepartment] || "general";
+}
+
+function resolveRuleDepartment(rawDepartment) {
+  const values = Array.isArray(rawDepartment)
+    ? rawDepartment
+    : String(rawDepartment || "").split("|").map((part) => part.trim()).filter(Boolean);
+  if (!values.length) return "";
+
+  const normalized = values.map((value) => String(value).trim().toLowerCase());
+  if (normalized.includes("general") || normalized.includes("algemeen")) return "Spoed/Ambulance";
+  return NL_TO_UI_DEPARTMENT[normalized[0]] || "Spoed/Ambulance";
+}
+
+function inferImagingBucket(adviceValue) {
+  const normalized = String(adviceValue || "").toLowerCase();
+  if (normalized.includes("ct")) return "ct";
+  if (normalized.includes("rx") || normalized.includes("rontgen") || normalized.includes("röntgen")) return "rx";
+  return "observe";
+}
+
+function collectCentralInjuryProfiles(formData, library, selectedDepartment) {
+  const matches = [];
+  formData.injuries.forEach((part) => {
+    part.injuries.forEach((injury) => {
+      if (!injury.wound) return;
+      const zone = getCentralBodyZone(part.key);
+      const targetSeverity = getCentralSeverityLabel(injury.severity);
+      const candidate = library
+        .filter((item) => String(item.category || "").trim().toLowerCase() === String(injury.wound).trim().toLowerCase())
+        .filter((item) => profileMatchesZone(item, zone))
+        .sort((a, b) => Math.abs(getCentralSeverityScore(a.severity) - getCentralSeverityScore(targetSeverity)) - Math.abs(getCentralSeverityScore(b.severity) - getCentralSeverityScore(targetSeverity)))[0];
+      if (!candidate) return;
+      const departments = inferDepartmentsForCentralProfile(candidate, selectedDepartment);
+      matches.push({
+        ...candidate,
+        bodyZone: zone,
+        bodyLabel: part.label,
+        departments
+      });
+    });
+  });
+  return matches;
+}
+
+function profileMatchesZone(item, zone) {
+  const zones = splitPipe(item.bodyZones || item.bodyZone).map((value) => String(value).trim().toLowerCase());
+  return !zones.length || zones.includes(zone);
+}
+
+function getCentralBodyZone(partKey) {
+  const map = {
+    head: "head",
+    torso: "torso",
+    leftArm: "left_arm",
+    rightArm: "right_arm",
+    leftLeg: "left_leg",
+    rightLeg: "right_leg"
+  };
+  return map[partKey] || partKey;
+}
+
+function inferDepartmentsForCentralProfile(profile, selectedDepartment) {
+  if (selectedDepartment && selectedDepartment !== "all") return [selectedDepartment];
+  const category = String(profile.category || "").toLowerCase();
+  if (["gunshot", "puncture", "avulsion", "crush"].includes(category) || getCentralSeverityScore(profile.severity) >= 4) {
+    return ["Spoed/Ambulance", "Chirurgie"];
+  }
+  return ["Spoed/Ambulance"];
+}
+
+function inferDepartmentsFromBodyZone(zone) {
+  if (zone === "torso" || zone === "head") return ["Spoed/Ambulance", "Chirurgie"];
+  return ["Spoed/Ambulance"];
+}
+
+function getCentralSeverityLabel(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  const inverse = { light: "licht", moderate: "matig", severe: "ernstig", critical: "kritiek" };
+  return inverse[normalized] || normalized;
 }
 
 function ruleMatchesForm(rule, formData) {
@@ -471,6 +653,16 @@ function ruleMatchesForm(rule, formData) {
   } else if (field === "triage") {
     currentValue = formData.condition.triage;
     translatedRuleValue = RULE_VALUE_TRANSLATIONS.triage[ruleValueRaw] || ruleValueRaw;
+  } else if (field === "airwayrisk" || field === "airway") {
+    currentValue = translateSelectValue("airwayRisk", formData.condition.airwayRisk);
+    translatedRuleValue = ruleValueRaw;
+  } else if (field === "breathingstatus" || field === "breathing") {
+    currentValue = translateSelectValue("breathingStatus", formData.condition.breathingStatus);
+    translatedRuleValue = ruleValueRaw;
+  } else if (field === "hasfracture") {
+    currentValue = formData.injuries.some((part) => part.fracture) ? "true" : "false";
+  } else if (field === "hasgunshot") {
+    currentValue = formData.injuries.some((part) => part.injuries.some((injury) => injury.wound === "gunshot")) ? "true" : "false";
   } else {
     return false;
   }
@@ -840,7 +1032,7 @@ function buildTreatmentAdvice(formData) {
   };
 
   applyGeneralConditionLogic(formData.condition, centralRuleContext);
-  applyCentralTreatmentRules(formData, centralRuleContext);
+  const centralInsights = applyCentralTreatmentRules(formData, centralRuleContext);
 
   formData.injuries.forEach((part) => {
     const hasPartInjury = part.injuries.length > 0 || part.fracture || part.needsImaging;
@@ -941,7 +1133,8 @@ function buildTreatmentAdvice(formData) {
     filteredItems,
     filteredImaging,
     filteredFollowUp,
-    Array.from(clinicalImpressions)
+    Array.from(clinicalImpressions),
+    centralInsights
   );
 
   return {
@@ -958,6 +1151,7 @@ function buildTreatmentAdvice(formData) {
     imaging: filteredImaging,
     followUp: filteredFollowUp,
     warnings: filteredWarnings,
+    centralInsights,
     summary,
     costEntries
   };
@@ -1696,7 +1890,7 @@ function normalizePriorityAlerts(alerts) {
    REPORT BUILDING
 ========================================================= */
 
-function buildReportSummary(formData, priority, operation, closing, departments, steps, actions, items, imaging, followUp, clinicalImpressions) {
+function buildReportSummary(formData, priority, operation, closing, departments, steps, actions, items, imaging, followUp, clinicalImpressions, centralInsights) {
   const patientName = formData.patient.name || "Onbekende patiënt";
   const locationText = formData.patient.location ? ` ter hoogte van ${formData.patient.location}` : "";
   const medicText = formData.patient.treatingMedic
@@ -1749,6 +1943,7 @@ function buildReportSummary(formData, priority, operation, closing, departments,
     items.length ? `Aanbevolen items: ${items.join(", ")}.` : "",
     imagingFlat.length ? `Beeldvorming/onderzoek: ${imagingFlat.join("; ")}.` : "",
     followUp.length ? `Nazorg patiënt: ${followUp.join("; ")}.` : "",
+    centralInsights?.lines?.length ? `Centrale medische logica: ${centralInsights.lines.join("; ")}.` : "",
     `Afsluitstatus: ${closing.label}. ${closing.text}`,
     formData.condition.generalNotes ? `Algemene observaties: ${formData.condition.generalNotes}.` : "",
     medicText
@@ -1801,6 +1996,7 @@ function renderResult(result) {
 
   renderList(followUpList, result.followUp, "Geen nazorg voorgesteld.");
   renderList(warningsList, result.warnings, "Geen extra aandachtspunten.");
+  renderCentralInsights(result.centralInsights);
   renderCosts(buildVisibleCosts(result.costEntries, result.formData));
 
   reportSummary.value = result.summary;
@@ -1867,6 +2063,12 @@ function renderTagList(target, tags, emptyText) {
     span.textContent = tagText;
     target.appendChild(span);
   });
+}
+
+function renderCentralInsights(centralInsights) {
+  if (!centralRulesList || !centralContextMeta) return;
+  centralContextMeta.textContent = centralInsights?.meta || "Nog geen centrale medische inzichten toegepast.";
+  renderList(centralRulesList, centralInsights?.lines || [], "Nog geen centrale behandelregels toegepast.");
 }
 
 /* =========================================================

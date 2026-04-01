@@ -65,10 +65,56 @@
     return normalize(value) !== 'false';
   }
 
+  function getRank(value) {
+    const map = {
+      none: 0,
+      geen: 0,
+      low: 1,
+      laag: 1,
+      light: 1,
+      licht: 1,
+      stable: 1,
+      stabiel: 1,
+      reduced: 2,
+      verminderd: 2,
+      moderate: 2,
+      matig: 2,
+      disturbed: 2,
+      verstoord: 2,
+      high: 3,
+      hoog: 3,
+      severe: 3,
+      ernstig: 3,
+      urgent: 3,
+      weak: 3,
+      zwak: 3,
+      at_risk: 3,
+      'at-risk': 3,
+      bedreigd: 3,
+      critical: 4,
+      kritiek: 4,
+      extreme: 4,
+      extreem: 4,
+      unconscious: 4,
+      buiten_bewustzijn: 4,
+      fast: 3,
+      snel: 3,
+      slow: 2,
+      traag: 2,
+      normal: 1,
+      normaal: 1,
+      elevated: 2,
+      verhoogd: 2
+    };
+    return map[normalize(value)] ?? null;
+  }
+
   function compare(actual, operator, expected) {
     const op = normalize(operator || 'equals');
     const actualNorm = normalize(actual);
     const expectedNorm = normalize(expected);
+    const actualRank = getRank(actualNorm);
+    const expectedRank = getRank(expectedNorm);
 
     if (op === 'equals') return actualNorm === expectedNorm;
     if (op === 'not_equals') return actualNorm !== expectedNorm;
@@ -77,6 +123,14 @@
       return asArray(expected).map(normalize).includes(actualNorm);
     }
     if (op === 'any' || op === 'exists') return actualNorm.length > 0;
+    if (op === 'gte' || op === 'min') {
+      if (actualRank != null && expectedRank != null) return actualRank >= expectedRank;
+      return actualNorm >= expectedNorm;
+    }
+    if (op === 'lte' || op === 'max') {
+      if (actualRank != null && expectedRank != null) return actualRank <= expectedRank;
+      return actualNorm <= expectedNorm;
+    }
     return false;
   }
 
