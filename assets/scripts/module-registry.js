@@ -1,10 +1,39 @@
 (function (global) {
+  const URL_ALIASES = {
+    'tools/feedback/index.html': 'tools/aanvragen-feedback/index.html',
+    'tools/training-aanvraag/index.html': 'tools/aanvragen-training/index.html',
+    'tools/specialisatie-aanvraag/index.html': 'tools/aanvragen-specialisatie/index.html',
+    'pages/portaal-spoed-ambu.html': 'tools/portaal-spoed-ambu/index.html',
+    'pages/portaal-chirurgie.html': 'tools/portaal-chirurgie/index.html',
+    'pages/portaal-psychologie.html': 'tools/portaal-psychologie/index.html',
+    'pages/portaal-ortho-revalidatie.html': 'tools/portaal-ortho-revalidatie/index.html',
+    'pages/portaal-forensisch.html': 'tools/portaal-forensisch/index.html'
+  };
+
   function normalize(value) {
     return String(value || '')
       .toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .trim();
+  }
+
+  function normalizeContext(value) {
+    let cleaned = normalize(value)
+      .replace(/[_\s]+/g, '-')
+      .replace(/\.+/g, '.')
+      .replace(/-+/g, '-');
+
+    cleaned = cleaned
+      .replace(/^home\.medewerker\./, 'home.')
+      .replace(/^home\.command\./, 'command.')
+      .replace(/^command\.high-command\./, 'command.')
+      .replace(/algemene-info/g, 'algemene-info')
+      .replace(/algemene_info/g, 'algemene-info')
+      .replace(/quick-actions/g, 'quick')
+      .replace(/quick_actions/g, 'quick');
+
+    return cleaned;
   }
 
   function toSafeText(value) {
@@ -28,13 +57,21 @@
     return [];
   }
 
+  function resolveModuleUrl(url) {
+    const raw = String(url || '').trim();
+    if (!raw) return '#';
+    const alias = URL_ALIASES[raw] || raw;
+    return alias;
+  }
+
   function normalizeModuleRow(item) {
     return {
       ...item,
+      url: resolveModuleUrl(item.url),
       keywords: Array.isArray(item.keywords)
         ? item.keywords.join(' ')
         : String(item.keywords || ''),
-      contexts: asArray(item.contexts),
+      contexts: asArray(item.contexts).map(normalizeContext),
       enabled: item.enabled !== false && String(item.enabled).toLowerCase() !== 'false',
       order: Number(item.order) || 9999
     };
@@ -69,8 +106,9 @@
   }
 
   function itemMatchesContext(item, context) {
-    const contexts = asArray(item.contexts);
-    return contexts.includes(context) && item.enabled !== false;
+    const targetContext = normalizeContext(context);
+    const contexts = asArray(item.contexts).map(normalizeContext);
+    return contexts.includes(targetContext) && item.enabled !== false;
   }
 
   function sortItems(items) {
@@ -221,6 +259,8 @@
     renderRegion,
     filterCards,
     sortItems,
-    normalizeModuleRow
+    normalizeModuleRow,
+    normalizeContext,
+    resolveModuleUrl
   };
 })(window);

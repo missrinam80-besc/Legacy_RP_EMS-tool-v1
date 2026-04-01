@@ -4,6 +4,13 @@
     document.documentElement.style.setProperty(name, value);
   }
 
+  function resolveThemePath(path) {
+    if (!path) return path;
+    if (/^(?:https?:)?\/\//i.test(path) || path.startsWith('data:')) return path;
+    if (window.EMS_STORE_CONFIG?.resolveSitePath) return window.EMS_STORE_CONFIG.resolveSitePath(path);
+    return path;
+  }
+
   function applyColors(colors) {
     if (!colors || typeof colors !== 'object') return;
 
@@ -19,7 +26,6 @@
     if (colors.success) setCssVar('--color-success', colors.success);
     if (colors.warning) setCssVar('--color-warning', colors.warning);
     if (colors.danger) setCssVar('--color-danger', colors.danger);
-
     if (colors.surfaceSoft) setCssVar('--color-surface-soft', colors.surfaceSoft);
     if (colors.textSoft) setCssVar('--color-text-soft', colors.textSoft);
     if (colors.primaryDark) setCssVar('--color-primary-dark', colors.primaryDark);
@@ -31,8 +37,7 @@
   function applyTheme(theme) {
     if (!theme || typeof theme !== 'object') return;
 
-    const colors = theme.colors || {};
-    applyColors(colors);
+    applyColors(theme.colors || {});
 
     if (theme.borderRadius) {
       setCssVar('--theme-radius', theme.borderRadius);
@@ -41,25 +46,29 @@
 
     document.body.classList.toggle('theme-compact', !!theme.compactMode);
 
-    document.querySelectorAll('[data-site-title]').forEach((el) => {
+    document.querySelectorAll('[data-site-title="theme"], [data-theme-site-title]').forEach((el) => {
       el.textContent = theme.siteTitle || '';
     });
 
-    document.querySelectorAll('[data-site-subtitle]').forEach((el) => {
+    document.querySelectorAll('[data-site-subtitle="theme"], [data-theme-site-subtitle]').forEach((el) => {
       el.textContent = theme.siteSubtitle || '';
     });
 
     document.querySelectorAll('[data-site-banner]').forEach((el) => {
       if (el.tagName === 'IMG' && theme.bannerPath) {
-        el.src = theme.bannerPath;
+        el.src = resolveThemePath(theme.bannerPath);
       }
     });
 
     document.querySelectorAll('[data-site-logo]').forEach((el) => {
       if (el.tagName === 'IMG' && theme.logoPath) {
-        el.src = theme.logoPath;
+        el.src = resolveThemePath(theme.logoPath);
       }
     });
+
+    if (theme.siteTitle && !document.title) {
+      document.title = theme.siteTitle;
+    }
 
     document.documentElement.dataset.themeLoaded = 'true';
     window.__EMS_THEME__ = theme;

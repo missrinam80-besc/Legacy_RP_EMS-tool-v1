@@ -14,24 +14,89 @@
 </head>
 <body class="portal-page">
   <div class="app-shell">
-    <header class="site-header"><img src="../../assets/images/Banner.png" class="site-banner" data-site-banner /></header>
+    <header class="site-header">
+      <img src="../../assets/images/Banner.png" alt="EMS banner" class="site-banner" data-site-banner />
+    </header>
+
     <main class="page-container">
-      <section class="portal-header-card"><div class="portal-header-card__content"><h1 data-site-title>Portaal Forensisch</h1><p>Afdelingsportaal voor verdachte casussen, bewijsondersteunende documentatie en gespecialiseerde verslaggeving.</p>
-      <nav class="portal-subnav" aria-label="Snelle navigatie"><a class="portal-subnav__link" href="../../index.html">🏠 Home medewerkers</a><a class="portal-subnav__link" href="../../command.html">⚙️ Command</a><a class="portal-subnav__link" href="../../tools/personeelslijst/index.html">👥 Personeelslijst</a><a class="portal-subnav__link" href="../../tools/afwezigheid/index.html">📅 Afwezigheid</a></nav>
-      <div class="portal-anchor-nav" aria-label="Sectienavigatie"><a href="#afdelingsinfo">Afdelingsinfo</a><a href="#tools">Tools</a><a href="#rapporten">Rapporten</a><a href="#aanvragen">Aanvragen</a><a href="#doorverwijzingen">Doorverwijzingen</a></div></div></section>
-      <section class="portal-search-card"><div class="portal-search-row"><div class="form-field"><label for="portalSearch">Zoek binnen deze pagina</label><input class="form-input" id="portalSearch" type="text" placeholder="Zoek op tool, rapport, afdeling of trefwoord" /></div></div><div id="portalSearchStatus" class="status-box status-info mt-2">Klaar om te zoeken in tools, rapporten en informatieblokken.</div></section>
-      <section class="portal-layout" id="afdelingsinfo"><article class="portal-info-card"><h2>Afdelingsinfo</h2><p>Afdelingsportaal voor verdachte casussen, bewijsondersteunende documentatie en gespecialiseerde verslaggeving.</p><div class="portal-meta-grid"><div class="portal-meta-item"><strong>Wanneer inzetten</strong><span>Bij gerechtelijke context, verdachte letsels of nood aan extra documentatie.</span></div><div class="portal-meta-item"><strong>Belangrijkste focus</strong><span>Context vastleggen, observeren, documenteren en samenwerken met andere afdelingen.</span></div></div><div class="portal-note"><strong>Opmerking:</strong> Werk zorgvuldig en objectief. Focus op verslaggeving en overdraagbare bevindingen.</div></article><aside class="portal-side-card"><h2>Snelle aandachtspunten</h2><p>Gebruik dit portaal wanneer de focus van de casus in deze discipline ligt.</p><ul class="portal-checklist"><li>Is deze casus relevant voor onderzoek of gerechtelijke opvolging?</li><li>Moeten medische feiten extra nauwkeurig vastgelegd worden?</li><li>Is labo of acute zorg nog bijkomend nodig?</li></ul></aside></section>
-      <section class="portal-section" id="flow"><div class="section-heading"><div><h2>Afdelingsflow</h2><p class="text-soft">Gebruik een strakke flow van observatie naar rapportering.</p></div></div><div class="portal-flow-grid"><a class="portal-flow-card" href="../rapport-forensisch/index.html"><span class="portal-flow-card__step">1</span><h3>Rapport</h3><p>Start vanuit de verslaggeving en werk de bevindingen volledig uit.</p></a><a class="portal-flow-card" href="../rapport-labo/index.html"><span class="portal-flow-card__step">2</span><h3>Ondersteuning</h3><p>Gebruik laboresultaten wanneer die relevant zijn voor de casus.</p></a><a class="portal-flow-card" href="../portaal-spoed-ambu/index.html"><span class="portal-flow-card__step">3</span><h3>Doorverwijzing</h3><p>Schakel acute zorg in als medische stabilisatie nodig is.</p></a></div></section>
-      <section class="portal-section" id="tools"><div class="section-heading"><div><h2>Tools</h2><p class="text-soft">Tools en ondersteunende modules voor deze afdeling.</p></div></div><div class="portal-grid" data-module-context="portal.forensisch.tools" data-variant="portal"></div></section>
-      <section class="portal-section" id="rapporten"><div class="section-heading"><div><h2>Rapporten</h2><p class="text-soft">Verslaggeving en opvolgdocumenten voor deze afdeling.</p></div></div><div class="portal-grid" data-module-context="portal.forensisch.rapporten" data-variant="portal"></div></section>
-      <section class="portal-section" id="aanvragen"><div class="section-heading"><div><h2>Aanvragen</h2><p class="text-soft">Aanvraagmodules en opstartpunten voor nieuwe casussen.</p></div></div><div class="portal-grid" data-module-context="portal.forensisch.aanvragen" data-variant="portal"></div></section>
-      <section class="portal-section" id="doorverwijzingen"><div class="section-heading"><div><h2>Doorverwijzingen</h2><p class="text-soft">Andere afdelingen of vervolgtrajecten die vaak aansluiten op deze discipline.</p></div></div><div class="portal-grid" data-module-context="portal.forensisch.doorverwijzingen" data-variant="portal"></div></section>
+      <section class="portal-header-card">
+        <div class="portal-header-card__content">
+          <h1>Portaal Forensisch</h1>
+          <p>Afdelingsportaal voor forensische vaststellingen, documentatie en overdracht naar politie of command.</p>
+          <nav class="portal-subnav" aria-label="Snelle navigatie">
+            <a class="portal-subnav__link" href="../../index.html">🏠 Home medewerkers</a>
+            <a class="portal-subnav__link" href="../../command.html">⚙️ Command</a>
+            <a class="portal-subnav__link" href="../../tools/personeelslijst/index.html">👥 Personeelslijst</a>
+            <a class="portal-subnav__link" href="../../tools/afwezigheid/index.html">📅 Afwezigheid</a>
+          </nav>
+          <div class="portal-anchor-nav" aria-label="Sectienavigatie"><a href="#afdelingsinfo">Afdelingsinfo</a><a href="#tools">Tools</a><a href="#rapporten">Rapporten</a><a href="#aanvragen">Aanvragen</a><a href="#doorverwijzingen">Doorverwijzingen</a></div>
+        </div>
+      </section>
+
+      <section class="portal-search-card">
+        <div class="portal-search-row">
+          <div class="form-field">
+            <label for="portalSearch">Zoek binnen deze pagina</label>
+            <input class="form-input" id="portalSearch" type="text" placeholder="Zoek op tool, rapport, afdeling of trefwoord" />
+          </div>
+        </div>
+        <div id="portalSearchStatus" class="status-box status-info mt-2">Klaar om te zoeken in tools, rapporten en informatieblokken.</div>
+      </section>
+
+      <section class="portal-layout" id="afdelingsinfo">
+        <article class="portal-info-card">
+          <h2>Afdelingsinfo</h2>
+          <p>Afdelingsportaal voor forensische vaststellingen, documentatie en overdracht naar politie of command.</p>
+          <div class="portal-meta-grid">
+            <div class="portal-meta-item"><strong>Wanneer inzetten</strong><span>Bij verdacht letsel, overlijden, sporenonderzoek of juridische verslaggeving.</span></div>
+            <div class="portal-meta-item"><strong>Belangrijkste focus</strong><span>Observeren, veiligstellen, documenteren en rapporteren.</span></div>
+          </div>
+          <div class="portal-note"><strong>Opmerking:</strong> Werk neutraal en objectief. Noteer observaties duidelijk en vermijd aannames in het rapport.</div>
+        </article>
+        <aside class="portal-side-card">
+          <h2>Snelle aandachtspunten</h2>
+          <p>Gebruik dit portaal wanneer de focus van de casus in deze discipline ligt.</p>
+          <ul class="portal-checklist"><li>Zijn er sporen of letsels die juridisch relevant zijn?</li><li>Moet de situatie extra zorgvuldig gedocumenteerd worden?</li><li>Is er afstemming nodig met command of politie?</li></ul>
+        </aside>
+      </section>
+
+      <section class="portal-section" id="flow">
+        <div class="section-heading">
+          <div>
+            <h2>Afdelingsflow</h2>
+            <p class="text-soft">Werk steeds in dezelfde volgorde zodat elke casus consequent wordt opgebouwd.</p>
+          </div>
+        </div>
+        <div class="portal-flow-grid"><a class="portal-flow-card" href="../rapport-forensisch/index.html"><span class="portal-flow-card__step">1</span><h3>Rapport</h3><p>Forensische vaststellingen en observaties gestructureerd vastleggen.</p></a></div>
+      </section>
+
+      <section class="portal-section" id="tools">
+        <div class="section-heading"><div><h2>Tools</h2><p class="text-soft">Tools en ondersteunende modules voor deze afdeling.</p></div></div>
+        <div class="portal-grid" data-module-context="portal.forensisch.tools" data-variant="portal"></div>
+      </section>
+
+      <section class="portal-section" id="rapporten">
+        <div class="section-heading"><div><h2>Rapporten</h2><p class="text-soft">Verslaggeving en opvolgdocumenten voor deze afdeling.</p></div></div>
+        <div class="portal-grid" data-module-context="portal.forensisch.rapporten" data-variant="portal"></div>
+      </section>
+
+      <section class="portal-section" id="aanvragen">
+        <div class="section-heading"><div><h2>Aanvragen</h2><p class="text-soft">Aanvraagmodules en opstartpunten voor nieuwe casussen.</p></div></div>
+        <div class="portal-grid" data-module-context="portal.forensisch.aanvragen" data-variant="portal"></div>
+      </section>
+
+      <section class="portal-section" id="doorverwijzingen">
+        <div class="section-heading"><div><h2>Doorverwijzingen</h2><p class="text-soft">Andere afdelingen of vervolgtrajecten die vaak aansluiten op deze discipline.</p></div></div>
+        <div class="portal-grid" data-module-context="portal.forensisch.doorverwijzingen" data-variant="portal"></div>
+      </section>
     </main>
   </div>
+
+  <script src="../../assets/scripts/store-config.js"></script>
+  <script src="../../assets/scripts/api-client.js"></script>
   <script src="../../assets/scripts/admin-store.js"></script>
-  <script>window.__MODULES_DEFAULT_PATH__='../../data/admin/default-modules.json'; window.__THEME_DEFAULT_PATH__='../../data/admin/default-theme.json';</script>
-  <script src="../../assets/scripts/module-registry.js"></script>
   <script src="../../assets/scripts/theme-loader.js"></script>
+  <script src="../../assets/scripts/module-registry.js"></script>
   <script src="../../assets/scripts/portaal.js"></script>
 </body>
 </html>
