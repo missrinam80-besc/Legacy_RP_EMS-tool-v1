@@ -10,6 +10,7 @@
 
 let CONFIG = {};
 let STAFF_ROWS = [];
+const CENTRAL_REPORT_OPTIONS = { documentType: 'rapport-forensisch', department: 'forensisch' };
 
 document.addEventListener("DOMContentLoaded", init);
 
@@ -23,6 +24,7 @@ async function init() {
 
     await initStaffFields();
     restoreDraft();
+    await initCentralReportEnhancements();
 
     buildReport();
     showStatus("Klaar. Je kunt gegevens invoeren, het rapport opbouwen of kopiëren.", "neutral");
@@ -37,6 +39,33 @@ async function loadConfig() {
     throw new Error("config.json kon niet geladen worden.");
   }
   return response.json();
+}
+
+
+async function initCentralReportEnhancements() {
+  if (!window.EMSReportCentral?.init) return;
+
+  try {
+    await window.EMSReportCentral.init({
+      storageKey: CONFIG.storageKey || config?.storageKey || 'rapport-forensisch',
+      documentType: CENTRAL_REPORT_OPTIONS.documentType,
+      department: CENTRAL_REPORT_OPTIONS.department,
+      onChange: () => {
+        try {
+          buildReport();
+        } catch (error) {
+          console.warn('[EMSReportCentral] Rapport kon niet opnieuw worden opgebouwd.', error);
+        }
+      }
+    });
+  } catch (error) {
+    console.warn('[EMSReportCentral] Centrale rapportlaag kon niet geladen worden.', error);
+  }
+}
+
+function finalizeReportWithCentralData(reportText) {
+  if (!window.EMSReportCentral?.appendSections) return reportText;
+  return window.EMSReportCentral.appendSections(reportText, CENTRAL_REPORT_OPTIONS);
 }
 
 function bindEvents() {
@@ -225,13 +254,14 @@ function extractFromLog(text) {
 function buildReport() {
   const data = collectFormData();
   const report = composeReport(data);
+  const finalReport = finalizeReportWithCentralData(report);
 
   if ($("#reportOutput")) {
-    $("#reportOutput").value = report;
+    $("#reportOutput").value = finalReport;
   }
 
-  renderMarkdownPreview(report);
-  return report;
+  renderMarkdownPreview(finalReport);
+  return finalReport;
 }
 
 function collectFormData() {

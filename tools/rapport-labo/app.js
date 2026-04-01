@@ -1,4 +1,5 @@
 let config = {};
+const CENTRAL_REPORT_OPTIONS = { documentType: 'rapport-labo', department: 'algemeen' };
 
 document.addEventListener("DOMContentLoaded", init);
 
@@ -10,6 +11,7 @@ async function init() {
     fillSelect("#testType", config.testTypes || [], "Kies een onderzoek");
     fillSelect("#priority", config.priorityLevels || [], "Kies prioriteit");
     bindEvents();
+    await initCentralReportEnhancements();
   } catch (error) {
     showStatus("#statusBox", `Fout bij laden: ${error.message}`, "danger");
   }
@@ -24,6 +26,33 @@ function fillSelect(selector, items, placeholder) {
     option.textContent = item;
     select.appendChild(option);
   });
+}
+
+
+async function initCentralReportEnhancements() {
+  if (!window.EMSReportCentral?.init) return;
+
+  try {
+    await window.EMSReportCentral.init({
+      storageKey: CONFIG.storageKey || config?.storageKey || 'rapport-labo',
+      documentType: CENTRAL_REPORT_OPTIONS.documentType,
+      department: CENTRAL_REPORT_OPTIONS.department,
+      onChange: () => {
+        try {
+          buildReport();
+        } catch (error) {
+          console.warn('[EMSReportCentral] Rapport kon niet opnieuw worden opgebouwd.', error);
+        }
+      }
+    });
+  } catch (error) {
+    console.warn('[EMSReportCentral] Centrale rapportlaag kon niet geladen worden.', error);
+  }
+}
+
+function finalizeReportWithCentralData(reportText) {
+  if (!window.EMSReportCentral?.appendSections) return reportText;
+  return window.EMSReportCentral.appendSections(reportText, CENTRAL_REPORT_OPTIONS);
 }
 
 function bindEvents() {

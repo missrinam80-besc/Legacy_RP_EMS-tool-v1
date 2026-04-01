@@ -7,7 +7,29 @@
     'pages/portaal-chirurgie.html': 'tools/portaal-chirurgie/index.html',
     'pages/portaal-psychologie.html': 'tools/portaal-psychologie/index.html',
     'pages/portaal-ortho-revalidatie.html': 'tools/portaal-ortho-revalidatie/index.html',
-    'pages/portaal-forensisch.html': 'tools/portaal-forensisch/index.html'
+    'pages/portaal-forensisch.html': 'tools/portaal-forensisch/index.html',
+    '../aanvraag-spoedoperatie/index.html': 'tools/aanvraag-spoedoperatie/index.html',
+    '../aanvraag-operatieplanning/index.html': 'tools/aanvraag-operatieplanning/index.html',
+    '../operatie-tool/index.html': 'tools/operatie-tool/index.html',
+    '../aanvraag-psychologie-crisis/index.html': 'tools/aanvraag-psychologie-crisis/index.html',
+    '../aanvraag-psychologie-traject/index.html': 'tools/aanvraag-psychologie-traject/index.html',
+    '../psychologie-tool/index.html': 'tools/psychologie-tool/index.html',
+    '../rapport-psychologie/index.html': 'tools/rapport-psychologie/index.html',
+    '../aanvraag-ortho-prioritair/index.html': 'tools/aanvraag-ortho-prioritair/index.html',
+    '../aanvraag-revalidatieplanning/index.html': 'tools/aanvraag-revalidatieplanning/index.html',
+    '../revalidatie-tool/index.html': 'tools/revalidatie-tool/index.html',
+    '../rapport-revalidatie/index.html': 'tools/rapport-revalidatie/index.html',
+    '../behandeling/index.html': 'tools/behandeling/index.html',
+    '../rapport-trauma/index.html': 'tools/rapport-trauma/index.html',
+    '../rapport-opname/index.html': 'tools/rapport-opname/index.html',
+    '../afwezigheid/index.html': 'tools/afwezigheid/index.html',
+    '../rapport-forensisch/index.html': 'tools/rapport-forensisch/index.html',
+    '../rapport-labo/index.html': 'tools/rapport-labo/index.html',
+    '../portaal-ortho-revalidatie/index.html': 'tools/portaal-ortho-revalidatie/index.html',
+    '../portaal-psychologie/index.html': 'tools/portaal-psychologie/index.html',
+    '../portaal-spoed-ambu/index.html': 'tools/portaal-spoed-ambu/index.html',
+    '../portaal-chirurgie/index.html': 'tools/portaal-chirurgie/index.html',
+    '../portaal-forensisch/index.html': 'tools/portaal-forensisch/index.html'
   };
 
   function normalize(value) {
@@ -57,11 +79,39 @@
     return [];
   }
 
+  function getPageDepthPrefix() {
+    const path = String(global.location?.pathname || '');
+    return path.includes('/tools/') ? '../../' : '';
+  }
+
+  function absolutizeAppUrl(path) {
+    const raw = String(path || '').trim();
+    if (!raw || raw === '#') return '#';
+    if (/^(https?:|mailto:|tel:|#)/i.test(raw)) return raw;
+
+    const prefix = getPageDepthPrefix();
+
+    if (raw.startsWith('../')) {
+      if (prefix) return raw;
+      return raw.replace(/^\.\.\//, 'tools/');
+    }
+
+    if (raw.startsWith('./')) {
+      return raw;
+    }
+
+    if (raw.startsWith('tools/') || raw.startsWith('data/') || raw.startsWith('assets/')) {
+      return `${prefix}${raw}`;
+    }
+
+    return raw;
+  }
+
   function resolveModuleUrl(url) {
     const raw = String(url || '').trim();
     if (!raw) return '#';
-    const alias = URL_ALIASES[raw] || raw;
-    return alias;
+    const aliased = URL_ALIASES[raw] || raw;
+    return absolutizeAppUrl(aliased);
   }
 
   function normalizeModuleRow(item) {
@@ -258,8 +308,6 @@
     renderPageRegions,
     renderRegion,
     filterCards,
-    sortItems,
-    normalizeModuleRow,
     normalizeContext,
     resolveModuleUrl
   };
