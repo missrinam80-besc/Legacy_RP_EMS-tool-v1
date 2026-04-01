@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Operatie-assistent - EMS Tools</title>
+
   <link rel="stylesheet" href="../../assets/styles/theme.css" />
   <link rel="stylesheet" href="../../assets/styles/base.css" />
   <link rel="stylesheet" href="../../assets/styles/layout.css" />
@@ -59,6 +60,10 @@
             <summary>1. Casus en indicatie</summary>
             <div class="accordion-content">
               <div class="form-row form-row--2">
+                <div class="field">
+                  <label for="location">Locatie / context</label>
+                  <input id="location" type="text" placeholder="Bijv. spoed, OK, overdracht van ambulance..." />
+                </div>
                 <div class="field">
                   <label for="caseOrigin">Herkomst casus</label>
                   <select id="caseOrigin"></select>
@@ -120,25 +125,46 @@
               <div class="form-row form-row--2">
                 <div class="field"><label for="anesthesia">Anesthesie / sedatie</label><select id="anesthesia"></select></div>
                 <div class="field"><label for="operationComplexity">Complexiteit</label><select id="operationComplexity"></select></div>
-                <div class="field"><label for="postOpStatus">Onmiddellijke post-op status</label><select id="postOpStatus"></select></div>
-                <div class="field"><label for="followupDepartment">Vervolgafdeling</label><select id="followupDepartment"></select></div>
               </div>
-              <div class="field"><label for="requiredMaterials">Benodigd materiaal / medicatie</label><textarea id="requiredMaterials" rows="3" placeholder="Noem de belangrijkste kits, medicatie, hechting, bloedproducten of hulpmiddelen."></textarea></div>
-              <div class="field"><label for="rpSteps">RP-stappen tijdens de ingreep</label><textarea id="rpSteps" rows="5" placeholder="Beschrijf de operatie- of behandelstappen in logische volgorde."></textarea></div>
+              <div class="field">
+                <label for="requiredMaterials">Benodigde materialen / medicatie</label>
+                <textarea id="requiredMaterials" rows="4" placeholder="Bijv. hechtset, bloed, saline, brace, gips, wondzorgmateriaal..."></textarea>
+              </div>
+              <div class="field">
+                <label for="rpSteps">RP-stappen van de ingreep</label>
+                <textarea id="rpSteps" rows="5" placeholder="Stap voor stap beschrijving van wat men uitspreelt of uitbeeldt tijdens de ingreep..."></textarea>
+              </div>
             </div>
           </details>
 
           <details class="accordion-section" open>
-            <summary>5. Post-op opvolging</summary>
+            <summary>5. Post-op en nazorg</summary>
             <div class="accordion-content">
-              <div class="field"><label for="postOpPlan">Post-op plan</label><textarea id="postOpPlan" rows="4" placeholder="Opname, observatie, extra controle, pijnbeleid, beeldvorming of doorverwijzing."></textarea></div>
-              <div class="field"><label for="complications">Complicaties / aandachtspunten</label><textarea id="complications" rows="3" placeholder="Noem complicaties of aandachtspunten voor recovery en overdracht."></textarea></div>
+              <div class="form-row form-row--2">
+                <div class="field"><label for="postOpStatus">Onmiddellijke post-op status</label><select id="postOpStatus"></select></div>
+                <div class="field"><label for="followupDepartment">Doorverwijzing / vervolgafdeling</label><select id="followupDepartment"></select></div>
+              </div>
+              <div class="field">
+                <label for="postOpPlan">Post-op plan</label>
+                <textarea id="postOpPlan" rows="4" placeholder="Monitoring, medicatie, rust, opname, controle, revalidatie..."></textarea>
+              </div>
+              <div class="field">
+                <label for="complications">Complicaties / aandachtspunten</label>
+                <textarea id="complications" rows="3" placeholder="Bijv. nabloeding, instabiliteit, infectierisico, geen complicaties..."></textarea>
+              </div>
+              <div class="field">
+                <label for="extraInfo">Extra info voor overdracht</label>
+                <textarea id="extraInfo" rows="3" placeholder="Vrij veld voor bijkomende context, teamafspraken of overdrachtsinfo..."></textarea>
+              </div>
             </div>
           </details>
 
           <details class="accordion-section" open>
-            <summary>6. Chirurgisch kostenblok</summary>
-            <div class="accordion-content"><p class="soft-text">Selecteer enkel de relevante kosten. Centrale letsels, regels en medicatie worden nu mee verwerkt in waarschuwingen en samenvatting.</p><div class="cost-grid" id="costGrid"></div></div>
+            <summary>6. Chirurgische kostenblok</summary>
+            <div class="accordion-content">
+              <p class="soft-text">Selecteer enkel de relevante chirurgische kosten. Deze blok kan later gekoppeld worden aan je kostencalculator.</p>
+              <div class="cost-grid" id="costGrid"></div>
+            </div>
           </details>
         </div>
 
@@ -153,7 +179,10 @@
           </section>
 
           <section class="panel output-panel">
-            <div class="output-panel__header"><h2>Snelle beoordeling</h2><p class="muted-line">Handige indicatoren voor prioriteit, checklist en kostenschatting.</p></div>
+            <div class="output-panel__header">
+              <h2>Snelle beoordeling</h2>
+              <p class="muted-line">Handige indicatoren voor operatieflow en overdracht.</p>
+            </div>
             <div class="quick-badge-grid">
               <div class="quick-badge-card"><span class="quick-badge-card__label">Prioriteit</span><strong id="priorityBadge">Nog niet berekend</strong></div>
               <div class="quick-badge-card"><span class="quick-badge-card__label">Checklist</span><strong id="checklistBadge">0% voltooid</strong></div>
@@ -163,20 +192,24 @@
           </section>
 
           <section class="panel output-panel">
-            <div class="output-panel__header"><h2>Gegenereerde tekst</h2><p class="muted-line">Gebruik deze output als bouwsteen voor het operatierapport.</p></div>
-            <div class="output-canvas"><textarea id="summaryOutput" class="output-canvas__textarea" readonly placeholder="Hier verschijnt de operatie-samenvatting..."></textarea></div>
+            <div class="output-panel__header">
+              <h2>Gegenereerde tekst</h2>
+              <p class="muted-line">Gebruik deze output als bouwsteen voor rapport, briefing of Discord-overdracht.</p>
+            </div>
+            <div class="output-canvas">
+              <textarea id="summaryOutput" class="output-canvas__textarea" readonly placeholder="Hier verschijnt de operatie-samenvatting..."></textarea>
+            </div>
           </section>
         </div>
       </section>
     </div>
   </div>
 
+  <script src="../../assets/scripts/department-flow.js"></script>
+  <script src="./app.js"></script>
   <script src="../../assets/scripts/store-config.js"></script>
   <script src="../../assets/scripts/api-client.js"></script>
   <script src="../../assets/scripts/admin-store.js"></script>
-  <script src="../../assets/scripts/medical-central.js"></script>
-  <script src="../../assets/scripts/department-flow.js"></script>
-  <script src="./app.js"></script>
   <script src="../../assets/scripts/theme-loader.js"></script>
 </body>
 </html>
