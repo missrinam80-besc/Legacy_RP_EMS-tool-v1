@@ -101,7 +101,6 @@ function debugLog(text, data = null) {
     }
   }
 
-  console.log(line);
 
   if (debugOutput) {
     debugOutput.textContent += `\n${line}\n`;

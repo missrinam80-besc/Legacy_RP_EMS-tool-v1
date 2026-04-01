@@ -2,7 +2,7 @@
   "siteTitle": "Pillbox EMS Suite",
   "siteSubtitle": "Interne EMS tools en portalen",
   "bannerPath": "assets/images/Banner.png",
-  "logoPath": "assets/images/Logo.png",
+  "logoPath": "",
   "borderRadius": "16px",
   "compactMode": false,
   "colors": {
