@@ -1,17 +1,13 @@
+
 /**
  * EMS Staff Service
  * -----------------
- * Centrale dataservice voor de personeelslijst.
+ * Robuuste dataservice voor personeels- en roepnummerdata.
  *
- * Doel:
- * - personeelsdata ophalen uit de bestaande Apps Script API
- * - gegevens normaliseren
- * - herbruikbare helpers voorzien voor dropdowns en autofill
- *
- * Gebruik:
- * - laden in elke tool die personeel nodig heeft
- * - API-url instellen via window.EmsStaffService.setApiUrl(...)
- * - daarna functies gebruiken via window.EmsStaffService
+ * Ondersteunt:
+ * - oude én nieuwe API-responseformaten
+ * - fallback naar centrale EMS_STORE_CONFIG apiBaseUrl
+ * - duidelijkere foutmeldingen bij fetch/CORS/proxy-problemen
  */
 
 window.EmsStaffService = (() => {
@@ -19,28 +15,20 @@ window.EmsStaffService = (() => {
   let lastLoadedAt = null;
   let apiUrl = '';
 
-  /**
-   * Stelt de API-url in.
-   */
   function setApiUrl(url) {
     apiUrl = String(url || '').trim();
   }
 
-  /**
-   * Geeft de huidige API-url terug.
-   */
   function getApiUrl() {
     return apiUrl;
   }
 
-  /**
-   * Normaliseert statuswaarden naar vaste waarden.
-   */
   function normalizeStatus(value) {
     const status = String(value || '').trim().toLowerCase();
 
     if (status === 'actief') return 'actief';
     if (status === 'verlof') return 'verlof';
+    if (status === 'ziekte') return 'ziekte';
     if (status === 'non actief' || status === 'non-actief' || status === 'nonactief') {
       return 'non-actief';
     }
@@ -48,9 +36,6 @@ window.EmsStaffService = (() => {
     return 'actief';
   }
 
-  /**
-   * Zet verschillende truthy/falsy waarden om naar boolean.
-   */
   function toBoolean(value) {
     if (typeof value === 'boolean') return value;
     if (typeof value === 'number') return value === 1;
@@ -59,159 +44,172 @@ window.EmsStaffService = (() => {
     return ['true', '1', 'ja', 'yes', 'y'].includes(normalized);
   }
 
-  /**
-   * Zet één rij om naar een consistente structuur.
-   */
   function sanitizeRow(row) {
     return {
-      roepnummer: String(row.roepnummer || '').trim(),
-      naam: String(row.naam || '').trim(),
-      rang: String(row.rang || '').trim(),
-      afdeling: String(row.afdeling || '').trim(),
-      status: normalizeStatus(row.status),
-      is_active: toBoolean(row.is_active)
+      roepnummer: String(row?.roepnummer || '').trim(),
+      naam: String(row?.naam || '').trim(),
+      rang: String(row?.rang || '').trim(),
+      afdeling: String(row?.afdeling || '').trim(),
+      status: normalizeStatus(row?.status),
+      is_active: toBoolean(row?.is_active)
     };
   }
 
-  /**
-   * Haalt read-only personeelsdata op via de API.
-   * Resultaat wordt gecachet in memory.
-   */
-  async function load(forceReload = false) {
-    if (!forceReload && cache.length) {
-      return cache;
-    }
+  function uniqueUrls(urls) {
+    return [...new Set(urls.map(item => String(item || '').trim()).filter(Boolean))];
+  }
 
-    if (!apiUrl) {
-      throw new Error('API URL is niet ingesteld. Gebruik EmsStaffService.setApiUrl(url).');
-    }
+  function getCandidateApiUrls() {
+    const centralApi = window.EMS_STORE_CONFIG?.apiBaseUrl || '';
+    const inlineApi = typeof window.API_URL === 'string' ? window.API_URL : '';
+    return uniqueUrls([apiUrl, centralApi, inlineApi]);
+  }
 
-    const response = await fetch(`${apiUrl}?action=readonly`);
+  function buildActionUrl(baseUrl, action) {
+    const separator = String(baseUrl).includes('?') ? '&' : '?';
+    return `${baseUrl}${separator}action=${encodeURIComponent(action)}`;
+  }
+
+  async function safeFetchJson(url) {
+    let response;
+
+    try {
+      response = await fetch(url, {
+        method: 'GET',
+        mode: 'cors',
+        redirect: 'follow',
+        cache: 'no-store'
+      });
+    } catch (error) {
+      throw new Error(`Netwerkfout bij ophalen van personeelsdata (${error.message || 'fetch mislukt'}).`);
+    }
 
     if (!response.ok) {
       throw new Error(`Personeels-API gaf een HTTP-fout terug: ${response.status}`);
     }
 
-    const data = await response.json();
-
-    if (!data || data.success !== true) {
-      throw new Error((data && data.message) || 'Personeelslijst laden mislukt.');
+    let data;
+    try {
+      data = await response.json();
+    } catch (error) {
+      throw new Error('Personeels-API gaf geen geldige JSON terug.');
     }
 
-    cache = Array.isArray(data.rows) ? data.rows.map(sanitizeRow) : [];
-    lastLoadedAt = new Date();
-
-    return cache;
+    return data;
   }
 
-  /**
-   * Leegt de cache.
-   */
+  function extractRowsFromResponse(data) {
+    if (!data || typeof data !== 'object') {
+      throw new Error('Lege of ongeldige response van personeels-API.');
+    }
+
+    // Nieuw formaat: { ok: true, data: { rows: [...] } }
+    if (data.ok === true) {
+      return Array.isArray(data.data?.rows) ? data.data.rows : [];
+    }
+
+    // Oud formaat: { success: true, rows: [...] }
+    if (data.success === true) {
+      return Array.isArray(data.rows) ? data.rows : [];
+    }
+
+    const explicitMessage = data.error || data.message || data.data?.error || data.data?.message;
+    if (explicitMessage) {
+      throw new Error(explicitMessage);
+    }
+
+    throw new Error('Personeelslijst laden mislukt.');
+  }
+
+  async function load(forceReload = false) {
+    if (!forceReload && cache.length) {
+      return cache;
+    }
+
+    const candidateUrls = getCandidateApiUrls();
+    if (!candidateUrls.length) {
+      throw new Error('API URL is niet ingesteld voor de personeelslijst.');
+    }
+
+    let lastError = null;
+
+    for (const baseUrl of candidateUrls) {
+      try {
+        const data = await safeFetchJson(buildActionUrl(baseUrl, 'readonly'));
+        cache = extractRowsFromResponse(data).map(sanitizeRow);
+        lastLoadedAt = new Date();
+        apiUrl = baseUrl;
+        return cache;
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
+    throw lastError || new Error('Personeelslijst laden mislukt.');
+  }
+
   function clearCache() {
     cache = [];
     lastLoadedAt = null;
   }
 
-  /**
-   * Geeft alle geladen medewerkers terug.
-   * Als nog niet geladen: eerst laden.
-   */
   async function getAll(forceReload = false) {
     return await load(forceReload);
   }
 
-  /**
-   * Geeft alleen zichtbare medewerkers terug.
-   */
   async function getVisibleStaff(forceReload = false) {
     const rows = await load(forceReload);
     return rows.filter(row => row.is_active);
   }
 
-  /**
-   * Filter op status.
-   * Voorbeeld: getByStatus('actief')
-   */
   async function getByStatus(status, visibleOnly = true) {
     const rows = visibleOnly ? await getVisibleStaff() : await getAll();
     const normalized = normalizeStatus(status);
-
     return rows.filter(row => row.status === normalized);
   }
 
-  /**
-   * Filter op rang.
-   * Ondersteunt 1 rang of array van rangen.
-   */
   async function getByRole(roles, options = {}) {
     const { visibleOnly = true, status = null } = options;
     const rows = visibleOnly ? await getVisibleStaff() : await getAll();
     const roleList = Array.isArray(roles) ? roles : [roles];
-    const normalizedRoles = roleList.map(role =>
-      String(role || '').trim().toLowerCase()
-    );
+    const normalizedRoles = roleList.map(role => String(role || '').trim().toLowerCase());
 
     return rows.filter(row => {
-      const matchesRole = normalizedRoles.includes(
-        String(row.rang || '').trim().toLowerCase()
-      );
+      const matchesRole = normalizedRoles.includes(String(row.rang || '').trim().toLowerCase());
       const matchesStatus = status ? row.status === normalizeStatus(status) : true;
       return matchesRole && matchesStatus;
     });
   }
 
-  /**
-   * Filter op afdeling.
-   */
   async function getByDepartment(departments, options = {}) {
     const { visibleOnly = true, status = null } = options;
     const rows = visibleOnly ? await getVisibleStaff() : await getAll();
     const deptList = Array.isArray(departments) ? departments : [departments];
-    const normalizedDepartments = deptList.map(item =>
-      String(item || '').trim().toLowerCase()
-    );
+    const normalizedDepartments = deptList.map(item => String(item || '').trim().toLowerCase());
 
     return rows.filter(row => {
-      const matchesDepartment = normalizedDepartments.includes(
-        String(row.afdeling || '').trim().toLowerCase()
-      );
+      const matchesDepartment = normalizedDepartments.includes(String(row.afdeling || '').trim().toLowerCase());
       const matchesStatus = status ? row.status === normalizeStatus(status) : true;
       return matchesDepartment && matchesStatus;
     });
   }
 
-  /**
-   * Zoek medewerker op roepnummer.
-   */
   async function getByCallSign(roepnummer, visibleOnly = true) {
     const rows = visibleOnly ? await getVisibleStaff() : await getAll();
     const target = String(roepnummer || '').trim();
-
     return rows.find(row => row.roepnummer === target) || null;
   }
 
-  /**
-   * Zoek medewerker op naam.
-   */
   async function getByName(name, visibleOnly = true) {
     const rows = visibleOnly ? await getVisibleStaff() : await getAll();
     const target = String(name || '').trim().toLowerCase();
-
-    return (
-      rows.find(row => String(row.naam || '').trim().toLowerCase() === target) || null
-    );
+    return rows.find(row => String(row.naam || '').trim().toLowerCase() === target) || null;
   }
 
-  /**
-   * Sorteert personeel alfabetisch op naam.
-   */
   function sortByName(rows) {
     return [...rows].sort((a, b) => a.naam.localeCompare(b.naam, 'nl-BE'));
   }
 
-  /**
-   * Bouwt label voor dropdowns.
-   */
   function buildOptionLabel(row, format = 'naam-roepnummer-rang') {
     switch (format) {
       case 'naam':
@@ -228,15 +226,6 @@ window.EmsStaffService = (() => {
     }
   }
 
-  /**
-   * Vult een select-element met medewerkers.
-   *
-   * options:
-   * - includeEmpty
-   * - emptyLabel
-   * - labelFormat
-   * - valueField: 'roepnummer' of 'naam'
-   */
   function populateSelect(selectElement, rows, options = {}) {
     const {
       includeEmpty = true,
@@ -287,6 +276,7 @@ window.EmsStaffService = (() => {
     populateSelect,
     normalizeStatus,
     sanitizeRow,
-    getLastLoadedAt: () => lastLoadedAt
+    getLastLoadedAt: () => lastLoadedAt,
+    getCandidateApiUrls
   };
 })();

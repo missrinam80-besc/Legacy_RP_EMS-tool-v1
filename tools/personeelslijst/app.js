@@ -1,6 +1,7 @@
+
 /**
  * Personeelslijst read-only
- * Toolspecifieke logica voor de publieke of interne weergave.
+ * Robuuste versie met centrale staff service en fallback-API.
  */
 
 let staffRows = [];
@@ -13,75 +14,80 @@ const messageBox = document.getElementById('messageBox');
 const resultCount = document.getElementById('resultCount');
 
 const {
-  normalizeStatus,
   getStatusClass,
   escapeHtml,
-  setMessage,
-  sanitizeRow
+  setMessage
 } = window.PersoneelShared;
 
 document.addEventListener('DOMContentLoaded', () => {
   bindEvents();
+  initStaffApi();
   loadRows();
 });
 
+function initStaffApi() {
+  const fallbackApi = window.EMS_STORE_CONFIG?.apiBaseUrl || '';
+  const inlineApi = typeof window.API_URL === 'string' ? window.API_URL : '';
+
+  if (window.EmsStaffService) {
+    window.EmsStaffService.setApiUrl(inlineApi || fallbackApi);
+  }
+}
+
 function bindEvents() {
-  loadBtn.addEventListener('click', loadRows);
-  searchInput.addEventListener('input', applyFilter);
+  loadBtn?.addEventListener('click', loadRows);
+  searchInput?.addEventListener('input', applyFilter);
 }
 
 async function loadRows() {
+  if (!window.EmsStaffService) {
+    setMessage(messageBox, 'Personeelsservice is niet geladen.', 'error');
+    return;
+  }
+
   loadBtn.disabled = true;
   setMessage(messageBox, 'Personeelslijst wordt geladen...', 'info');
 
   try {
-    const response = await fetch(`${API_URL}?action=readonly`);
-
-    if (!response.ok) {
-      throw new Error(`HTTP-fout: ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    if (!data.success) {
-      throw new Error(data.message || 'Laden mislukt.');
-    }
-
-    staffRows = Array.isArray(data.rows)
-      ? data.rows.map(sanitizeRow).filter(row => row.is_active)
-      : [];
-
+    staffRows = await window.EmsStaffService.getVisibleStaff(true);
     applyFilter();
-    setMessage(messageBox, 'Personeelslijst is geladen.', 'success');
+
+    const loadedAt = window.EmsStaffService.getLastLoadedAt();
+    const suffix = loadedAt
+      ? ` Laatst opgehaald: ${loadedAt.toLocaleString('nl-BE')}.`
+      : '';
+
+    setMessage(messageBox, `Personeelslijst is geladen.${suffix}`, 'success');
   } catch (error) {
-    setMessage(messageBox, error.message || 'Fout bij laden.', 'error');
+    const hint = ' Controleer of de Apps Script webapp publiek bereikbaar en opnieuw gedeployed is.';
+    setMessage(messageBox, (error.message || 'Fout bij laden.') + hint, 'error');
   } finally {
     loadBtn.disabled = false;
   }
 }
 
 function applyFilter() {
-  const query = searchInput.value.trim().toLowerCase();
+  const query = String(searchInput?.value || '').trim().toLowerCase();
 
   if (!query) {
     filteredRows = [...staffRows];
   } else {
     filteredRows = staffRows.filter(row => {
-      return [
-        row.roepnummer,
-        row.naam,
-        row.rang,
-        row.afdeling,
-        row.status
-      ].some(value => String(value || '').toLowerCase().includes(query));
+      return [row.roepnummer, row.naam, row.rang, row.afdeling, row.status]
+        .some(value => String(value || '').toLowerCase().includes(query));
     });
   }
 
-  resultCount.textContent = String(filteredRows.length);
+  if (resultCount) {
+    resultCount.textContent = String(filteredRows.length);
+  }
+
   renderTable();
 }
 
 function renderTable() {
+  if (!tableBody) return;
+
   if (!filteredRows.length) {
     tableBody.innerHTML = `
       <tr>

@@ -39,6 +39,24 @@ const {
   sanitizeRow
 } = window.PersoneelShared;
 
+function resolveApiUrl() {
+  const inlineApi = typeof API_URL === 'string' ? API_URL : '';
+  const centralApi = window.EMS_STORE_CONFIG?.apiBaseUrl || '';
+  return String(inlineApi || centralApi || '').trim();
+}
+
+function buildApiUrl(action) {
+  const baseUrl = resolveApiUrl();
+  const separator = baseUrl.includes('?') ? '&' : '?';
+  return `${baseUrl}${separator}action=${encodeURIComponent(action)}`;
+}
+
+function normalizeApiPayload(data) {
+  if (data?.ok === true) return data.data || {};
+  if (data?.success === true) return data;
+  throw new Error(data?.error || data?.message || 'Laden mislukt.');
+}
+
 // =========================
 // INIT
 // =========================
@@ -46,7 +64,7 @@ const {
 document.addEventListener('DOMContentLoaded', () => {
   bindEvents();
   debugLog('DEBUG admin.js geladen');
-  debugLog('API_URL = ' + API_URL);
+  debugLog('API_URL = ' + resolveApiUrl());
   loadRows();
 });
 
@@ -134,7 +152,7 @@ async function loadRows() {
   debugLog('loadRows() gestart');
 
   try {
-    const response = await fetch(`${API_URL}?action=list`);
+    const response = await fetch(buildApiUrl('list'), { method: 'GET', mode: 'cors', redirect: 'follow', cache: 'no-store' });
     debugLog('GET list response ontvangen', {
       ok: response.ok,
       status: response.status
@@ -147,12 +165,10 @@ async function loadRows() {
     const data = await response.json();
     debugLog('GET list JSON parsed', data);
 
-    if (!data.success) {
-      throw new Error(data.message || 'Laden mislukt.');
-    }
+    const payload = normalizeApiPayload(data);
 
-    staffRows = Array.isArray(data.rows)
-      ? data.rows.map(sanitizeRow)
+    staffRows = Array.isArray(payload.rows)
+      ? payload.rows.map(sanitizeRow)
       : [];
 
     editStateByKey = {};
