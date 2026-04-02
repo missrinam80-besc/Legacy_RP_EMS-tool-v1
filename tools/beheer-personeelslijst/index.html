@@ -15,7 +15,7 @@
 <body>
   <div class="app-shell">
     <header class="site-header">
-      <img src="../../assets/images/Banner.png" class="site-banner" data-site-banner />
+      <img src="../../assets/images/Banner.png" class="site-banner" alt="EMS Tools banner" data-site-banner />
     </header>
 
     <main class="page-container">
@@ -26,9 +26,7 @@
       <section class="hero-card">
         <div class="hero-card__content">
           <h1>EMS Personeelsbeheer</h1>
-          <p class="text-soft">
-            Beheer de personeelslijst van het ziekenhuis.
-          </p>
+          <p class="text-soft">Beheer de personeelslijst van het ziekenhuis.</p>
         </div>
       </section>
 
@@ -36,32 +34,19 @@
         <div class="section-heading">
           <div>
             <h2>Beheer</h2>
-            <p class="text-soft">
-              Pas medewerkers rij per rij aan en sla wijzigingen afzonderlijk op.
-            </p>
+            <p class="text-soft">Pas medewerkers rij per rij aan en sla wijzigingen afzonderlijk op.</p>
           </div>
         </div>
 
         <div class="personeel-toolbar personeel-toolbar--admin">
           <div class="form-field personeel-toolbar__actor">
             <label for="actorInput">Jouw naam</label>
-            <input
-              class="form-input"
-              type="text"
-              id="actorInput"
-              placeholder="Naam voor logging"
-              autocomplete="name"
-            />
+            <input class="form-input" type="text" id="actorInput" placeholder="Naam voor logging" autocomplete="name" />
           </div>
 
           <div class="form-field personeel-toolbar__search">
             <label for="searchInput">Zoeken</label>
-            <input
-              class="form-input"
-              type="text"
-              id="searchInput"
-              placeholder="Zoek op roepnummer, naam, rang, afdeling of status..."
-            />
+            <input class="form-input" type="text" id="searchInput" placeholder="Zoek op roepnummer, naam, rang, afdeling of status..." />
           </div>
 
           <div class="personeel-toolbar__actions">
@@ -70,16 +55,14 @@
           </div>
         </div>
 
-        <div id="messageBox" class="status-box status-info mt-2" aria-live="polite">
-          Klaar om te laden.
-        </div>
+        <div id="messageBox" class="status-box status-info mt-2" aria-live="polite">Klaar om te laden.</div>
       </section>
 
       <section class="panel mt-2 personeel-admin-note">
         <div class="personeel-admin-note__content">
           <strong>Beheerinfo:</strong>
-          vul je naam in voor logging, zoek een medewerker, klik op <strong>Bewerken</strong>, pas de rij aan en klik op <strong>Opslaan</strong>. <br>
-          <strong>Roepnummer</strong> en <strong>rang</strong> kunnen niet gewijzigd worden.<br> 
+          vul je naam in voor logging, zoek een medewerker, klik op <strong>Bewerken</strong>, pas de rij aan en klik op <strong>Opslaan</strong>.<br>
+          <strong>Roepnummer</strong> en <strong>rang</strong> kunnen niet gewijzigd worden.<br>
           <strong>Zichtbaar</strong> bepaalt of iemand in de roepnummerslijst getoond wordt.
         </div>
       </section>
@@ -92,18 +75,10 @@
           </div>
 
           <div class="personeel-legend">
-            <span class="personeel-legend__item">
-              <span class="personeel-dot personeel-dot--actief"></span> Actief
-            </span>
-            <span class="personeel-legend__item">
-              <span class="personeel-dot personeel-dot--non-actief"></span> Non-actief
-            </span>
-            <span class="personeel-legend__item">
-              <span class="personeel-dot personeel-dot--verlof"></span> Verlof
-            </span>
-            <span class="personeel-legend__item">
-              <span class="personeel-dot personeel-dot--ziekte"></span> Ziekte
-            </span>
+            <span class="personeel-legend__item"><span class="personeel-dot personeel-dot--actief"></span> Actief</span>
+            <span class="personeel-legend__item"><span class="personeel-dot personeel-dot--non-actief"></span> Non-actief</span>
+            <span class="personeel-legend__item"><span class="personeel-dot personeel-dot--verlof"></span> Verlof</span>
+            <span class="personeel-legend__item"><span class="personeel-dot personeel-dot--ziekte"></span> Ziekte</span>
           </div>
         </div>
 
@@ -129,9 +104,7 @@
         <div class="section-heading">
           <div>
             <h2>Debug informatie</h2>
-            <p class="text-soft">
-              Technische logging voor foutopsporing.
-            </p>
+            <p class="text-soft">Technische logging voor foutopsporing.</p>
           </div>
           <div class="personeel-debug-actions">
             <button class="btn btn-secondary btn-sm" id="clearDebugBtn" type="button">Wissen</button>
@@ -143,14 +116,11 @@
     </main>
   </div>
 
-  <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxh-7nXpT8A7D4KCQJsvA3rS_fWbFZUPsxC6zjbiLuN5Cp2y8AZ35NrrtgwGhgX8KffRA/exec';
-  </script>
-  <script src="../../assets/scripts/personeel-shared.js"></script>
-  <script src="./app.js"></script>
   <script src="../../assets/scripts/store-config.js"></script>
   <script src="../../assets/scripts/api-client.js"></script>
   <script src="../../assets/scripts/admin-store.js"></script>
+  <script src="../../assets/scripts/personeel-shared.js"></script>
+  <script src="./app.js"></script>
   <script src="../../assets/scripts/theme-loader.js"></script>
 </body>
 </html>

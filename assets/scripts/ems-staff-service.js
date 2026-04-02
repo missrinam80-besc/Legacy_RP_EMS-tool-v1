@@ -102,7 +102,7 @@
   async function load(forceReload = false) {
     if (!forceReload && cache.length) return cache;
     const candidates = [getApiUrl(), getFallbackApiUrl()].filter(Boolean);
-    if (!candidates.length) throw new Error('API URL is niet ingesteld. Gebruik EmsStaffService.setApiUrl(url).');
+    if (!candidates.length) throw new Error('Geen personeels-API geconfigureerd. Controleer EMS_STORE_CONFIG.apiBaseUrl.');
 
     let lastError = null;
     for (const candidate of [...new Set(candidates)]) {

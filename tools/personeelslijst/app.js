@@ -1,7 +1,6 @@
-
 /**
  * Personeelslijst read-only
- * Robuuste versie met centrale staff service en fallback-API.
+ * Robuuste versie met centrale staff service en directe fetch fallback.
  */
 
 let staffRows = [];
@@ -16,7 +15,8 @@ const resultCount = document.getElementById('resultCount');
 const {
   getStatusClass,
   escapeHtml,
-  setMessage
+  setMessage,
+  sanitizeRow
 } = window.PersoneelShared;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -25,12 +25,13 @@ document.addEventListener('DOMContentLoaded', () => {
   loadRows();
 });
 
-function initStaffApi() {
-  const fallbackApi = window.EMS_STORE_CONFIG?.apiBaseUrl || '';
-  const inlineApi = typeof window.API_URL === 'string' ? window.API_URL : '';
+function resolveApiUrl() {
+  return String(window.EMS_STORE_CONFIG?.apiBaseUrl || '').trim();
+}
 
+function initStaffApi() {
   if (window.EmsStaffService) {
-    window.EmsStaffService.setApiUrl(inlineApi || fallbackApi);
+    window.EmsStaffService.setApiUrl(resolveApiUrl());
   }
 }
 
@@ -39,27 +40,59 @@ function bindEvents() {
   searchInput?.addEventListener('input', applyFilter);
 }
 
-async function loadRows() {
-  if (!window.EmsStaffService) {
-    setMessage(messageBox, 'Personeelsservice is niet geladen.', 'error');
-    return;
+function normalizeApiPayload(data) {
+  if (data?.ok === true) return data.data || {};
+  if (data?.success === true) return data;
+  throw new Error(data?.error || data?.message || 'Personeelslijst laden mislukt.');
+}
+
+async function fetchVisibleRowsDirect() {
+  const baseUrl = resolveApiUrl();
+  if (!baseUrl) {
+    throw new Error('Geen personeels-API geconfigureerd.');
   }
 
+  const separator = baseUrl.includes('?') ? '&' : '?';
+  const response = await fetch(`${baseUrl}${separator}action=readonly`, {
+    method: 'GET',
+    mode: 'cors',
+    redirect: 'follow',
+    cache: 'no-store'
+  });
+
+  if (!response.ok) {
+    throw new Error(`Personeels-API gaf een HTTP-fout terug: ${response.status}`);
+  }
+
+  const data = await response.json();
+  const payload = normalizeApiPayload(data);
+  const rows = Array.isArray(payload.rows) ? payload.rows : [];
+  return rows.map(sanitizeRow).filter(row => row.is_active);
+}
+
+async function getVisibleRows() {
+  if (window.EmsStaffService && typeof window.EmsStaffService.getVisibleStaff === 'function') {
+    return await window.EmsStaffService.getVisibleStaff(true);
+  }
+  return await fetchVisibleRowsDirect();
+}
+
+async function loadRows() {
   loadBtn.disabled = true;
   setMessage(messageBox, 'Personeelslijst wordt geladen...', 'info');
 
   try {
-    staffRows = await window.EmsStaffService.getVisibleStaff(true);
+    staffRows = await getVisibleRows();
     applyFilter();
 
-    const loadedAt = window.EmsStaffService.getLastLoadedAt();
+    const loadedAt = window.EmsStaffService?.getLastLoadedAt?.();
     const suffix = loadedAt
       ? ` Laatst opgehaald: ${loadedAt.toLocaleString('nl-BE')}.`
       : '';
 
     setMessage(messageBox, `Personeelslijst is geladen.${suffix}`, 'success');
   } catch (error) {
-    const hint = ' Controleer of de Apps Script webapp publiek bereikbaar en opnieuw gedeployed is.';
+    const hint = ' Controleer of de Apps Script webapp publiek bereikbaar is en naar de juiste deploy-URL wijst.';
     setMessage(messageBox, (error.message || 'Fout bij laden.') + hint, 'error');
   } finally {
     loadBtn.disabled = false;
@@ -104,9 +137,7 @@ function renderTable() {
       <td>${escapeHtml(row.rang)}</td>
       <td>${escapeHtml(row.afdeling)}</td>
       <td>
-        <span class="personeel-badge ${getStatusClass(row.status)}">
-          ${escapeHtml(row.status)}
-        </span>
+        <span class="personeel-badge ${getStatusClass(row.status)}">${escapeHtml(row.status)}</span>
       </td>
     </tr>
   `).join('');

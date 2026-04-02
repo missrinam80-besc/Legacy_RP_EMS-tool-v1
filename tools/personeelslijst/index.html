@@ -15,20 +15,14 @@
 <body>
   <div class="app-shell">
     <header class="site-header">
-      <img src="../../assets/images/Banner.png" class="site-banner" data-site-banner />
+      <img src="../../assets/images/Banner.png" class="site-banner" alt="EMS Tools banner" data-site-banner />
     </header>
 
     <main class="page-container">
-      <!-- <div class="tool-nav">
-        <a href="../../index.html">← Terug naar EMS Tools Hub</a>
-      </div> -->
-
       <section class="hero-card">
         <div class="hero-card__content">
           <h1>EMS Personeelslijst</h1>
-          <p class="text-soft">
-            Overzicht van actieve en zichtbare medewerkers.
-          </p>
+          <p class="text-soft">Overzicht van actieve en zichtbare medewerkers.</p>
         </div>
       </section>
 
@@ -36,12 +30,7 @@
         <div class="personeel-toolbar">
           <div class="form-field personeel-toolbar__search">
             <label for="searchInput">Zoeken</label>
-            <input
-              class="form-input"
-              type="text"
-              id="searchInput"
-              placeholder="Zoek op roepnummer, naam, rang, afdeling of status..."
-            />
+            <input class="form-input" type="text" id="searchInput" placeholder="Zoek op roepnummer, naam, rang, afdeling of status..." />
           </div>
 
           <div class="personeel-toolbar__actions">
@@ -49,9 +38,7 @@
           </div>
         </div>
 
-        <div id="messageBox" class="status-box status-info mt-2" aria-live="polite">
-          Klaar om te laden.
-        </div>
+        <div id="messageBox" class="status-box status-info mt-2" aria-live="polite">Klaar om te laden.</div>
       </section>
 
       <section class="panel mt-2">
@@ -62,18 +49,10 @@
           </div>
 
           <div class="personeel-legend">
-            <span class="personeel-legend__item">
-              <span class="personeel-dot personeel-dot--actief"></span> Actief
-            </span>
-            <span class="personeel-legend__item">
-              <span class="personeel-dot personeel-dot--non-actief"></span> Non-actief
-            </span>
-            <span class="personeel-legend__item">
-              <span class="personeel-dot personeel-dot--verlof"></span> Verlof
-            </span>
-            <span class="personeel-legend__item">
-              <span class="personeel-dot personeel-dot--ziekte"></span> Ziekte
-            </span>
+            <span class="personeel-legend__item"><span class="personeel-dot personeel-dot--actief"></span> Actief</span>
+            <span class="personeel-legend__item"><span class="personeel-dot personeel-dot--non-actief"></span> Non-actief</span>
+            <span class="personeel-legend__item"><span class="personeel-dot personeel-dot--verlof"></span> Verlof</span>
+            <span class="personeel-legend__item"><span class="personeel-dot personeel-dot--ziekte"></span> Ziekte</span>
           </div>
         </div>
 
@@ -95,14 +74,12 @@
     </main>
   </div>
 
-  <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxh-7nXpT8A7D4KCQJsvA3rS_fWbFZUPsxC6zjbiLuN5Cp2y8AZ35NrrtgwGhgX8KffRA/exec';
-  </script>
-  <script src="../../assets/scripts/personeel-shared.js"></script>
-  <script src="./app.js"></script>
   <script src="../../assets/scripts/store-config.js"></script>
   <script src="../../assets/scripts/api-client.js"></script>
   <script src="../../assets/scripts/admin-store.js"></script>
+  <script src="../../assets/scripts/personeel-shared.js"></script>
+  <script src="../../assets/scripts/ems-staff-service.js"></script>
+  <script src="./app.js"></script>
   <script src="../../assets/scripts/theme-loader.js"></script>
 </body>
 </html>
