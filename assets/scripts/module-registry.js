@@ -109,24 +109,33 @@
     return normalized;
   }
 
-  function dedupeModules(items) {
-    const map = new Map();
-    items.filter(Boolean).forEach((item) => {
-      const key = item.id || `${item.name}::${item.url}`;
-      if (!map.has(key)) {
-        map.set(key, item);
-        return;
-      }
+function dedupeModules(items) {
+  const map = new Map();
 
-      const previous = map.get(key);
-      map.set(key, {
-        ...previous,
-        ...item,
-        contexts: Array.from(new Set([...(previous.contexts || []), ...(item.contexts || [])]))
-      });
+  items.filter(Boolean).forEach((item) => {
+    const url = String(item.url || '').trim().toLowerCase();
+    const contexts = asArray(item.contexts).map(normalizeContext).sort().join('|');
+    const name = normalize(item.name || '');
+    const key = url
+      ? `${url}::${contexts}`
+      : `${item.id || ''}::${name}::${contexts}`;
+
+    if (!map.has(key)) {
+      map.set(key, item);
+      return;
+    }
+
+    const previous = map.get(key);
+
+    map.set(key, {
+      ...previous,
+      ...item,
+      contexts: Array.from(new Set([...(previous.contexts || []), ...(item.contexts || [])]))
     });
-    return Array.from(map.values());
-  }
+  });
+
+  return Array.from(map.values());
+}
 
   async function fetchDefaultModulesDirect() {
     const path = global.EMS_STORE_CONFIG?.configTypes?.modules?.defaultPath;
@@ -141,31 +150,43 @@
     return Array.isArray(payload) ? payload : Array.isArray(payload?.items) ? payload.items : [];
   }
 
-  async function loadModuleData() {
-    const normalizedItems = [];
+async function loadModuleData() {
+  let adminItems = [];
+  let fallbackItems = [];
 
-    try {
-      if (global.EMSAdminStore?.get) {
-        const raw = await global.EMSAdminStore.get('modules');
-        const items = Array.isArray(raw) ? raw : Array.isArray(raw?.items) ? raw.items : [];
-        normalizedItems.push(...items.map(normalizeModuleRow).filter(Boolean));
-      }
-    } catch (error) {
-      console.warn('[ModuleRegistry] Centrale moduleconfig niet beschikbaar, fallback wordt gebruikt.', error);
+  try {
+    if (global.EMSAdminStore?.get) {
+      const raw = await global.EMSAdminStore.get('modules');
+      const items = Array.isArray(raw) ? raw : Array.isArray(raw?.items) ? raw.items : [];
+      adminItems = items.map(normalizeModuleRow).filter(Boolean);
     }
-
-    try {
-      const fallbackItems = await fetchDefaultModulesDirect();
-      normalizedItems.push(...fallbackItems.map(normalizeModuleRow).filter(Boolean));
-    } catch (error) {
-      console.warn('[ModuleRegistry] Lokale fallback modules niet beschikbaar.', error);
-    }
-
-    return {
-      items: dedupeModules(normalizedItems)
-    };
+  } catch (error) {
+    console.warn('[ModuleRegistry] Centrale moduleconfig niet beschikbaar, fallback wordt gebruikt.', error);
   }
 
+  try {
+    const fallbackRaw = await fetchDefaultModulesDirect();
+    fallbackItems = fallbackRaw.map(normalizeModuleRow).filter(Boolean);
+  } catch (error) {
+    console.warn('[ModuleRegistry] Lokale fallback modules niet beschikbaar.', error);
+  }
+
+  const adminUrls = new Set(
+    adminItems
+      .map((item) => String(item.url || '').trim().toLowerCase())
+      .filter(Boolean)
+  );
+
+  const missingFallbackItems = fallbackItems.filter((item) => {
+    const url = String(item.url || '').trim().toLowerCase();
+    if (!url) return true;
+    return !adminUrls.has(url);
+  });
+
+  return {
+    items: dedupeModules([...adminItems, ...missingFallbackItems])
+  };
+}
   function getStatusTone(status = '') {
     const value = normalize(status);
     if (value === 'actief' || value === 'live') return 'success';
