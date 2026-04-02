@@ -196,22 +196,21 @@
     return [...items].sort((a, b) => (Number(a.order) || 9999) - (Number(b.order) || 9999));
   }
 
-  function buildQuickAction(item) {
-    return `
-      <a class="quick-action-card module-card"
-         href="${toSafeText(item.url)}"
-         data-name="${toSafeText(item.name)}"
-         data-category="${toSafeText(item.type)}"
-         data-status="${toSafeText(item.status)}"
-         data-keywords="${toSafeText(item.keywords)}">
-        <span class="quick-action-card__icon" aria-hidden="true">${toSafeText(item.icon || '🔗')}</span>
-        <div>
-          <strong>${toSafeText(item.name)}</strong>
-          <p class="text-soft mt-1">${toSafeText(item.description)}</p>
-        </div>
-      </a>
-    `;
-  }
+function buildQuickAction(item) {
+  return `
+    <a class="quick-action-card module-card"
+       href="${toSafeText(item.url)}"
+       data-name="${toSafeText(item.name)}"
+       data-category="${toSafeText(item.type)}"
+       data-status="${toSafeText(item.status)}"
+       data-keywords="${toSafeText(item.keywords)}">
+      <span class="quick-action-card__icon" aria-hidden="true">${toSafeText(item.icon || '🔗')}</span>
+      <div class="quick-action-card__content">
+        <strong>${toSafeText(item.name)}</strong>
+      </div>
+    </a>
+  `;
+}
 
   function buildToolCard(item, variant = 'hub') {
     const baseClass = variant === 'portal' ? 'portal-card' : 'tool-card tool-card--hub';

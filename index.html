@@ -21,33 +21,34 @@
       <section class="hero-card">
         <div class="hero-card__content">
           <h1>EMS Medewerkersportaal</h1>
-          <p class="text-soft">Centrale toegang tot algemene informatie, aanvragen, spoed- en ambulancetools en de portalen van de gespecialiseerde afdelingen.</p>
+          <p class="text-soft">
+            Centrale toegang tot algemene informatie, aanvragen en de portalen van de verschillende EMS-afdelingen.
+          </p>
         </div>
       </section>
 
-      <section class="panel mt-2">
-        <div class="section-heading">
-          <div>
-            <h2>Quick actions</h2>
-            <p class="text-soft">Snelle toegang tot de meest gebruikte functies voor de dagelijkse werking.</p>
-          </div>
-        </div>
+      <section class="panel mt-2 quick-actions-panel">
         <div class="quick-actions-grid" data-module-context="home.quick" data-render-type="quick"></div>
       </section>
 
-      <section class="panel mt-2">
+      <section class="panel mt-2 search-panel">
         <div class="form-field">
           <label for="toolSearch">Zoek een link of tool</label>
-          <input class="form-input" id="toolSearch" type="text" placeholder="Zoek op naam, functie of categorie" />
+          <input
+            class="form-input"
+            id="toolSearch"
+            type="text"
+            placeholder="Zoek op naam, functie of categorie"
+          />
         </div>
-        <div id="hubStatus" class="status-box status-info mt-2">Klaar om te starten.</div>
+
+        <div id="hubStatus" class="visually-hidden" aria-hidden="true"></div>
       </section>
 
       <section class="tool-section" data-section="algemene-info">
         <div class="section-heading">
           <div>
             <h2>Algemene informatie</h2>
-            <p class="text-soft">Basisinformatie en vaste links voor alle EMS-medewerkers.</p>
           </div>
         </div>
         <div class="tool-grid" data-module-context="home.algemene-info"></div>
@@ -57,7 +58,6 @@
         <div class="section-heading">
           <div>
             <h2>Aanvragen</h2>
-            <p class="text-soft">Interne formulieren voor meldingen, feedback en ontwikkeling.</p>
           </div>
         </div>
         <div class="tool-grid" data-module-context="home.aanvragen"></div>
@@ -66,13 +66,20 @@
       <section class="tool-section" data-section="afdelingen">
         <div class="section-heading">
           <div>
-            <h2>Afdelingsportalen</h2>
-            <p class="text-soft">Navigeer per afdeling naar de juiste tools, rapporten en aanvragen.</p>
+            <h2>Afdelingen</h2>
           </div>
         </div>
         <div class="tool-grid" data-module-context="home.afdelingen"></div>
       </section>
     </main>
+
+    <footer class="site-footer">
+      <div class="site-footer__inner page-container">
+        <p>Laatste update info: <strong>02/04/2026</strong></p>
+        <p>Versie: <strong>v1.0 live</strong></p>
+        <p>Fout gevonden? <a href="#" class="footer-link">Meld een fout in de tool</a></p>
+      </div>
+    </footer>
   </div>
 
   <script src="assets/scripts/store-config.js"></script>

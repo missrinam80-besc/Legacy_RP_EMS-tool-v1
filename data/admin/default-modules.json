@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2026-03-28",
+  "lastUpdated": "2026-04-02",
   "items": [
     {
       "id": "personeelslijst_view",
@@ -60,7 +60,6 @@
       "description": "Start meteen met de behandelingsadviseur voor acute zorg.",
       "keywords": "behandeling behandeltool spoed ambulance trauma",
       "contexts": [
-        "home.quick",
         "command.tools"
       ],
       "order": 30,
@@ -82,7 +81,6 @@
       "description": "Genereer snel een nieuw traumarapport.",
       "keywords": "rapport trauma spoed",
       "contexts": [
-        "home.quick",
         "command.tools"
       ],
       "order": 40,
@@ -94,7 +92,7 @@
     },
     {
       "id": "portostatussen",
-      "name": "Portostatussen",
+      "name": "Portoprotocol",
       "type": "info",
       "department": "algemeen",
       "url": "tools/portostatussen/index.html",
@@ -102,9 +100,9 @@
       "badge": "Info",
       "status": "intern",
       "description": "Overzicht van statussen en standaardmeldingen op de porto.",
-      "keywords": "portostatussen porto communicatie",
+      "keywords": "portoprotocol portostatussen porto communicatie",
       "contexts": [
-        "home.algemene-info",
+        "home.quick",
         "command.algemene-info"
       ],
       "order": 50,
@@ -116,7 +114,7 @@
     },
     {
       "id": "belangrijke_info",
-      "name": "Belangrijke info",
+      "name": "Belangrijke informatie",
       "type": "info",
       "department": "algemeen",
       "url": "tools/belangrijke-info/index.html",
@@ -124,9 +122,9 @@
       "badge": "Info",
       "status": "intern",
       "description": "Snelle toegang tot de belangrijkste interne informatiepagina’s.",
-      "keywords": "belangrijke info links intern",
+      "keywords": "belangrijke informatie belangrijke info links intern",
       "contexts": [
-        "home.algemene-info",
+        "home.quick",
         "command.algemene-info"
       ],
       "order": 60,
@@ -252,7 +250,7 @@
       "type": "portaal",
       "department": "chirurgie",
       "url": "tools/portaal-chirurgie/index.html",
-      "icon": "🔬",
+      "icon": "⚕️",
       "badge": "Portaal",
       "status": "actief",
       "description": "Operaties, ingrepen, post-op opvolging en chirurgische verslaggeving.",
@@ -314,15 +312,15 @@
     },
     {
       "id": "portaal_forensisch",
-      "name": "Forensisch",
+      "name": "Forensische wetenschappen",
       "type": "portaal",
       "department": "forensisch",
       "url": "tools/portaal-forensisch/index.html",
-      "icon": "⚖️",
+      "icon": "🔬",
       "badge": "Portaal",
       "status": "nieuw",
       "description": "Rapportering en documentatie van verdachte of gerechtelijke casussen.",
-      "keywords": "forensisch portaal afdeling",
+      "keywords": "forensisch portaal afdeling forensische wetenschappen",
       "contexts": [
         "home.afdelingen",
         "command.afdelingen"
@@ -1036,7 +1034,7 @@
       "type": "portaal",
       "department": "algemeen",
       "url": "tools/portaal-chirurgie/index.html",
-      "icon": "🔬",
+      "icon": "⚕️",
       "badge": "Portaal",
       "status": "intern",
       "description": "Bij casussen met nood aan operatieve of gespecialiseerde medische zorg.",
@@ -1057,7 +1055,7 @@
       "type": "portaal",
       "department": "algemeen",
       "url": "tools/portaal-chirurgie/index.html",
-      "icon": "🔬",
+      "icon": "⚕️",
       "badge": "Portaal",
       "status": "intern",
       "description": "Bij letsels die eerst chirurgische tussenkomst vereisen.",
@@ -1099,7 +1097,7 @@
       "type": "portaal",
       "department": "algemeen",
       "url": "tools/portaal-chirurgie/index.html",
-      "icon": "🔬",
+      "icon": "⚕️",
       "badge": "Portaal",
       "status": "intern",
       "description": "Wanneer een ingreep of gespecialiseerde opvolging nodig is.",
@@ -1116,11 +1114,11 @@
     },
     {
       "id": "cross_970",
-      "name": "Doorverwijzen naar forensisch",
+      "name": "Doorverwijzen naar forensische wetenschappen",
       "type": "portaal",
       "department": "algemeen",
       "url": "tools/portaal-forensisch/index.html",
-      "icon": "⚖️",
+      "icon": "🔬",
       "badge": "Portaal",
       "status": "intern",
       "description": "Bij verdachte of gerechtelijke casussen met bijkomende documentatie.",
