@@ -1,82 +1,89 @@
+/**
+ * EMS Tool API Router
+ * -------------------
+ * Centrale router voor:
+ * - healthcheck
+ * - personeel readonly/list/save
+ * - centrale config get/save
+ */
+
 function doGet(e) {
-  return handleRequest_(e);
+  return handleRequest_(e, 'GET');
 }
 
 function doPost(e) {
-  return handleRequest_(e);
+  return handleRequest_(e, 'POST');
 }
 
-function handleRequest_(e) {
+function handleRequest_(e, method) {
   try {
-    const method = e.method || 'GET';
-    const action = e.parameter.action;
+    const action = String((e && e.parameter && e.parameter.action) || '').trim().toLowerCase();
     const body = getJsonBody_(e);
 
-    if (!action) throw new Error('Missing action');
+    logDebug_('handleRequest_start', {
+      method: method,
+      action: action,
+      params: (e && e.parameter) || {},
+      hasBody: !!Object.keys(body || {}).length
+    });
 
     let result;
 
     switch (action) {
-
-      // ===== HEALTH =====
+      case '':
+      case 'health':
       case 'healthcheck':
-        result = handleHealthcheck_(); break;
-
-      case 'pingSheets':
-        result = handlePingSheets_(); break;
-
-      case 'testConfig':
-        result = handleTestConfig_(); break;
-
-      case 'testStaff':
-        result = handleTestStaff_(); break;
-
-      case 'debugInfo':
-        result = handleDebugInfo_(); break;
-
-      // ===== CONFIG =====
-      case 'getConfig':
-        result = handleGetConfig_(e); break;
-
-      case 'getAllConfigs':
-        result = handleGetAllConfigs_(); break;
-
-      case 'saveConfig':
-        ensurePost_(method);
-        result = handleSaveConfig_(body); break;
-
-      // ===== STAFF =====
-      case 'list':
-        result = handleListStaff_(); break;
-
-      case 'readonly':
-        result = handleReadonlyStaff_(); break;
-
-      case 'dropdown':
-        result = handleStaffDropdown_(); break;
-
-      case 'saveAll':
-        ensurePost_(method);
-        result = handleSaveAllStaff_(body); break;
-
-      case 'saveRow':
-        result = method === 'GET'
-          ? handleSaveStaffRow_(getRowPayloadFromGet_(e))
-          : handleSaveStaffRow_(body);
+        result = handleHealthcheck_();
         break;
 
-      case 'deleteByCallsign':
+      // =========================
+      // PERSONEEL
+      // =========================
+      case 'readonly':
+        result = handleReadonlyStaff_();
+        break;
+
+      case 'list':
+        result = handleListStaff_();
+        break;
+
+      case 'save':
+      case 'savestaff':
         ensurePost_(method);
-        result = handleDeleteStaffByCallsign_(body); break;
+        result = handleSaveStaff_(body, e);
+        break;
+
+      // =========================
+      // CONFIG
+      // =========================
+      case 'getconfig':
+        result = handleGetConfig_(e);
+        break;
+
+      case 'getallconfigs':
+        result = handleGetAllConfigs_();
+        break;
+
+      case 'saveconfig':
+        ensurePost_(method);
+        result = handleSaveConfig_(body, e);
+        break;
 
       default:
-        throw new Error('Unknown action: ' + action);
+        throw new Error('Onbekende actie: ' + action);
     }
 
-    return jsonSuccess_(result);
+    logDebug_('handleRequest_success', {
+      method: method,
+      action: action
+    });
 
-  } catch (err) {
-    logError_('handleRequest', err);
-    return jsonError_(err.message);
+    return okResponse_(result);
+  } catch (error) {
+    logError_('handleRequest_error', error, {
+      method: method,
+      params: (e && e.parameter) || {}
+    });
+    return errorResponse_(error);
   }
 }

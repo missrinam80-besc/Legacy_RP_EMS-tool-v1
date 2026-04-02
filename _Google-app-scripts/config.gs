@@ -1,82 +1,50 @@
-function doGet(e) {
-  return handleRequest_(e);
-}
+/**
+ * EMS Tool Config
+ * ----------------
+ * Centrale config voor sheetnamen en instellingen.
+ */
 
-function doPost(e) {
-  return handleRequest_(e);
-}
-
-function handleRequest_(e) {
-  try {
-    const method = e.method || 'GET';
-    const action = e.parameter.action;
-    const body = getJsonBody_(e);
-
-    if (!action) throw new Error('Missing action');
-
-    let result;
-
-    switch (action) {
-
-      // ===== HEALTH =====
-      case 'healthcheck':
-        result = handleHealthcheck_(); break;
-
-      case 'pingSheets':
-        result = handlePingSheets_(); break;
-
-      case 'testConfig':
-        result = handleTestConfig_(); break;
-
-      case 'testStaff':
-        result = handleTestStaff_(); break;
-
-      case 'debugInfo':
-        result = handleDebugInfo_(); break;
-
-      // ===== CONFIG =====
-      case 'getConfig':
-        result = handleGetConfig_(e); break;
-
-      case 'getAllConfigs':
-        result = handleGetAllConfigs_(); break;
-
-      case 'saveConfig':
-        ensurePost_(method);
-        result = handleSaveConfig_(body); break;
-
-      // ===== STAFF =====
-      case 'list':
-        result = handleListStaff_(); break;
-
-      case 'readonly':
-        result = handleReadonlyStaff_(); break;
-
-      case 'dropdown':
-        result = handleStaffDropdown_(); break;
-
-      case 'saveAll':
-        ensurePost_(method);
-        result = handleSaveAllStaff_(body); break;
-
-      case 'saveRow':
-        result = method === 'GET'
-          ? handleSaveStaffRow_(getRowPayloadFromGet_(e))
-          : handleSaveStaffRow_(body);
-        break;
-
-      case 'deleteByCallsign':
-        ensurePost_(method);
-        result = handleDeleteStaffByCallsign_(body); break;
-
-      default:
-        throw new Error('Unknown action: ' + action);
-    }
-
-    return jsonSuccess_(result);
-
-  } catch (err) {
-    logError_('handleRequest', err);
-    return jsonError_(err.message);
+var EMS_CONFIG = {
+  spreadsheetId: '', // Leeg laten om actieve spreadsheet te gebruiken, of vul expliciet een ID in.
+  sheets: {
+    staff: 'personeel',
+    modules: 'modules',
+    theme: 'theme',
+    prices: 'prijzen',
+    medication: 'medicatie',
+    injuries: 'verwondingen',
+    treatmentRules: 'behandelregels',
+    meta: 'meta',
+    logs: 'logs'
+  },
+  defaults: {
+    status: 'actief'
   }
+};
+
+function getSpreadsheet_() {
+  if (EMS_CONFIG.spreadsheetId && String(EMS_CONFIG.spreadsheetId).trim()) {
+    return SpreadsheetApp.openById(String(EMS_CONFIG.spreadsheetId).trim());
+  }
+  return SpreadsheetApp.getActiveSpreadsheet();
+}
+
+function getSheetByNameSafe_(name) {
+  var ss = getSpreadsheet_();
+  var sheet = ss.getSheetByName(name);
+  if (!sheet) {
+    throw new Error('Sheet niet gevonden: ' + name);
+  }
+  return sheet;
+}
+
+function getConfigSheetMap_() {
+  return {
+    theme: EMS_CONFIG.sheets.theme,
+    modules: EMS_CONFIG.sheets.modules,
+    prices: EMS_CONFIG.sheets.prices,
+    medication: EMS_CONFIG.sheets.medication,
+    injuries: EMS_CONFIG.sheets.injuries,
+    treatmentRules: EMS_CONFIG.sheets.treatmentRules
+  };
 }
