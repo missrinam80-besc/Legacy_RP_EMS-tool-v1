@@ -83,18 +83,6 @@
     return readLocal(getLocalKey(type));
   }
 
-  function mergeWithDefaults(defaultData, savedData) {
-    if (!savedData || typeof savedData !== 'object') {
-      return structuredCloneSafe(defaultData);
-    }
-
-    const merged = structuredCloneSafe(defaultData);
-    Object.keys(savedData).forEach((key) => {
-      merged[key] = savedData[key];
-    });
-    return merged;
-  }
-
   function toBool(value) {
     if (value === true || value === false) return value;
     const normalized = String(value || '').trim().toLowerCase();
@@ -104,11 +92,9 @@
   }
 
   function normalizeThemeRows(rows) {
-    const theme = {
-      colors: {}
-    };
+    const theme = { colors: {} };
 
-    rows.filter((row) => toBool(row.active ?? true)).forEach((row) => {
+    (Array.isArray(rows) ? rows : []).filter((row) => toBool(row.active ?? true)).forEach((row) => {
       const key = String(row.key || '').trim();
       const value = row.value;
       if (!key) return;
@@ -125,25 +111,40 @@
     return theme;
   }
 
+  function normalizeCollectionPayload(payload) {
+    if (Array.isArray(payload)) return payload;
+    if (Array.isArray(payload?.rows)) return payload.rows;
+    if (Array.isArray(payload?.items)) return payload.items;
+    if (Array.isArray(payload?.data)) return payload.data;
+    if (Array.isArray(payload?.data?.rows)) return payload.data.rows;
+    if (Array.isArray(payload?.data?.items)) return payload.data.items;
+    return null;
+  }
+
   function normalizeApiData(type, payload) {
-    if (payload == null) return payload;
-
-    const data = payload.data ?? payload;
-
-    if (type === 'theme') {
-      if (Array.isArray(data)) return normalizeThemeRows(data);
-      if (Array.isArray(data?.items)) return normalizeThemeRows(data.items);
-      return data;
+    if (payload == null) {
+      return type === 'theme' ? { colors: {} } : [];
     }
 
-    if (Array.isArray(data)) return data;
-    if (Array.isArray(data?.items)) return data;
-    return data;
+    const data = payload?.data ?? payload;
+
+    if (type === 'theme') {
+      const themeRows = normalizeCollectionPayload(data);
+      if (themeRows) return normalizeThemeRows(themeRows);
+      if (typeof data === 'object' && !Array.isArray(data)) return data;
+      return { colors: {} };
+    }
+
+    const rows = normalizeCollectionPayload(data);
+    if (rows) return rows;
+    if (typeof data === 'object' && data && Array.isArray(data.items)) return data.items;
+    return [];
   }
 
   async function fetchDefaultsByType(type) {
     const cfg = getTypeConfig(type);
-    return fetchJson(cfg.defaultPath);
+    const defaults = await fetchJson(cfg.defaultPath);
+    return normalizeApiData(type, defaults);
   }
 
   async function fetchApiType(type) {
@@ -165,7 +166,7 @@
 
     if (!forceRefresh) {
       const cached = readCache(type);
-      if (cached != null) return structuredCloneSafe(cached);
+      if (cached != null) return structuredCloneSafe(normalizeApiData(type, cached));
     }
 
     try {
@@ -178,8 +179,9 @@
 
       const localData = readLocalType(type);
       if (localData != null) {
-        writeCache(type, localData);
-        return structuredCloneSafe(localData);
+        const normalizedLocal = normalizeApiData(type, localData);
+        writeCache(type, normalizedLocal);
+        return structuredCloneSafe(normalizedLocal);
       }
 
       const defaults = await fetchDefaultsByType(type);
@@ -230,7 +232,7 @@
   function saveAdminData(storageKey, data) {
     const type = LEGACY_KEY_MAP[storageKey];
     if (type) {
-      saveLocalType(type, data);
+      saveLocalType(type, normalizeApiData(type, data));
       clearCache(type);
       return data;
     }
@@ -258,106 +260,20 @@
     }
 
     const defaults = await fetchJson(defaultPath);
-    const savedData = readLocal(storageKey);
-    return mergeWithDefaults(defaults, savedData);
-  }
+    const saved = readLocal(storageKey);
 
-  async function resetAdminData(storageKey, defaultPath) {
-    const type = LEGACY_KEY_MAP[storageKey];
-
-    if (type) {
-      localStorage.removeItem(getLocalKey(type));
-      clearCache(type);
+    if (!saved) {
+      return structuredCloneSafe(defaults);
     }
 
-    const defaults = await fetchJson(defaultPath);
-
-    if (type) {
-      saveLocalType(type, defaults);
-      writeCache(type, defaults);
-    } else {
-      localStorage.setItem(storageKey, JSON.stringify(defaults));
+    if (typeof defaults === 'object' && !Array.isArray(defaults)) {
+      return structuredCloneSafe({ ...defaults, ...saved });
     }
 
-    return defaults;
+    return structuredCloneSafe(saved);
   }
 
-  function exportAdminData(data, filename = 'export.json') {
-    const blob = new Blob([JSON.stringify(data, null, 2)], {
-      type: 'application/json'
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
-  }
-
-  function importAdminData(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-
-      reader.onload = (event) => {
-        try {
-          const data = JSON.parse(event.target?.result || '{}');
-          resolve(data);
-        } catch (error) {
-          reject(new Error('Het JSON-bestand kon niet gelezen worden.'));
-        }
-      };
-
-      reader.onerror = () => reject(new Error('Het bestand kon niet gelezen worden.'));
-      reader.readAsText(file);
-    });
-  }
-
-  async function getAdminCollection(storageKey, defaultPath, itemKey = 'items') {
-    const data = await loadAdminData(storageKey, defaultPath);
-    return Array.isArray(data?.[itemKey]) ? data[itemKey] : Array.isArray(data) ? data : [];
-  }
-
-  function getStoredCollection(storageKey, itemKey = 'items') {
-    const data = readLocal(storageKey);
-    if (Array.isArray(data?.[itemKey])) return data[itemKey];
-    if (Array.isArray(data)) return data;
-    return [];
-  }
-
-  async function getByType(type, options = {}) {
-    return global.EMSAdminStore.get(type, options);
-  }
-
-  async function saveByType(type, data, actor = 'frontend') {
-    return global.EMSAdminStore.save(type, data, actor);
-  }
-
-  async function refreshByType(type) {
-    return global.EMSAdminStore.refresh(type);
-  }
-
-  function clearTypeCache(type) {
-    global.EMSAdminStore.clearCache(type);
-  }
-
-  global.AdminStore = {
-    fetchJson,
-    loadAdminData,
-    saveAdminData,
-    removeAdminData,
-    resetAdminData,
-    exportAdminData,
-    importAdminData,
-    mergeWithDefaults,
-    getAdminCollection,
-    getStoredCollection,
-    readLocal,
-    getByType,
-    saveByType,
-    refreshByType,
-    clearTypeCache,
-    clearAllCache
-  };
+  global.saveAdminData = saveAdminData;
+  global.loadAdminData = loadAdminData;
+  global.removeAdminData = removeAdminData;
 })(window);
