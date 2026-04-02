@@ -359,7 +359,8 @@
     setStatus('Prijsregels laden...', 'info');
 
     try {
-      const rows = await window.EMSAdminStore.get('prices', { forceRefresh: true });
+      const loadedRows = await window.EMSAdminStore.get('prices', { forceRefresh: true });
+      const rows = Array.isArray(loadedRows) ? loadedRows : [];
       state.originalRows = rows.map(normalizeRow);
       state.rows = clone(state.originalRows);
       applyFilter();

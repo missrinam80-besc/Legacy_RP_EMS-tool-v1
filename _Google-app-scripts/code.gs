@@ -1,12 +1,6 @@
 /**
  * EMS Tool API Router
- * -------------------
- * Centrale router voor:
- * - healthcheck
- * - personeel readonly/list/save
- * - centrale config get/save
  */
-
 function doGet(e) {
   return handleRequest_(e, 'GET');
 }
@@ -17,18 +11,23 @@ function doPost(e) {
 
 function handleRequest_(e, method) {
   try {
-    const action = String((e && e.parameter && e.parameter.action) || '').trim().toLowerCase();
-    const body = getJsonBody_(e);
+    var body = getJsonBody_(e);
+    var action = String(
+      (e && e.parameter && e.parameter.action) ||
+      (body && body.action) ||
+      ''
+    ).trim().toLowerCase();
 
-    logDebug_('handleRequest_start', {
-      method: method,
-      action: action,
-      params: (e && e.parameter) || {},
-      hasBody: !!Object.keys(body || {}).length
-    });
+    if (typeof logDebug_ === 'function') {
+      logDebug_('handleRequest_start', {
+        method: method,
+        action: action,
+        params: (e && e.parameter) || {},
+        hasBody: !!Object.keys(body || {}).length
+      });
+    }
 
-    let result;
-
+    var result;
     switch (action) {
       case '':
       case 'health':
@@ -36,9 +35,6 @@ function handleRequest_(e, method) {
         result = handleHealthcheck_();
         break;
 
-      // =========================
-      // PERSONEEL
-      // =========================
       case 'readonly':
         result = handleReadonlyStaff_();
         break;
@@ -53,11 +49,8 @@ function handleRequest_(e, method) {
         result = handleSaveStaff_(body, e);
         break;
 
-      // =========================
-      // CONFIG
-      // =========================
       case 'getconfig':
-        result = handleGetConfig_(e);
+        result = handleGetConfig_(e, body);
         break;
 
       case 'getallconfigs':
@@ -73,17 +66,18 @@ function handleRequest_(e, method) {
         throw new Error('Onbekende actie: ' + action);
     }
 
-    logDebug_('handleRequest_success', {
-      method: method,
-      action: action
-    });
+    if (typeof logDebug_ === 'function') {
+      logDebug_('handleRequest_success', { method: method, action: action });
+    }
 
     return okResponse_(result);
   } catch (error) {
-    logError_('handleRequest_error', error, {
-      method: method,
-      params: (e && e.parameter) || {}
-    });
+    if (typeof logError_ === 'function') {
+      logError_('handleRequest_error', error, {
+        method: method,
+        params: (e && e.parameter) || {}
+      });
+    }
     return errorResponse_(error);
   }
 }

@@ -4,8 +4,20 @@
  * Leest en schrijft centrale configuratie-tabs.
  */
 
-function handleGetConfig_(e) {
-  var type = String((e && e.parameter && e.parameter.type) || '').trim();
+function normalizeConfigType_(value) {
+  var type = String(value || '').trim();
+  var normalized = type.toLowerCase();
+  if (normalized === 'treatmentrules' || normalized === 'treatment_rules') return 'treatmentRules';
+  return normalized === 'theme' ? 'theme' :
+    normalized === 'modules' ? 'modules' :
+    normalized === 'prices' ? 'prices' :
+    normalized === 'medication' ? 'medication' :
+    normalized === 'injuries' ? 'injuries' :
+    normalized === 'treatmentrules' ? 'treatmentRules' : type;
+}
+
+function handleGetConfig_(e, body) {
+  var type = normalizeConfigType_((e && e.parameter && e.parameter.type) || (body && body.type) || '');
   if (!type) throw new Error('Config type ontbreekt.');
 
   var sheetMap = getConfigSheetMap_();
@@ -30,7 +42,7 @@ function handleGetAllConfigs_() {
 }
 
 function handleSaveConfig_(body, e) {
-  var type = String((body && body.type) || (e && e.parameter && e.parameter.type) || '').trim();
+  var type = normalizeConfigType_((body && body.type) || (e && e.parameter && e.parameter.type) || '');
   if (!type) throw new Error('Config type ontbreekt.');
 
   var sheetMap = getConfigSheetMap_();
@@ -44,11 +56,13 @@ function handleSaveConfig_(body, e) {
 
   writeObjectsToSheetWithHeaders_(sheetName, headers, sanitized);
 
-  logDebug_('save_config', {
-    type: type,
-    actor: actor,
-    rows: sanitized.length
-  });
+  if (typeof logDebug_ === 'function') {
+    logDebug_('save_config', {
+      type: type,
+      actor: actor,
+      rows: sanitized.length
+    });
+  }
 
   return {
     saved: true,
@@ -73,15 +87,13 @@ function readConfigRows_(sheetName) {
 }
 
 function normalizeConfigInputRows_(type, data) {
-  if (type === 'theme') {
-    return normalizeThemeInputRows_(data);
-  }
-
+  if (type === 'theme') return normalizeThemeInputRows_(data);
   if (Array.isArray(data)) return data;
   if (data && Array.isArray(data.rows)) return data.rows;
   if (data && Array.isArray(data.items)) return data.items;
+  if (data && data.data && Array.isArray(data.data.rows)) return data.data.rows;
+  if (data && data.data && Array.isArray(data.data.items)) return data.data.items;
   if (data == null) return [];
-
   throw new Error(type + ': verwacht een array van rows.');
 }
 

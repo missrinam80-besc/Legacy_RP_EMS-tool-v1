@@ -8,10 +8,23 @@
     return config.apiBaseUrl;
   }
 
+  async function parseJsonResponse(response, methodLabel) {
+    if (!response.ok) {
+      throw new Error(`API ${methodLabel} fout: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const ok = data?.ok === true || data?.success === true;
+    if (!ok) {
+      throw new Error(data?.error || data?.message || `Onbekende API ${methodLabel} fout`);
+    }
+    return data.data ?? data;
+  }
+
   async function apiGet(params) {
     const url = new URL(getApiBaseUrl());
     Object.entries(params || {}).forEach(([key, value]) => {
-      url.searchParams.set(key, value);
+      if (value != null) url.searchParams.set(key, value);
     });
 
     const response = await fetch(url.toString(), {
@@ -19,17 +32,7 @@
       cache: 'no-store'
     });
 
-    if (!response.ok) {
-      throw new Error(`API GET fout: ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    if (!data.ok) {
-      throw new Error(data.error || 'Onbekende API GET fout');
-    }
-
-    return data.data;
+    return parseJsonResponse(response, 'GET');
   }
 
   async function apiPost(payload) {
@@ -39,21 +42,11 @@
         'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
       },
       body: new URLSearchParams({
-        payload: JSON.stringify(payload)
+        payload: JSON.stringify(payload || {})
       })
     });
 
-    if (!response.ok) {
-      throw new Error(`API POST fout: ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    if (!data.ok) {
-      throw new Error(data.error || 'Onbekende API POST fout');
-    }
-
-    return data.data;
+    return parseJsonResponse(response, 'POST');
   }
 
   window.EMSApiClient = {

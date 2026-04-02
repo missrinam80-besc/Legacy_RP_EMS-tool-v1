@@ -341,7 +341,8 @@
     setStatus('Medicatie laden...', 'info');
 
     try {
-      const rows = await window.EMSAdminStore.get('medication', { forceRefresh: true });
+      const loadedRows = await window.EMSAdminStore.get('medication', { forceRefresh: true });
+      const rows = Array.isArray(loadedRows) ? loadedRows : [];
       state.originalRows = rows.map(normalizeRow);
       state.rows = clone(state.originalRows);
       applyFilter();

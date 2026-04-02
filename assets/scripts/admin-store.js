@@ -9,6 +9,7 @@
   };
 
   const storeConfig = global.EMS_STORE_CONFIG || {};
+  const LIST_TYPES = new Set(['modules', 'prices', 'medication', 'injuries', 'treatmentRules']);
 
   function getTypeConfig(type) {
     const cfg = storeConfig.configTypes?.[type];
@@ -26,24 +27,19 @@
   }
 
   function structuredCloneSafe(value) {
-    if (typeof structuredClone === 'function') {
-      return structuredClone(value);
-    }
+    if (typeof structuredClone === 'function') return structuredClone(value);
     return JSON.parse(JSON.stringify(value));
   }
 
   async function fetchJson(path) {
     const response = await fetch(path, { cache: 'no-store' });
-    if (!response.ok) {
-      throw new Error(`Kon ${path} niet laden (${response.status})`);
-    }
+    if (!response.ok) throw new Error(`Kon ${path} niet laden (${response.status})`);
     return response.json();
   }
 
   function readLocal(storageKey) {
     const raw = localStorage.getItem(storageKey);
     if (!raw) return null;
-
     try {
       return JSON.parse(raw);
     } catch (error) {
@@ -118,13 +114,13 @@
     if (Array.isArray(payload?.data)) return payload.data;
     if (Array.isArray(payload?.data?.rows)) return payload.data.rows;
     if (Array.isArray(payload?.data?.items)) return payload.data.items;
+    if (Array.isArray(payload?.result)) return payload.result;
+    if (Array.isArray(payload?.result?.rows)) return payload.result.rows;
     return null;
   }
 
   function normalizeApiData(type, payload) {
-    if (payload == null) {
-      return type === 'theme' ? { colors: {} } : [];
-    }
+    if (payload == null) return type === 'theme' ? { colors: {} } : [];
 
     const data = payload?.data ?? payload;
 
@@ -137,28 +133,28 @@
 
     const rows = normalizeCollectionPayload(data);
     if (rows) return rows;
-    if (typeof data === 'object' && data && Array.isArray(data.items)) return data.items;
     return [];
+  }
+
+  function ensureExpectedShape(type, value) {
+    if (type === 'theme') {
+      if (value && typeof value === 'object' && !Array.isArray(value)) return value;
+      return { colors: {} };
+    }
+    return Array.isArray(value) ? value : normalizeApiData(type, value);
   }
 
   async function fetchDefaultsByType(type) {
     const cfg = getTypeConfig(type);
     const defaults = await fetchJson(cfg.defaultPath);
-    return normalizeApiData(type, defaults);
+    return ensureExpectedShape(type, normalizeApiData(type, defaults));
   }
 
   async function fetchApiType(type) {
-    if (!global.EMSApiClient?.apiGet) {
-      throw new Error('EMSApiClient ontbreekt.');
-    }
-
+    if (!global.EMSApiClient?.apiGet) throw new Error('EMSApiClient ontbreekt.');
     const cfg = getTypeConfig(type);
-    const data = await global.EMSApiClient.apiGet({
-      action: 'getConfig',
-      type: cfg.apiType
-    });
-
-    return normalizeApiData(type, data);
+    const data = await global.EMSApiClient.apiGet({ action: 'getConfig', type: cfg.apiType });
+    return ensureExpectedShape(type, normalizeApiData(type, data));
   }
 
   async function getType(type, options = {}) {
@@ -166,7 +162,7 @@
 
     if (!forceRefresh) {
       const cached = readCache(type);
-      if (cached != null) return structuredCloneSafe(normalizeApiData(type, cached));
+      if (cached != null) return structuredCloneSafe(ensureExpectedShape(type, cached));
     }
 
     try {
@@ -179,7 +175,7 @@
 
       const localData = readLocalType(type);
       if (localData != null) {
-        const normalizedLocal = normalizeApiData(type, localData);
+        const normalizedLocal = ensureExpectedShape(type, localData);
         writeCache(type, normalizedLocal);
         return structuredCloneSafe(normalizedLocal);
       }
@@ -192,13 +188,10 @@
   }
 
   async function saveType(type, data, actor = 'frontend') {
-    const payload = normalizeApiData(type, data);
+    const payload = ensureExpectedShape(type, normalizeApiData(type, data));
 
     try {
-      if (!global.EMSApiClient?.apiPost) {
-        throw new Error('EMSApiClient ontbreekt.');
-      }
-
+      if (!global.EMSApiClient?.apiPost) throw new Error('EMSApiClient ontbreekt.');
       await global.EMSApiClient.apiPost({
         action: 'saveConfig',
         type: getTypeConfig(type).apiType,
@@ -232,11 +225,10 @@
   function saveAdminData(storageKey, data) {
     const type = LEGACY_KEY_MAP[storageKey];
     if (type) {
-      saveLocalType(type, normalizeApiData(type, data));
+      saveLocalType(type, ensureExpectedShape(type, normalizeApiData(type, data)));
       clearCache(type);
       return data;
     }
-
     localStorage.setItem(storageKey, JSON.stringify(data));
     return data;
   }
@@ -253,27 +245,21 @@
 
   async function loadAdminData(storageKey, defaultPath) {
     const type = LEGACY_KEY_MAP[storageKey];
-
     if (type) {
       const data = await global.EMSAdminStore.get(type);
       return structuredCloneSafe(data);
     }
 
+    const localData = readLocal(storageKey);
+    if (localData != null) return structuredCloneSafe(localData);
+
+    if (!defaultPath) return null;
     const defaults = await fetchJson(defaultPath);
-    const saved = readLocal(storageKey);
-
-    if (!saved) {
-      return structuredCloneSafe(defaults);
-    }
-
-    if (typeof defaults === 'object' && !Array.isArray(defaults)) {
-      return structuredCloneSafe({ ...defaults, ...saved });
-    }
-
-    return structuredCloneSafe(saved);
+    localStorage.setItem(storageKey, JSON.stringify(defaults));
+    return structuredCloneSafe(defaults);
   }
 
-  global.saveAdminData = saveAdminData;
   global.loadAdminData = loadAdminData;
+  global.saveAdminData = saveAdminData;
   global.removeAdminData = removeAdminData;
 })(window);
