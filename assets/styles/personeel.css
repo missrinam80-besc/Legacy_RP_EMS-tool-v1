@@ -554,3 +554,13 @@
 .personeel-admin-note__content strong {
   color: #0f172a;
 }
+
+.page-back-link {
+  margin-bottom: 1rem;
+}
+
+.page-back-link .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
