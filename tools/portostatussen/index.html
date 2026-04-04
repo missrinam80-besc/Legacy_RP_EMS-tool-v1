@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Portostatussen - EMS Tools</title>
+  <title>Portoprotocol - EMS Tools</title>
 
   <link rel="stylesheet" href="../../assets/styles/theme.css" />
   <link rel="stylesheet" href="../../assets/styles/base.css" />
@@ -15,28 +15,87 @@
 <body class="portal-page">
   <div class="app-shell">
     <header class="site-header">
-      <img src="../../assets/images/Banner.png" class="site-banner" data-site-banner />
+      <img src="../../assets/images/Banner.png" class="site-banner" alt="EMS banner" data-site-banner />
     </header>
 
     <main class="page-container">
+      <nav class="tool-nav" aria-label="Terug navigatie">
+        <a href="../../index.html">← Terug naar medewerkersportaal</a>
+      </nav>
+
       <section class="portal-header-card">
         <div class="portal-header-card__content">
-          <h1>Portostatussen</h1>
+          <h1>Portoprotocol</h1>
           <p>
-            Overzicht van de belangrijkste porto- en inzetstatussen voor de dagelijkse
-            werking van EMS.
+            Overzicht van de EMS-portostatussen, basisafspraken en correcte communicatie tijdens interventies.
           </p>
+        </div>
+      </section>
 
-          <nav class="portal-subnav" aria-label="Snelle navigatie">
-            <a class="portal-subnav__link" href="../../index.html">🏠 Home medewerkers</a>
-            <a class="portal-subnav__link" href="../../command.html">⚙️ Command</a>
-            <a class="portal-subnav__link" href="../personeelslijst/index.html">👥 Personeelslijst</a>
-          </nav>
-
-          <div class="info-toolbar">
-            <button type="button" class="btn btn-secondary" id="expandAllBtn">Alles openklappen</button>
-            <button type="button" class="btn btn-secondary" id="collapseAllBtn">Alles sluiten</button>
+      <section class="portal-section">
+        <div class="section-heading">
+          <div>
+            <h2>Algemene afspraken</h2>
           </div>
+        </div>
+
+        <div class="info-blocks">
+          <article class="info-panel-card">
+            <p>
+              Goede communicatie via de portofoon is essentieel binnen EMS.
+              We houden berichten kort, duidelijk en professioneel.
+            </p>
+
+            <ul class="info-list">
+              <li>Gebruik altijd je roepnummer, nooit je naam</li>
+              <li>Spreek rustig en duidelijk</li>
+              <li>Houd berichten zo kort mogelijk</li>
+              <li>Geen overbodige praat op de porto</li>
+              <li>Luister eerst, spreek daarna</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="portal-section">
+        <div class="section-heading">
+          <div>
+            <h2>Basisopbouw van een bericht</h2>
+          </div>
+        </div>
+
+        <div class="info-blocks">
+          <article class="info-panel-card">
+            <p>
+              Eerst zeg je wie je oproept, daarna je eigen roepnummer.
+              Wanneer de ontvanger antwoordt met <strong>“geef bericht”</strong>,
+              kan je je boodschap doorgeven.
+            </p>
+
+            <div class="info-example">
+              <strong>Voorbeeld:</strong><br />
+              Jij (212): “212 aan 203”<br />
+              Ontvanger (203): “Geef bericht”<br />
+              Jij (212): geeft je boodschap door
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="portal-section">
+        <div class="section-heading">
+          <div>
+            <h2>Statussen melden</h2>
+          </div>
+        </div>
+
+        <div class="info-blocks">
+          <article class="info-panel-card">
+            <p>
+              Statussen geven in één oogopslag weer wat je aan het doen bent.
+              Elke statuswijziging wordt correct en tijdig doorgegeven.
+            </p>
+          </article>
         </div>
       </section>
 
@@ -44,186 +103,205 @@
         <div class="section-heading">
           <div>
             <h2>Statusoverzicht</h2>
-            <p class="text-soft">Snelle visuele samenvatting van de meest gebruikte statussen.</p>
           </div>
         </div>
 
-        <div class="portal-grid">
-          <article class="portal-card">
+        <div class="portal-grid portal-grid--compact">
+          <article class="portal-card portal-card--compact">
             <div class="portal-card__title">
-              <span class="portal-card__icon">🟢</span>
-              <div><h3>Beschikbaar</h3></div>
+              <span class="portal-card__icon">0</span>
+              <div><h3>In dienst</h3></div>
             </div>
-            <p>De eenheid is vrij en klaar voor een nieuwe oproep.</p>
+            <p>Je bent aangemeld voor je shift.</p>
           </article>
 
-          <article class="portal-card">
+          <article class="portal-card portal-card--compact">
             <div class="portal-card__title">
-              <span class="portal-card__icon">🚑</span>
+              <span class="portal-card__icon">1</span>
+              <div><h3>Vrij / beschikbaar</h3></div>
+            </div>
+            <p>Je bent inzetbaar voor oproepen.</p>
+          </article>
+
+          <article class="portal-card portal-card--compact">
+            <div class="portal-card__title">
+              <span class="portal-card__icon">2</span>
               <div><h3>Onderweg</h3></div>
             </div>
-            <p>De eenheid is onderweg naar een oproep, patiënt of locatie.</p>
+            <p>Je bent onderweg naar een melding.</p>
           </article>
 
-          <article class="portal-card">
+          <article class="portal-card portal-card--compact">
             <div class="portal-card__title">
-              <span class="portal-card__icon">📍</span>
+              <span class="portal-card__icon">3</span>
               <div><h3>Ter plaatse</h3></div>
             </div>
-            <p>De eenheid is aangekomen en de situatie wordt beoordeeld of behandeld.</p>
+            <p>Je bent aangekomen op locatie.</p>
           </article>
 
-          <article class="portal-card">
+          <article class="portal-card portal-card--compact">
             <div class="portal-card__title">
-              <span class="portal-card__icon">🏥</span>
-              <div><h3>Transport / ziekenhuis</h3></div>
+              <span class="portal-card__icon">4</span>
+              <div><h3>Terug naar ziekenhuis</h3></div>
             </div>
-            <p>Patiëntentransport bezig of aangekomen in het ziekenhuis.</p>
+            <p>Je keert terug richting ziekenhuis.</p>
           </article>
 
-          <article class="portal-card">
+          <article class="portal-card portal-card--compact">
             <div class="portal-card__title">
-              <span class="portal-card__icon">⛔</span>
-              <div><h3>Tijdelijk niet inzetbaar</h3></div>
+              <span class="portal-card__icon">5</span>
+              <div><h3>Pauze</h3></div>
             </div>
-            <p>De eenheid is tijdelijk niet beschikbaar door nazorg, administratie of andere reden.</p>
+            <p>Tijdelijk niet beschikbaar door pauze.</p>
           </article>
 
-          <article class="portal-card">
+          <article class="portal-card portal-card--compact">
             <div class="portal-card__title">
-              <span class="portal-card__icon">🌙</span>
+              <span class="portal-card__icon">6</span>
+              <div><h3>Spraak hoogste rang</h3></div>
+            </div>
+            <p>Je vraagt overleg aan de hoogste rang.</p>
+          </article>
+
+          <article class="portal-card portal-card--compact">
+            <div class="portal-card__title">
+              <span class="portal-card__icon">7</span>
+              <div><h3>Urgente spraak hoogste rang</h3></div>
+            </div>
+            <p>Dringende spraakaanvraag aan hoogste rang.</p>
+          </article>
+
+          <article class="portal-card portal-card--compact">
+            <div class="portal-card__title">
+              <span class="portal-card__icon">8</span>
               <div><h3>Uit dienst</h3></div>
             </div>
-            <p>De medewerker is niet langer inzetbaar voor de rest van de dienst.</p>
+            <p>Je bent uit dienst maar nog oproepbaar.</p>
           </article>
+
+          <article class="portal-card portal-card--compact">
+            <div class="portal-card__title">
+              <span class="portal-card__icon">9</span>
+              <div><h3>Einde dienst</h3></div>
+            </div>
+            <p>Je bent volledig uit dienst.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="portal-section">
+        <div class="section-heading section-heading--stack">
+          <div>
+            <h2>Uitleg per status</h2>
+          </div>
+
+          <div class="info-toolbar">
+            <button type="button" class="btn btn-secondary" id="expandAllBtn">Alles openklappen</button>
+            <button type="button" class="btn btn-secondary" id="collapseAllBtn">Alles sluiten</button>
+          </div>
+        </div>
+
+        <div class="info-blocks">
+          <details class="info-accordion" open>
+            <summary>Status 0 — In dienst</summary>
+            <div class="info-accordion__content">
+              <p>Je bent aangemeld en actief begonnen aan je dienst.</p>
+            </div>
+          </details>
+
+          <details class="info-accordion">
+            <summary>Status 1 — Vrij / beschikbaar</summary>
+            <div class="info-accordion__content">
+              <p>Je bent vrij en beschikbaar om een nieuwe oproep of taak op te nemen.</p>
+            </div>
+          </details>
+
+          <details class="info-accordion">
+            <summary>Status 2 — Onderweg naar melding</summary>
+            <div class="info-accordion__content">
+              <p>Je bent onderweg naar een interventie of melding.</p>
+            </div>
+          </details>
+
+          <details class="info-accordion">
+            <summary>Status 3 — Ter plaatse</summary>
+            <div class="info-accordion__content">
+              <p>Je bent aangekomen op de locatie van de interventie.</p>
+            </div>
+          </details>
+
+          <details class="info-accordion">
+            <summary>Status 4 — Terug naar ziekenhuis</summary>
+            <div class="info-accordion__content">
+              <p>Je bent onderweg terug naar het ziekenhuis.</p>
+            </div>
+          </details>
+
+          <details class="info-accordion">
+            <summary>Status 5 — Pauze / eten halen</summary>
+            <div class="info-accordion__content">
+              <p>Je bent tijdelijk niet inzetbaar wegens pauze of om eten te halen.</p>
+            </div>
+          </details>
+
+          <details class="info-accordion">
+            <summary>Status 6 — Spraak aanvraag hoogste rang</summary>
+            <div class="info-accordion__content">
+              <p>Je vraagt overleg of bijstand aan van de hoogste aanwezige rang.</p>
+            </div>
+          </details>
+
+          <details class="info-accordion">
+            <summary>Status 7 — Spraak aanvraag urgent hoogste rang</summary>
+            <div class="info-accordion__content">
+              <p>Je vraagt dringend overleg of onmiddellijke tussenkomst van de hoogste aanwezige rang.</p>
+            </div>
+          </details>
+
+          <details class="info-accordion">
+            <summary>Status 8 — Uit dienst (oproepbaar)</summary>
+            <div class="info-accordion__content">
+              <p>Je bent uit dienst, maar indien nodig nog oproepbaar.</p>
+            </div>
+          </details>
+
+          <details class="info-accordion">
+            <summary>Status 9 — Einde dienst (bedtijd)</summary>
+            <div class="info-accordion__content">
+              <p>Je bent volledig uit dienst en niet meer oproepbaar.</p>
+            </div>
+          </details>
         </div>
       </section>
 
       <section class="portal-section">
         <div class="section-heading">
           <div>
-            <h2>Uitleg per status</h2>
-            <p class="text-soft">Gebruik deze blokken als vaste leidraad voor communicatie op de porto.</p>
+            <h2>Tijdens interventies</h2>
           </div>
         </div>
 
-        <div class="info-blocks">
-          <details class="info-accordion" open>
-            <summary>Beschikbaar / vrij inzetbaar</summary>
-            <div class="info-accordion__content">
-              <p>Gebruik deze status wanneer je eenheid klaar is voor een nieuwe dispatch of oproep.</p>
+        <div class="info-mini-grid">
+          <article class="info-mini-card info-mini-card--success">
+            <strong>DO’s</strong>
+            <ul class="info-list">
+              <li>Enkel noodzakelijke communicatie</li>
+              <li>Geen discussies via de porto</li>
+              <li>Medische details enkel indien nodig</li>
+              <li>Voor besprekingen ga je in een apart portokanaal</li>
+              <li>Leidinggevend EMS’er voert het woord bij complexe situaties</li>
+            </ul>
+          </article>
 
-              <div class="info-mini-grid">
-                <div class="info-mini-card">
-                  <strong>Wanneer gebruiken</strong>
-                  <span>Na afronding van een interventie of bij aanvang van je inzet.</span>
-                </div>
-                <div class="info-mini-card">
-                  <strong>Vermijd</strong>
-                  <span>Deze status gebruiken als je nog administratie of nazorg moet afwerken.</span>
-                </div>
-              </div>
-
-              <div class="info-example">
-                <strong>Voorbeeld:</strong> “201 terug beschikbaar voor oproepen.”
-              </div>
-            </div>
-          </details>
-
-          <details class="info-accordion">
-            <summary>Onderweg</summary>
-            <div class="info-accordion__content">
-              <p>Deze status gebruik je wanneer je eenheid effectief onderweg is naar een incident of opdracht.</p>
-              <ul class="info-list">
-                <li>Meld idealiter je roepnummer mee.</li>
-                <li>Gebruik dit pas zodra je effectief vertrekt.</li>
-                <li>Hou communicatie kort en duidelijk.</li>
-              </ul>
-
-              <div class="info-example">
-                <strong>Voorbeeld:</strong> “214 onderweg naar oproep.”
-              </div>
-            </div>
-          </details>
-
-          <details class="info-accordion">
-            <summary>Ter plaatse</summary>
-            <div class="info-accordion__content">
-              <p>Gebruik deze status bij aankomst op de locatie of zodra je de situatie actief beoordeelt.</p>
-              <ul class="info-list">
-                <li>Meld indien nodig meteen of bijkomende ondersteuning nodig is.</li>
-                <li>Gebruik korte updates als de situatie verandert.</li>
-              </ul>
-
-              <div class="info-example">
-                <strong>Voorbeeld:</strong> “201 ter plaatse, beoordeling gestart.”
-              </div>
-            </div>
-          </details>
-
-          <details class="info-accordion">
-            <summary>Transport / ziekenhuis</summary>
-            <div class="info-accordion__content">
-              <p>Gebruik deze status wanneer je een patiënt vervoert of aangekomen bent aan Pillbox.</p>
-              <ul class="info-list">
-                <li>Hou dispatch op de hoogte wanneer je ambulance tijdelijk bezet blijft.</li>
-                <li>Na overdracht geef je een nieuwe status door.</li>
-              </ul>
-
-              <div class="info-example">
-                <strong>Voorbeeld:</strong> “225 transport bezig richting ziekenhuis.”
-              </div>
-            </div>
-          </details>
-
-          <details class="info-accordion">
-            <summary>Tijdelijk niet inzetbaar</summary>
-            <div class="info-accordion__content">
-              <p>Gebruik dit wanneer je even niet beschikbaar bent, maar wel nog in dienst bent.</p>
-
-              <ul class="info-list">
-                <li>Administratie of rapportering</li>
-                <li>Nazorg of schoonmaak van voertuig</li>
-                <li>Interne overlegmomenten</li>
-              </ul>
-
-              <div class="info-example">
-                <strong>Voorbeeld:</strong> “214 tijdelijk niet inzetbaar voor administratie.”
-              </div>
-            </div>
-          </details>
-
-          <details class="info-accordion">
-            <summary>Uit dienst</summary>
-            <div class="info-accordion__content">
-              <p>Gebruik deze status aan het einde van je inzet of shift.</p>
-              <ul class="info-list">
-                <li>Werk lopende administratie eerst af.</li>
-                <li>Laat geen openstaande onduidelijkheden achter.</li>
-              </ul>
-
-              <div class="info-example">
-                <strong>Voorbeeld:</strong> “201 uit dienst.”
-              </div>
-            </div>
-          </details>
-
-          <details class="info-accordion">
-            <summary>Algemene richtlijnen voor porto</summary>
-            <div class="info-accordion__content">
-              <ul class="info-list">
-                <li>Hou meldingen kort, duidelijk en functioneel.</li>
-                <li>Gebruik altijd een consistente terminologie.</li>
-                <li>Vermijd overbodige discussie op de porto.</li>
-                <li>Bevestig belangrijke statuswissels op tijd.</li>
-              </ul>
-
-              <div class="info-inline-actions">
-                <a href="../procedures-afspraken/index.html">Naar procedures & afspraken</a>
-                <a href="../../index.html">Terug naar homepage</a>
-              </div>
-            </div>
-          </details>
+          <article class="info-mini-card info-mini-card--danger">
+            <strong>DON’TS</strong>
+            <ul class="info-list">
+              <li>Door elkaar praten</li>
+              <li>Lange uitleg of verhalen</li>
+              <li>Namen van patiënten</li>
+              <li>OOC-communicatie</li>
+            </ul>
+          </article>
         </div>
       </section>
     </main>

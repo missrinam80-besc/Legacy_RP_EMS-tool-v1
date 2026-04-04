@@ -1,7 +1,7 @@
 /**
  * info-pages.js
  * -------------
- * Kleine helpers voor kennispagina's met uitklapbare blokken.
+ * Helpers voor kennispagina's met uitklapbare blokken.
  */
 
 document.addEventListener("DOMContentLoaded", () => {
